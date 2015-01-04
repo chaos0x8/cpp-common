@@ -7,8 +7,15 @@ end
 
 web_require "https://raw.github.com/chaos0x8/ruby/master/rake-builder/RakeBuilder.rb"
 
+if ARGV.index("nodebug").nil?
+    FLAGS = [ "--std=c++1y", "-g" ]
+else
+    FLAGS = [ "--std=c++1y", "-O3", "-s", "-DNDEBUG" ]
+
+    task :nodebug
+end
+
 INCLUDES = [ "Source" ]
-FLAGS = [ "--std=c++1y", "-O3", "-DNDEBUG", "-s" ]
 UT_LIBS = [ "-lgtest", "-lgmock", "-lpthread" ]
 
 Library.new do |t|
