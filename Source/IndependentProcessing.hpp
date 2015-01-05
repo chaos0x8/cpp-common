@@ -78,9 +78,14 @@ public:
         for (size_t threadId = 0; threadId < this->threads.size(); ++threadId)
             this->threads[threadId] = std::thread([this, threadId]()
             {
-                this->results[threadId].reserve(this->partSize);
-                for (size_t i = this->partSize * threadId; i < this->partSize * (threadId + 1) && i < this->data.size(); ++i)
-                   this->results[threadId].push_back(this->functor(this->data[i]));
+                std::vector<R> tmpResult;
+                const auto tmpPartSize = this->partSize;
+                const auto tmpDataSize = this->data.size();
+
+                tmpResult.reserve(tmpPartSize);
+                for (size_t i = tmpPartSize * threadId; i < tmpPartSize * (threadId + 1) && i < tmpDataSize; ++i)
+                   tmpResult.push_back(this->functor(this->data[i]));
+                this->results[threadId] = std::move(tmpResult);
             });
     }
     ~IndependentProcessor()
@@ -107,12 +112,17 @@ public:
         for (size_t threadId = 0; threadId < this->threads.size(); ++threadId)
             this->threads[threadId] = std::thread([this, threadId]()
             {
-                for (size_t i = this->partSize * threadId; i < this->partSize * (threadId + 1) && i < this->data.size(); ++i)
+                std::vector<R> tmpResult;
+                const auto tmpPartSize = this->partSize;
+                const auto tmpDataSize = this->data.size();
+
+                for (size_t i = tmpPartSize * threadId; i < tmpPartSize * (threadId + 1) && i < tmpDataSize; ++i)
                 {
                     auto res = this->functor(this->data[i]);
                     if (res.is_initialized())
-                        this->results[threadId].push_back(std::move(res.get()));
+                        tmpResult.push_back(std::move(res.get()));
                 }
+                this->results[threadId] = std::move(tmpResult);
             });
     }
     ~IndependentProcessor()
@@ -137,7 +147,10 @@ public:
         for (size_t threadId = 0; threadId < this->threads.size(); ++threadId)
             this->threads[threadId] = std::thread([this, threadId]()
             {
-                for (size_t i = this->partSize * threadId; i < this->partSize * (threadId + 1) && i < this->data.size(); ++i)
+                const auto tmpPartSize = this->partSize;
+                const auto tmpDataSize = this->data.size();
+
+                for (size_t i = tmpPartSize * threadId; i < tmpPartSize * (threadId + 1) && i < tmpDataSize; ++i)
                     this->functor(this->data[i]);
             });
     }
