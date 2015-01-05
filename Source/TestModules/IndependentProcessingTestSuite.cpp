@@ -42,6 +42,42 @@ TEST_F(IndependentTaskTestSuite, shouldProccessDataAndGiveOptionalReuslt)
     ASSERT_THAT(inputData, ElementsAre(10, 42, 70, 105, 17));
 }
 
+class IndependentProcessingStressTestSuite : public Test
+{
+public:
+    IndependentProcessingStressTestSuite()
+    {
+        for (size_t i = 0; i < 1024*1024; ++i)
+            input.push_back(i);
+    }
+
+    std::vector<int> input;
+};
+
+TEST_F(IndependentProcessingStressTestSuite, stressWithoutOutput)
+{
+    runIndependentProcessing(std::move(input), [](int x) -> void { std::to_string(x); });
+}
+
+TEST_F(IndependentProcessingStressTestSuite, stressWithOutput)
+{
+    runIndependentProcessing(std::move(input), [](int x) -> std::string { return std::to_string(x); });
+}
+
+TEST_F(IndependentProcessingStressTestSuite, stressWithOptionalOutput)
+{
+    auto cut = runIndependentProcessing(std::move(input),
+    [](int x) -> boost::optional<std::string>
+    {
+        if (x % 2 == 0)
+            return boost::none;
+        return std::to_string(x);
+    });
+
+    const size_t expectedSize = std::count_if(std::begin(input), std::end(input), [](int x) { return x % 2 != 0; });
+    ASSERT_THAT(cut->get(), SizeIs(expectedSize));
+}
+
 }
 }
 

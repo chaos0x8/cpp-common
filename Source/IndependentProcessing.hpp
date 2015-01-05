@@ -21,10 +21,6 @@ public:
           partSize(data.size() / threadAmount + (data.size() % threadAmount == 0 ? 0 : 1))
     {
     }
-    ~IndependentProcessorBase()
-    {
-        join();
-    }
 
     void join()
     {
@@ -52,7 +48,14 @@ public:
 protected:
     std::vector<R> get() const
     {
+        const size_t totalSize = std::accumulate(std::begin(results), std::end(results), size_t(),
+        [](size_t y, const std::vector<R>& x) -> size_t
+        {
+            return y + x.size();
+        });
+
         std::vector<R> res;
+        res.reserve(totalSize);
 
         for (const std::vector<R>& x : results)
             res.insert(std::end(res), std::begin(x), std::end(x));
@@ -75,9 +78,14 @@ public:
         for (size_t threadId = 0; threadId < this->threads.size(); ++threadId)
             this->threads[threadId] = std::thread([this, threadId]()
             {
+                this->results[threadId].reserve(this->partSize);
                 for (size_t i = this->partSize * threadId; i < this->partSize * (threadId + 1) && i < this->data.size(); ++i)
                    this->results[threadId].push_back(this->functor(this->data[i]));
             });
+    }
+    ~IndependentProcessor()
+    {
+        this->join();
     }
 
     std::vector<R> get()
@@ -103,9 +111,13 @@ public:
                 {
                     auto res = this->functor(this->data[i]);
                     if (res.is_initialized())
-                        this->results[threadId].push_back(res.get());
+                        this->results[threadId].push_back(std::move(res.get()));
                 }
             });
+    }
+    ~IndependentProcessor()
+    {
+        this->join();
     }
 
     std::vector<R> get()
@@ -128,6 +140,10 @@ public:
                 for (size_t i = this->partSize * threadId; i < this->partSize * (threadId + 1) && i < this->data.size(); ++i)
                     this->functor(this->data[i]);
             });
+    }
+    ~IndependentProcessor()
+    {
+        this->join();
     }
 };
 
