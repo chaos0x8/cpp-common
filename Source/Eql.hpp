@@ -15,12 +15,17 @@ class Eql<T, T>
 public:
     static bool f(const T& t, const T& u)
     {
-        return std::fabs(t - u) < std::numeric_limits<T>::epsilon();
+        return std::fabs(t - u) < eps;
     }
+
+    static constexpr T eps = std::numeric_limits<T>::epsilon();
 };
 
+template <typename T>
+constexpr T Eql<T, T>::eps;
+
 template <typename T, typename U>
-bool eql(const T& t, const U& u)
+inline bool eql(const T& t, const U& u)
 {
     return Eql<T, U>::f(t, u);
 }
