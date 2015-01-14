@@ -1,6 +1,5 @@
 #include <ReadFile.hpp>
-#include <Exceptions.hpp>
-#include <gtest/gtest.h>
+#include <Exceptions/Exceptions.hpp>
 #include <gmock/gmock.h>
 
 namespace Common
