@@ -27,6 +27,7 @@ public:
     void queueTask(task_type task);
     void queueTasks(const std::vector<task_type>& tasks);
     void synchronize();
+    bool isSynchronized() const;
 
 private:
     static void threadProc(UniversalThreadPoll* _this);

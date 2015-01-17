@@ -36,6 +36,11 @@ public:
     UniversalThreadPoll sut;
 };
 
+TEST_F(UniversalThreadPollTestSuite, isSynchronizedAfterIsCreated)
+{
+    ASSERT_THAT(sut.isSynchronized(), Eq(true));
+}
+
 TEST_F(UniversalThreadPollTestSuite, testQueuingSingleTasks)
 {
     for (auto& mock : mocks)
@@ -58,7 +63,9 @@ TEST_F(UniversalThreadPollTestSuite, testQueuingMultipleTask)
     for (auto& mock : mocks)
         tasks.push_back(createTask(mock, std::chrono::milliseconds(50)));
     sut.queueTasks(tasks);
+    ASSERT_THAT(sut.isSynchronized(), Eq(false));
     sut.synchronize();
+    ASSERT_THAT(sut.isSynchronized(), Eq(true));
 }
 
 }
