@@ -49,7 +49,7 @@ template <typename T>
 class MockFunction : public testing::MockFunction<typename Detail::TypeWrapper<T>::type>
 {
 public:
-    typename Detail::TypeWrapper<T>::function_type bindCall()
+    operator typename Detail::TypeWrapper<T>::function_type()
     {
         return Detail::bindMockFunction(*this);
     }
