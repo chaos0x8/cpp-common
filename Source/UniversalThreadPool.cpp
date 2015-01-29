@@ -1,25 +1,25 @@
-#include <UniversalThreadPoll.hpp>
+#include <UniversalThreadPool.hpp>
 #include <algorithm>
 
 namespace Common
 {
 
-UniversalThreadPoll::UniversalThreadPoll(size_t threadCount)
+UniversalThreadPool::UniversalThreadPool(size_t threadCount)
     : threads(threadCount ? threadCount : 1)
 {
     finishedTaskCount = 0;
 
     for (auto& t : threads)
-        t = std::thread(&UniversalThreadPoll::threadProc, this);
+        t = std::thread(&UniversalThreadPool::threadProc, this);
 }
 
-UniversalThreadPoll::~UniversalThreadPoll()
+UniversalThreadPool::~UniversalThreadPool()
 {
-    deactivatePoll();
+    deactivatePool();
     std::for_each(std::begin(threads), std::end(threads), std::mem_fn(&std::thread::join));
 }
 
-void UniversalThreadPoll::queueTask(task_type task)
+void UniversalThreadPool::queueTask(task_type task)
 {
     std::unique_lock<std::mutex> lock(taskLock);
     addedTaskCount++;
@@ -27,7 +27,7 @@ void UniversalThreadPoll::queueTask(task_type task)
     resumeThread.notify_one();
 }
 
-void UniversalThreadPoll::queueTasks(const std::vector<task_type>& tasks)
+void UniversalThreadPool::queueTasks(const std::vector<task_type>& tasks)
 {
     std::unique_lock<std::mutex> lock(taskLock);
     addedTaskCount += tasks.size();
@@ -35,18 +35,18 @@ void UniversalThreadPoll::queueTasks(const std::vector<task_type>& tasks)
     resumeThread.notify_all();
 }
 
-void UniversalThreadPoll::synchronize()
+void UniversalThreadPool::synchronize()
 {
     std::unique_lock<std::mutex> lock(taskLock);
     actionFinished.wait(lock, [this] { return isSynchronized(); });
 }
 
-bool UniversalThreadPoll::isSynchronized() const
+bool UniversalThreadPool::isSynchronized() const
 {
     return addedTaskCount == finishedTaskCount;
 }
 
-void UniversalThreadPoll::threadProc(UniversalThreadPoll* _this)
+void UniversalThreadPool::threadProc(UniversalThreadPool* _this)
 {
     while (task_type task = _this->aquireTask())
     {
@@ -57,14 +57,14 @@ void UniversalThreadPoll::threadProc(UniversalThreadPoll* _this)
     }
 }
 
-void UniversalThreadPoll::deactivatePoll()
+void UniversalThreadPool::deactivatePool()
 {
     std::unique_lock<std::mutex> lock(taskLock);
     activeFlag = false;
     resumeThread.notify_all();
 }
 
-UniversalThreadPoll::task_type UniversalThreadPoll::aquireTask()
+UniversalThreadPool::task_type UniversalThreadPool::aquireTask()
 {
     std::unique_lock<std::mutex> lock(taskLock);
     resumeThread.wait(lock, [this] { return tasks.size() || !activeFlag; });

@@ -11,18 +11,18 @@
 namespace Common
 {
 
-class UniversalThreadPoll
+class UniversalThreadPool
 {
 public:
     using task_type = std::function<void ()>;
 
-    UniversalThreadPoll(size_t threadCount = std::thread::hardware_concurrency());
-    UniversalThreadPoll(const UniversalThreadPoll&) = delete;
-    UniversalThreadPoll(UniversalThreadPoll&&) = delete;
-    ~UniversalThreadPoll();
+    UniversalThreadPool(size_t threadCount = std::thread::hardware_concurrency());
+    UniversalThreadPool(const UniversalThreadPool&) = delete;
+    UniversalThreadPool(UniversalThreadPool&&) = delete;
+    ~UniversalThreadPool();
 
-    UniversalThreadPoll& operator = (const UniversalThreadPoll&) = delete;
-    UniversalThreadPoll& operator = (UniversalThreadPoll&&) = delete;
+    UniversalThreadPool& operator = (const UniversalThreadPool&) = delete;
+    UniversalThreadPool& operator = (UniversalThreadPool&&) = delete;
 
     void queueTask(task_type task);
     void queueTasks(const std::vector<task_type>& tasks);
@@ -30,9 +30,9 @@ public:
     bool isSynchronized() const;
 
 private:
-    static void threadProc(UniversalThreadPoll* _this);
+    static void threadProc(UniversalThreadPool* _this);
 
-    void deactivatePoll();
+    void deactivatePool();
     task_type aquireTask();
 
     bool activeFlag = true;

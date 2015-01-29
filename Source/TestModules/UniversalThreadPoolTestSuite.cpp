@@ -1,4 +1,4 @@
-#include <UniversalThreadPoll.hpp>
+#include <UniversalThreadPool.hpp>
 #include <TestModules/MockFunction.hpp>
 #include <gmock/gmock.h>
 
@@ -10,12 +10,12 @@ namespace Ut
 using namespace testing;
 using Common::MockFunction;
 
-class UniversalThreadPollTestSuite : public Test
+class UniversalThreadPoolTestSuite : public Test
 {
 public:
     static constexpr size_t TASK_AMOUNT = 22;
 
-    UniversalThreadPollTestSuite()
+    UniversalThreadPoolTestSuite()
         : sut(TASK_AMOUNT / 2)
     {
     }
@@ -33,22 +33,22 @@ public:
 
     std::array<StrictMock<MockFunction<void ()>>, TASK_AMOUNT> mocks;
 
-    UniversalThreadPoll sut;
+    UniversalThreadPool sut;
 };
 
-TEST_F(UniversalThreadPollTestSuite, isSynchronizedAfterIsCreated)
+TEST_F(UniversalThreadPoolTestSuite, isSynchronizedAfterIsCreated)
 {
     ASSERT_THAT(sut.isSynchronized(), Eq(true));
 }
 
-TEST_F(UniversalThreadPollTestSuite, testQueuingSingleTasks)
+TEST_F(UniversalThreadPoolTestSuite, testQueuingSingleTasks)
 {
     for (auto& mock : mocks)
         sut.queueTask(createTask(mock, std::chrono::milliseconds(50)));
     sut.synchronize();
 }
 
-TEST_F(UniversalThreadPollTestSuite, testQueuingSingleTasksOneAfterAnother)
+TEST_F(UniversalThreadPoolTestSuite, testQueuingSingleTasksOneAfterAnother)
 {
     for (auto& mock : mocks)
     {
@@ -57,7 +57,7 @@ TEST_F(UniversalThreadPollTestSuite, testQueuingSingleTasksOneAfterAnother)
     }
 }
 
-TEST_F(UniversalThreadPollTestSuite, testQueuingMultipleTask)
+TEST_F(UniversalThreadPoolTestSuite, testQueuingMultipleTask)
 {
     std::vector<std::function<void ()>> tasks;
     for (auto& mock : mocks)

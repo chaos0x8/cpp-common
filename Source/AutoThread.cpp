@@ -15,24 +15,24 @@ AutoThread::AutoThread(AutoThread&& other) noexcept
 
 AutoThread::~AutoThread()
 {
-    _join();
+    join();
 }
 
 AutoThread& AutoThread::operator = (AutoThread&& other) noexcept
 {
-    this->_join();
+    this->join();
     this->t = std::move(other.t);
     return *this;
 }
 
 AutoThread& AutoThread::operator = (std::thread t)
 {
-    this->_join();
+    this->join();
     this->t = std::move(t);
     return *this;
 }
 
-void AutoThread::_join()
+void AutoThread::join()
 {
     if (t.joinable())
         t.join();

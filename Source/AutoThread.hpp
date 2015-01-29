@@ -18,9 +18,9 @@ public:
     AutoThread& operator = (AutoThread&& other) noexcept;
     AutoThread& operator = (std::thread t);
 
-private:
-    void _join();
+    void join();
 
+private:
     std::thread t;
 };
 
