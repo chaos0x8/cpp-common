@@ -4,6 +4,7 @@
 #include <thread>
 #include <vector>
 #include <boost/optional.hpp>
+#include <atomic>
 
 namespace Common
 {
@@ -20,6 +21,7 @@ public:
           threads(threadAmount),
           partSize(data.size() / threadAmount + (data.size() % threadAmount == 0 ? 0 : 1))
     {
+        dataIndex = 0;
     }
 
     void join()
@@ -34,6 +36,8 @@ protected:
     F functor;
     std::vector<std::thread> threads;
     const size_t partSize;
+
+    std::atomic<size_t> dataIndex;
 };
 
 template <typename R>
@@ -79,12 +83,10 @@ public:
             this->threads[threadId] = std::thread([this, threadId]()
             {
                 std::vector<R> tmpResult;
-                const auto tmpPartSize = this->partSize;
-                const auto tmpDataSize = this->data.size();
+                tmpResult.reserve(this->data.size() / this->threads.size());
 
-                tmpResult.reserve(tmpPartSize);
-                for (size_t i = tmpPartSize * threadId; i < tmpPartSize * (threadId + 1) && i < tmpDataSize; ++i)
-                   tmpResult.push_back(this->functor(this->data[i]));
+                for (size_t i = this->dataIndex++; i < this->data.size(); i = this->dataIndex++)
+                    tmpResult.push_back(this->functor(this->data[i]));
                 this->results[threadId] = std::move(tmpResult);
             });
     }
@@ -113,10 +115,9 @@ public:
             this->threads[threadId] = std::thread([this, threadId]()
             {
                 std::vector<R> tmpResult;
-                const auto tmpPartSize = this->partSize;
-                const auto tmpDataSize = this->data.size();
+                tmpResult.reserve(this->data.size() / this->threads.size());
 
-                for (size_t i = tmpPartSize * threadId; i < tmpPartSize * (threadId + 1) && i < tmpDataSize; ++i)
+                for (size_t i = this->dataIndex++; i < this->data.size(); i = this->dataIndex++)
                 {
                     auto res = this->functor(this->data[i]);
                     if (res.is_initialized())
@@ -147,10 +148,7 @@ public:
         for (size_t threadId = 0; threadId < this->threads.size(); ++threadId)
             this->threads[threadId] = std::thread([this, threadId]()
             {
-                const auto tmpPartSize = this->partSize;
-                const auto tmpDataSize = this->data.size();
-
-                for (size_t i = tmpPartSize * threadId; i < tmpPartSize * (threadId + 1) && i < tmpDataSize; ++i)
+                for (size_t i = this->dataIndex++; i < this->data.size(); i = this->dataIndex++)
                     this->functor(this->data[i]);
             });
     }
