@@ -31,7 +31,7 @@ Application.new do |t|
     t.flags = FLAGS
     t.files = FileList[ "Source/TestModules/*.cpp" ]
     t.dependencies = [ "lib/libcppCommon.a" ]
-    t.libs = [ "-lpthread", "-lgtest", "-lgmock", "-Llib", "-lcppCommon" ]
+    t.libs = [ "-lgtest", "-lgmock", "-Llib", "-lcppCommon", "-lpthread" ]
 end
 
 task :ut => [ "bin/cppCommon-ut" ] do
