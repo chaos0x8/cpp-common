@@ -54,17 +54,17 @@ public:
     std::vector<int> input;
 };
 
-TEST_F(IndependentProcessingStressTestSuite, stressWithoutOutput)
+TEST_F(IndependentProcessingStressTestSuite, DISABLED_stressWithoutOutput)
 {
     runIndependentProcessing(std::move(input), [](int x) -> void { std::to_string(x); });
 }
 
-TEST_F(IndependentProcessingStressTestSuite, stressWithOutput)
+TEST_F(IndependentProcessingStressTestSuite, DISABLED_stressWithOutput)
 {
     runIndependentProcessing(std::move(input), [](int x) -> std::string { return std::to_string(x); });
 }
 
-TEST_F(IndependentProcessingStressTestSuite, stressWithOptionalOutput)
+TEST_F(IndependentProcessingStressTestSuite, DISABLED_stressWithOptionalOutput)
 {
     auto cut = runIndependentProcessing(std::move(input),
     [](int x) -> boost::optional<std::string>

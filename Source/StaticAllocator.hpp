@@ -16,7 +16,11 @@ public:
     static void setUp(size_t staticPoolSize, size_t chunkSize);
     static void tearDown();
 
-    static void* _allocate(size_t bytes, void* hint = 0);
+    static void* _allocate(size_t bytes);
+    static inline void* _allocate(size_t bytes, void* hint)
+    {
+        return _allocate(bytes);
+    }
     static void _deallocate(void* p, size_t bytes);
 
     inline static size_t calcChunkAmount(size_t bytes)
@@ -25,17 +29,13 @@ public:
             + (bytes % _chunkSize > 0u ? 1u : 0u);
     }
 
-    inline static size_t calcTotalChunkAmount()
-    {
-        return _staticPoolSize / _chunkSize;
-    }
-
 protected:
     static size_t _staticPoolSize;
     static size_t _chunkSize;
+    static size_t _chunkIndexHint;
+    static size_t _totalChunkAmount;
 
     static void* _memory;
-    static void* _position;
     static std::vector<char> _memoryMap;
     static std::mutex _mutex;
 };
@@ -78,7 +78,12 @@ public:
         using other = StaticAllocator<U>;
     };
 
-    inline pointer allocate(size_type n, StaticAllocator<void>::const_pointer hint = 0)
+    inline pointer allocate(size_type n)
+    {
+        return static_cast<pointer>(this->_allocate(n * sizeof(T)));
+    }
+
+    inline pointer allocate(size_type n, StaticAllocator<void>::const_pointer hint)
     {
         return static_cast<pointer>(this->_allocate(n * sizeof(T), hint));
     }

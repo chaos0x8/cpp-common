@@ -41,7 +41,6 @@ private:
 
     std::mutex taskLock;
     std::condition_variable resumeThread;
-    std::condition_variable actionFinished;
     std::vector<std::thread> threads;
     std::deque<task_type> tasks;
 };

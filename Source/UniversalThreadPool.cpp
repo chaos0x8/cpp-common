@@ -37,8 +37,8 @@ void UniversalThreadPool::queueTasks(const std::vector<task_type>& tasks)
 
 void UniversalThreadPool::synchronize()
 {
-    std::unique_lock<std::mutex> lock(taskLock);
-    actionFinished.wait(lock, [this] { return isSynchronized(); });
+    while (!isSynchronized())
+        std::this_thread::yield();
 }
 
 bool UniversalThreadPool::isSynchronized() const
@@ -53,7 +53,6 @@ void UniversalThreadPool::threadProc(UniversalThreadPool* _this)
         task();
 
         _this->finishedTaskCount++;
-        _this->actionFinished.notify_one();
     }
 }
 
