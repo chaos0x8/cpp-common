@@ -18,28 +18,9 @@ public:
     {
     }
 
-    template <typename string>
-    void stringPerformanceTest()
-    {
-        for (std::thread& t : threads)
-        {
-            t = std::thread([]
-            {
-                for (size_t i = 0; i < 8; ++i)
-                {
-                    string x = "hi";
-                    for (size_t k = 0; k < 1024 * 1024 * 128; ++k)
-                        x += "x";
-                }
-            });
-        }
-        std::for_each(std::begin(threads), std::end(threads), std::mem_fn(&std::thread::join));
-    }
-
     static constexpr size_t MEM_SIZE = 1024u;
 
     StaticAllocatorInitializer staticAlloc;
-    std::array<std::thread, 4> threads;
 };
 
 constexpr size_t StaticAllocatorTestSuite::MEM_SIZE;
@@ -84,7 +65,31 @@ TEST_F(StaticAllocatorTestSuite, shouldBeUsableInString)
     ASSERT_THAT(test, Eq("Hello world!"));
 }
 
-TEST_F(StaticAllocatorTestSuite, DISABLED_performanceHackString)
+class StaticAllocatorStressTestSuite : public Test
+{
+public:
+    template <typename string>
+    void stringPerformanceTest()
+    {
+        for (std::thread& t : threads)
+        {
+            t = std::thread([]
+            {
+                for (size_t i = 0; i < 8; ++i)
+                {
+                    string x = "hi";
+                    for (size_t k = 0; k < 1024 * 1024 * 128; ++k)
+                        x += "x";
+                }
+            });
+        }
+        std::for_each(std::begin(threads), std::end(threads), std::mem_fn(&std::thread::join));
+    }
+
+    std::array<std::thread, 4> threads;
+};
+
+TEST_F(StaticAllocatorStressTestSuite, DISABLED_performanceHackString)
 {
     using string = std::basic_string<char, std::char_traits<char>, Common::StaticAllocator<char>>;
 
@@ -93,7 +98,7 @@ TEST_F(StaticAllocatorTestSuite, DISABLED_performanceHackString)
     stringPerformanceTest<string>();
 }
 
-TEST_F(StaticAllocatorTestSuite, DISABLED_performanceString)
+TEST_F(StaticAllocatorStressTestSuite, DISABLED_performanceString)
 {
     stringPerformanceTest<std::string>();
 }

@@ -36,7 +36,7 @@ protected:
     static size_t _totalChunkAmount;
 
     static void* _memory;
-    static std::vector<char> _memoryMap;
+    static std::vector<bool> _memoryMap;
     static std::mutex _mutex;
 };
 
