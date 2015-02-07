@@ -1,10 +1,19 @@
-#include <ReadFile.hpp>
+#include <FileUtility.hpp>
 #include <Exceptions/FileLoadError.hpp>
 #include <fstream>
 #include <vector>
 
 namespace Common
 {
+
+bool doesFileExist(const std::string& fileName)
+{
+    std::ifstream file(fileName, std::ios::in);
+    if (!file.is_open())
+        return false;
+    file.close();
+    return true;
+}
 
 std::string readFile(const std::string& fileName)
 {
