@@ -11,7 +11,7 @@ namespace Common
 namespace Detail
 {
 
-template <typename T, typename F>
+template <class T, class F, template <class> class Allocator>
 class IndependentProcessorBase
 {
 public:
@@ -24,7 +24,7 @@ public:
         dataIndex = 0;
     }
 
-    void join()
+    inline void join()
     {
         for (std::thread& t : threads)
             t.join();
@@ -34,13 +34,13 @@ public:
 protected:
     T data;
     F functor;
-    std::vector<std::thread> threads;
+    std::vector<std::thread, Allocator<std::thread>> threads;
     const size_t partSize;
 
     std::atomic<size_t> dataIndex;
 };
 
-template <typename R>
+template <class R, template <class> class Allocator>
 class IndependentProcessorData
 {
 public:
@@ -50,121 +50,140 @@ public:
     }
 
 protected:
-    std::vector<R> get() const
+    inline std::vector<R, Allocator<R>> get() const
     {
         const size_t totalSize = std::accumulate(std::begin(results), std::end(results), size_t(),
-        [](size_t y, const std::vector<R>& x) -> size_t
+        [](size_t y, const std::vector<R, Allocator<R>>& x) -> size_t
         {
             return y + x.size();
         });
 
-        std::vector<R> res;
+        std::vector<R, Allocator<R>> res;
         res.reserve(totalSize);
 
-        for (const std::vector<R>& x : results)
-            res.insert(std::end(res), std::begin(x), std::end(x));
+        for (auto& x : results)
+            for (auto& y : x)
+                res.emplace_back(std::move(y));
 
         return res;
     }
 
-    std::vector<std::vector<R>> results;
+    using internal_value_type = std::vector<R, Allocator<R>>;
+
+    std::vector<internal_value_type, Allocator<internal_value_type>> results;
 };
 
-template <typename T, typename F, typename R>
-class IndependentProcessor : public IndependentProcessorBase<T, F>,
-                             public IndependentProcessorData<R>
+template <class T, class F, class R, template <class> class Allocator>
+class IndependentProcessor : public IndependentProcessorBase<T, F, Allocator>,
+                             public IndependentProcessorData<R, Allocator>
 {
 public:
+    using self_type = IndependentProcessor<T, F, R, Allocator>;
+
     IndependentProcessor(T data, F functor, size_t threadAmount)
-        : IndependentProcessorBase<T, F>(data, functor, threadAmount),
-          IndependentProcessorData<R>(threadAmount)
+        : IndependentProcessorBase<T, F, Allocator>(data, functor, threadAmount),
+          IndependentProcessorData<R, Allocator>(threadAmount)
     {
         for (size_t threadId = 0; threadId < this->threads.size(); ++threadId)
-            this->threads[threadId] = std::thread([this, threadId]()
-            {
-                std::vector<R> tmpResult;
-                tmpResult.reserve(this->data.size() / this->threads.size());
-
-                for (size_t i = this->dataIndex++; i < this->data.size(); i = this->dataIndex++)
-                    tmpResult.push_back(this->functor(this->data[i]));
-                this->results[threadId] = std::move(tmpResult);
-            });
+            this->threads[threadId] = std::thread(&self_type::threadProcedure, this, threadId);
     }
     ~IndependentProcessor()
     {
         this->join();
     }
 
-    std::vector<R> get()
+    std::vector<R, Allocator<R>> get()
     {
         this->join();
-        return this->IndependentProcessorData<R>::get();
+        return this->IndependentProcessorData<R, Allocator>::get();
+    }
+
+private:
+    inline void threadProcedure(size_t threadId)
+    {
+        std::vector<R, Allocator<R>> tmpResult;
+        tmpResult.reserve(this->data.size() / this->threads.size());
+
+        for (size_t i = this->dataIndex++; i < this->data.size(); i = this->dataIndex++)
+            tmpResult.emplace_back(this->functor(this->data[i]));
+        this->results[threadId] = std::move(tmpResult);
     }
 };
 
-template <typename T, typename F, typename R>
-class IndependentProcessor<T, F, boost::optional<R>> : public IndependentProcessorBase<T, F>,
-                                                       public IndependentProcessorData<R>
+template <class T, class F, class R, template <class> class Allocator>
+class IndependentProcessor<T, F, boost::optional<R>, Allocator> : public IndependentProcessorBase<T, F, Allocator>,
+                                                                  public IndependentProcessorData<R, Allocator>
 {
 public:
+    using self_type = IndependentProcessor<T, F, boost::optional<R>, Allocator>;
+
     IndependentProcessor(T data, F functor, size_t threadAmount)
-        : IndependentProcessorBase<T, F>(data, functor, threadAmount),
-          IndependentProcessorData<R>(threadAmount)
+        : IndependentProcessorBase<T, F, Allocator>(data, functor, threadAmount),
+          IndependentProcessorData<R, Allocator>(threadAmount)
     {
         for (size_t threadId = 0; threadId < this->threads.size(); ++threadId)
-            this->threads[threadId] = std::thread([this, threadId]()
-            {
-                std::vector<R> tmpResult;
-                tmpResult.reserve(this->data.size() / this->threads.size());
-
-                for (size_t i = this->dataIndex++; i < this->data.size(); i = this->dataIndex++)
-                {
-                    auto res = this->functor(this->data[i]);
-                    if (res.is_initialized())
-                        tmpResult.push_back(std::move(res.get()));
-                }
-                this->results[threadId] = std::move(tmpResult);
-            });
+            this->threads[threadId] = std::thread(&self_type::threadProcedure, this, threadId);
     }
     ~IndependentProcessor()
     {
         this->join();
     }
 
-    std::vector<R> get()
+    std::vector<R, Allocator<R>> get()
     {
         this->join();
-        return this->IndependentProcessorData<R>::get();
+        return this->IndependentProcessorData<R, Allocator>::get();
+    }
+
+private:
+    inline void threadProcedure(size_t threadId)
+    {
+        std::vector<R, Allocator<R>> tmpResult;
+        tmpResult.reserve(this->data.size() / this->threads.size());
+
+        for (size_t i = this->dataIndex++; i < this->data.size(); i = this->dataIndex++)
+        {
+            auto res = this->functor(this->data[i]);
+            if (res.is_initialized())
+                tmpResult.emplace_back(std::move(res.get()));
+        }
+        this->results[threadId] = std::move(tmpResult);
     }
 };
 
-template <typename T, typename F>
-class IndependentProcessor<T, F, void> : public IndependentProcessorBase<T, F>
+template <class T, class F, template <class> class Allocator>
+class IndependentProcessor<T, F, void, Allocator> : public IndependentProcessorBase<T, F, Allocator>
 {
 public:
+    using self_type = IndependentProcessor<T, F, void, Allocator>;
+
     IndependentProcessor(T data, F functor, size_t threadAmount)
-        : IndependentProcessorBase<T, F>(data, functor, threadAmount)
+        : IndependentProcessorBase<T, F, Allocator>(data, functor, threadAmount)
     {
         for (size_t threadId = 0; threadId < this->threads.size(); ++threadId)
-            this->threads[threadId] = std::thread([this, threadId]()
-            {
-                for (size_t i = this->dataIndex++; i < this->data.size(); i = this->dataIndex++)
-                    this->functor(this->data[i]);
-            });
+            this->threads[threadId] = std::thread(&self_type::threadProcedure, this, threadId);
     }
     ~IndependentProcessor()
     {
         this->join();
+    }
+
+private:
+    inline void threadProcedure(size_t threadId)
+    {
+        for (size_t i = this->dataIndex++; i < this->data.size(); i = this->dataIndex++)
+            this->functor(this->data[i]);
     }
 };
 
 }
 
-template <typename T, typename F>
+template <template<class> class Allocator = std::allocator, class T, class F>
 auto runIndependentProcessing(T&& data, F&& functor, size_t threadAmount = std::thread::hardware_concurrency())
 {
     using ReturnType = decltype(functor(data[0]));
-    return std::unique_ptr<Detail::IndependentProcessor<T, F, ReturnType>>(new Detail::IndependentProcessor<T, F, ReturnType>(data, functor, threadAmount));
+    return std::unique_ptr<Detail::IndependentProcessor<T, F, ReturnType, Allocator>>(
+        new Detail::IndependentProcessor<T, F, ReturnType, Allocator>(data, functor, threadAmount));
 }
 
 }

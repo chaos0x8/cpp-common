@@ -1,4 +1,5 @@
 #include <IndependentProcessing.hpp>
+#include <StaticAllocator.hpp>
 #include <boost/optional.hpp>
 #include <gmock/gmock.h>
 
@@ -39,6 +40,19 @@ TEST_F(IndependentTaskTestSuite, shouldProccessDataAndGiveOptionalReuslt)
         return boost::none;
     });
     ASSERT_THAT(cut->get(), UnorderedElementsAre(110, 142, 170));
+    ASSERT_THAT(inputData, ElementsAre(10, 42, 70, 105, 17));
+}
+
+template <typename T>
+using vector = std::vector<T, StaticAllocator<T>>;
+
+TEST_F(IndependentTaskTestSuite, shouldUseDesiredAllocator)
+{
+    StaticAllocatorInitializer init(1024 * std::thread::hardware_concurrency(), 256);
+
+    auto cut = runIndependentProcessing<StaticAllocator>(inputData, [](int x) { return x + 100; });
+    const vector<int> result = cut->get();
+    ASSERT_THAT(result, UnorderedElementsAre(110, 142, 170, 205, 117));
     ASSERT_THAT(inputData, ElementsAre(10, 42, 70, 105, 17));
 }
 

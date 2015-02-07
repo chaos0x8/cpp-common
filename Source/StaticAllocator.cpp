@@ -2,6 +2,10 @@
 #include <stdexcept>
 #include <cassert>
 
+#ifndef NDEBUG
+#include <iostream>
+#endif
+
 namespace Common
 {
 namespace Detail
@@ -62,7 +66,7 @@ void* StaticAllocatorBase::_allocate(size_t bytes)
 {
     assert(_memory);
 
-    if (bytes < _staticPoolSize)
+    if (bytes <= _staticPoolSize)
     {
         const size_t requiredChunks = calcChunkAmount(bytes);
 
@@ -74,6 +78,11 @@ void* StaticAllocatorBase::_allocate(size_t bytes)
         assignedChunks = 0;
         ALLOCATION_ALGORITH(0, _chunkIndexHint)
     }
+
+    #ifndef NDEBUG
+    std::clog << "WARNING: allocation failed using new instead\n";
+    std::clog.flush();
+    #endif
 
     return ::operator new(bytes);
 }
