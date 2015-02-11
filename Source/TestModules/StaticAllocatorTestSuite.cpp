@@ -75,8 +75,19 @@ TEST_F(StaticAllocatorTestSuite, shouldBeUsableInSharedPointer)
 {
     StaticAllocatorInitializer staticAlloc(MEM_SIZE, 64, 1);
 
-    std::shared_ptr<int> x = std::allocate_shared<int>(Common::StaticAllocator<int>(), 42);
-    ASSERT_THAT(*x, Eq(42));
+    struct Foo
+    {
+        Foo(int& value) : value(value) { ++value; }
+        ~Foo() { ++value; }
+
+        int& value;
+    };
+
+    int value = 0;
+    std::shared_ptr<Foo> foo = std::allocate_shared<Foo>(Common::StaticAllocator<Foo>(), value);
+    ASSERT_THAT(value, Eq(1));
+    foo = nullptr;
+    ASSERT_THAT(value, Eq(2));
 }
 
 TEST_F(StaticAllocatorTestSuite, shouldBeUsableInString)
