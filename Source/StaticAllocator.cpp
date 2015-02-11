@@ -115,6 +115,7 @@ void ParallelMemoryPool::tearDown()
     for (size_t i = 0; i < _poolAmount; ++i)
         _memoryPools[i].~MemoryPool();
 
+    ::operator delete((void*) _memoryPools);
     _memoryPools = nullptr;
 }
 
