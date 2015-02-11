@@ -2,18 +2,47 @@
 
 #include <memory>
 #include <atomic>
-#include <vector>
 #include <mutex>
+#include <thread>
+#include <cassert>
 
 namespace Common
 {
 namespace Detail
 {
 
-class StaticAllocatorBase
+class MemoryPool
 {
 public:
-    static void setUp(size_t staticPoolSize, size_t chunkSize);
+    MemoryPool(size_t poolSize, size_t chunkSize);
+    MemoryPool(const MemoryPool&) = delete;
+    MemoryPool(MemoryPool&&) = delete;
+    ~MemoryPool();
+
+    MemoryPool& operator = (const MemoryPool&) = delete;
+    MemoryPool& operator = (MemoryPool&&) = delete;
+
+    size_t calcChunkAmount(size_t bytes) const;
+
+    void* _allocate(size_t bytes);
+    bool _deallocate(void* p, size_t bytes);
+
+private:
+    const size_t _poolSize;
+    const size_t _chunkSize;
+    const size_t _chunkAmount;
+
+    void* _heap = nullptr;
+    std::mutex* _mutex = nullptr;
+    size_t* _chunkHint = nullptr;
+    bool* _memoryMap = nullptr;
+    void* _memory = nullptr;
+};
+
+class ParallelMemoryPool
+{
+public:
+    static void setUp(size_t poolSize, size_t chunkSize, size_t poolAmount);
     static void tearDown();
 
     static void* _allocate(size_t bytes);
@@ -21,23 +50,12 @@ public:
     {
         return _allocate(bytes);
     }
+
     static void _deallocate(void* p, size_t bytes);
 
-    inline static size_t calcChunkAmount(size_t bytes)
-    {
-        return (bytes / _chunkSize)
-            + (bytes % _chunkSize > 0u ? 1u : 0u);
-    }
-
-protected:
-    static size_t _staticPoolSize;
-    static size_t _chunkSize;
-    static size_t _chunkIndexHint;
-    static size_t _totalChunkAmount;
-
-    static void* _memory;
-    static std::vector<bool> _memoryMap;
-    static std::mutex _mutex;
+private:
+    static size_t* _poolAmount;
+    static MemoryPool* _memoryPools;
 };
 
 }
@@ -46,14 +64,14 @@ template <typename T>
 class StaticAllocator;
 
 template <>
-class StaticAllocator<void> : public Detail::StaticAllocatorBase
+class StaticAllocator<void> : public Detail::ParallelMemoryPool
 {
 public:
     using const_pointer = void*;
 };
 
 template <typename T>
-class StaticAllocator : public Detail::StaticAllocatorBase
+class StaticAllocator : public Detail::ParallelMemoryPool
 {
 public:
     StaticAllocator() = default;
@@ -121,16 +139,18 @@ inline bool operator != (const StaticAllocator<T1>& left, const StaticAllocator<
 class StaticAllocatorInitializer
 {
 public:
-    StaticAllocatorInitializer(size_t staticPoolSize, size_t chunkSize)
+    StaticAllocatorInitializer(size_t staticPoolSize, size_t chunkSize, size_t poolAmount = std::thread::hardware_concurrency())
     {
-        Detail::StaticAllocatorBase::setUp(staticPoolSize, chunkSize);
+        assert(poolAmount);
+
+        Detail::ParallelMemoryPool::setUp(staticPoolSize / poolAmount, chunkSize, poolAmount);
     }
     StaticAllocatorInitializer(const StaticAllocatorInitializer&) = delete;
     StaticAllocatorInitializer(StaticAllocatorInitializer&&) = delete;
 
     ~StaticAllocatorInitializer()
     {
-        Detail::StaticAllocatorBase::tearDown();
+        Detail::ParallelMemoryPool::tearDown();
     }
 };
 
