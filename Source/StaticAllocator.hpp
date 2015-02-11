@@ -14,27 +14,28 @@ namespace Detail
 class MemoryPool
 {
 public:
-    MemoryPool(size_t poolSize, size_t chunkSize);
+    MemoryPool(size_t poolSize, size_t chunkSize) __attribute__((cold));
     MemoryPool(const MemoryPool&) = delete;
     MemoryPool(MemoryPool&&) = delete;
-    ~MemoryPool();
+    ~MemoryPool() __attribute__((cold));
 
     MemoryPool& operator = (const MemoryPool&) = delete;
     MemoryPool& operator = (MemoryPool&&) = delete;
 
-    size_t calcChunkAmount(size_t bytes) const;
+    size_t calcChunkAmount(size_t bytes) const __attribute__((hot, always_inline));
 
-    void* _allocate(size_t bytes);
-    bool _deallocate(void* p, size_t bytes);
+    void* _allocate(size_t bytes) __attribute__((hot));
+    bool _deallocate(void* p, size_t bytes) __attribute__((hot));
 
 private:
     const size_t _poolSize;
     const size_t _chunkSize;
     const size_t _chunkAmount;
 
+    size_t _chunkHint = 0;
+    std::mutex _mutex;
+
     void* _heap = nullptr;
-    std::mutex* _mutex = nullptr;
-    size_t* _chunkHint = nullptr;
     bool* _memoryMap = nullptr;
     void* _memory = nullptr;
 };
@@ -42,21 +43,23 @@ private:
 class ParallelMemoryPool
 {
 public:
-    static void setUp(size_t poolSize, size_t chunkSize, size_t poolAmount);
-    static void tearDown();
+    static void setUp(size_t poolSize, size_t chunkSize, size_t poolAmount) __attribute__((cold));
+    static void tearDown() __attribute__((cold));
 
-    static void* _allocate(size_t bytes);
-    static inline void* _allocate(size_t bytes, void* hint)
-    {
-        return _allocate(bytes);
-    }
+    static void* _allocate(size_t bytes) __attribute__((hot));
+    static void* _allocate(size_t bytes, void* hint) __attribute__((hot, always_inline));
 
-    static void _deallocate(void* p, size_t bytes);
+    static void _deallocate(void* p, size_t bytes) __attribute__((hot));
 
 private:
-    static size_t* _poolAmount;
+    static size_t _poolAmount;
     static MemoryPool* _memoryPools;
 };
+
+inline void* ParallelMemoryPool::_allocate(size_t bytes, void* hint)
+{
+    return _allocate(bytes);
+}
 
 }
 
@@ -96,40 +99,59 @@ public:
         using other = StaticAllocator<U>;
     };
 
-    inline pointer allocate(size_type n)
-    {
-        return static_cast<pointer>(this->_allocate(n * sizeof(T)));
-    }
-
-    inline pointer allocate(size_type n, StaticAllocator<void>::const_pointer hint)
-    {
-        return static_cast<pointer>(this->_allocate(n * sizeof(T), hint));
-    }
-
-    inline void deallocate(pointer p, size_type n)
-    {
-        this->_deallocate(p, n * sizeof(T));
-    }
+    pointer allocate(size_type n) __attribute__((hot, always_inline));
+    pointer allocate(size_type n, StaticAllocator<void>::const_pointer hint) __attribute__((hot, always_inline));
+    void deallocate(pointer p, size_type n) __attribute__((hot, always_inline));
 
     template <typename U, typename... Args>
-    inline void construct(U* p, Args&&... args)
-    {
-        ::new((void*) p) U(std::forward<Args>(args)...);
-    }
+    inline void construct(U* p, Args&&... args) __attribute__((hot, always_inline));
 
     template <typename U>
-    inline void destroy(U* p)
-    {
-        p->~U();
-    }
+    inline void destroy(U* p) __attribute__((hot, always_inline));
 };
 
+template <typename T>
+inline typename StaticAllocator<T>::pointer StaticAllocator<T>::allocate(size_type n)
+{
+    return static_cast<pointer>(this->_allocate(n * sizeof(T)));
+}
+
+template <typename T>
+inline typename StaticAllocator<T>::pointer StaticAllocator<T>::allocate(size_type n, StaticAllocator<void>::const_pointer hint)
+{
+    return static_cast<pointer>(this->_allocate(n * sizeof(T), hint));
+}
+
+template <typename T>
+inline void StaticAllocator<T>::deallocate(pointer p, size_type n)
+{
+    this->_deallocate(p, n * sizeof(T));
+}
+
+template <typename T>
+template <typename U, typename... Args>
+inline void StaticAllocator<T>::construct(U* p, Args&&... args)
+{
+    ::new((void*) p) U(std::forward<Args>(args)...);
+}
+
+template <typename T>
+template <typename U>
+inline void StaticAllocator<T>::destroy(U* p)
+{
+    p->~U();
+}
+
+template <typename T1, typename T2>
+inline bool operator == (const StaticAllocator<T1>& left, const StaticAllocator<T2>& right) __attribute__((always_inline));
 template <typename T1, typename T2>
 inline bool operator == (const StaticAllocator<T1>& left, const StaticAllocator<T2>& right)
 {
     return true;
 }
 
+template <typename T1, typename T2>
+inline bool operator != (const StaticAllocator<T1>& left, const StaticAllocator<T2>& right) __attribute__((always_inline));
 template <typename T1, typename T2>
 inline bool operator != (const StaticAllocator<T1>& left, const StaticAllocator<T2>& right)
 {
