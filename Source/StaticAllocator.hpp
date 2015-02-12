@@ -157,22 +157,4 @@ inline bool operator != (const StaticAllocator<T1>& left, const StaticAllocator<
     return false;
 }
 
-class StaticAllocatorInitializer
-{
-public:
-    StaticAllocatorInitializer(size_t staticPoolSize, size_t chunkSize, size_t poolAmount = std::thread::hardware_concurrency())
-    {
-        assert(poolAmount);
-
-        Detail::ParallelMemoryPool::setUp(staticPoolSize / poolAmount, chunkSize, poolAmount);
-    }
-    StaticAllocatorInitializer(const StaticAllocatorInitializer&) = delete;
-    StaticAllocatorInitializer(StaticAllocatorInitializer&&) = delete;
-
-    ~StaticAllocatorInitializer()
-    {
-        Detail::ParallelMemoryPool::tearDown();
-    }
-};
-
 }

@@ -48,8 +48,6 @@ using vector = std::vector<T, StaticAllocator<T>>;
 
 TEST_F(IndependentTaskTestSuite, shouldUseDesiredAllocator)
 {
-    StaticAllocatorInitializer init(1024 * std::thread::hardware_concurrency(), 256);
-
     auto cut = runIndependentProcessing<StaticAllocator>(inputData, [](int x) { return x + 100; });
     const vector<int> result = cut->get();
     ASSERT_THAT(result, UnorderedElementsAre(110, 142, 170, 205, 117));

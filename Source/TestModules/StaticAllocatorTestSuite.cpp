@@ -3,6 +3,8 @@
 #include <array>
 #include <gmock/gmock.h>
 
+extern size_t MEM_SIZE;
+
 namespace Common
 {
 namespace Ut
@@ -10,49 +12,16 @@ namespace Ut
 
 using namespace testing;
 
-class StaticAllocatorTestSuite : public Test
+TEST(StaticAllocatorTestSuite, shouldNotOverflowAfterStaticMemoryIsDrained)
 {
-public:
-    template <typename string>
-    void stringPerformanceTest()
-    {
-        for (std::thread& t : threads)
-        {
-            t = std::thread([]
-            {
-                for (size_t i = 0; i < 8; ++i)
-                {
-                    string x = "hi";
-                    for (size_t k = 0; k < 1024 * 1024 * 128; ++k)
-                        x += "x";
-                }
-            });
-        }
-        std::for_each(std::begin(threads), std::end(threads), std::mem_fn(&std::thread::join));
-    }
-
-    static constexpr size_t MEM_SIZE = 1024u;
-
-    std::array<std::thread, 4> threads;
-};
-
-constexpr size_t StaticAllocatorTestSuite::MEM_SIZE;
-
-TEST_F(StaticAllocatorTestSuite, shouldNotOverflowAfterStaticMemoryIsDrained)
-{
-    StaticAllocatorInitializer staticAlloc(MEM_SIZE, 64, 1);
-
     std::vector<int, StaticAllocator<int>> vec;
     vec.resize(MEM_SIZE / sizeof(int));
-    vec.push_back(42);
 }
 
-TEST_F(StaticAllocatorTestSuite, shuldBeZeroInitialized)
+TEST(StaticAllocatorTestSuite, shuldBeZeroInitialized)
 {
-    StaticAllocatorInitializer staticAlloc(MEM_SIZE, 64, 1);
-
     std::vector<int, StaticAllocator<int>> vec;
-    vec.resize(MEM_SIZE / sizeof(int));
+    vec.resize(MEM_SIZE / sizeof(int) / std::thread::hardware_concurrency());
 
     for (int& x : vec)
     {
@@ -60,10 +29,8 @@ TEST_F(StaticAllocatorTestSuite, shuldBeZeroInitialized)
     }
 }
 
-TEST_F(StaticAllocatorTestSuite, shuldCreateElementsWithValidValue)
+TEST(StaticAllocatorTestSuite, shuldCreateElementsWithValidValue)
 {
-    StaticAllocatorInitializer staticAlloc(MEM_SIZE, 64, 1);
-
     std::vector<int, StaticAllocator<int>> vec;
     vec.push_back(15);
     vec.emplace_back(42);
@@ -71,10 +38,8 @@ TEST_F(StaticAllocatorTestSuite, shuldCreateElementsWithValidValue)
     ASSERT_THAT(vec, ElementsAre(15, 42, 17));
 }
 
-TEST_F(StaticAllocatorTestSuite, shouldBeUsableInSharedPointer)
+TEST(StaticAllocatorTestSuite, shouldBeUsableInSharedPointer)
 {
-    StaticAllocatorInitializer staticAlloc(MEM_SIZE, 64, 1);
-
     struct Foo
     {
         Foo(int& value) : value(value) { ++value; }
@@ -90,10 +55,8 @@ TEST_F(StaticAllocatorTestSuite, shouldBeUsableInSharedPointer)
     ASSERT_THAT(value, Eq(2));
 }
 
-TEST_F(StaticAllocatorTestSuite, shouldBeUsableInString)
+TEST(StaticAllocatorTestSuite, shouldBeUsableInString)
 {
-    StaticAllocatorInitializer staticAlloc(MEM_SIZE, 64, 1);
-
     using _string = std::basic_string<char, std::char_traits<char>, Common::StaticAllocator<char>>;
     _string test = "Hello world!";
     ASSERT_THAT(test, Eq("Hello world!"));
@@ -126,8 +89,6 @@ public:
 TEST_F(StaticAllocatorStressTestSuite, DISABLED_performanceHackString)
 {
     using string = std::basic_string<char, std::char_traits<char>, Common::StaticAllocator<char>>;
-
-    Common::StaticAllocatorInitializer staticAlloc(1024u * 1024u * 1024u * 2u, 1024);
 
     stringPerformanceTest<string>();
 }
