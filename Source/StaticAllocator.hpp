@@ -35,7 +35,6 @@ private:
     size_t _chunkHint = 0;
     std::mutex _mutex;
 
-    void* _heap = nullptr;
     bool* _memoryMap = nullptr;
     void* _memory = nullptr;
 };

@@ -22,16 +22,16 @@ MemoryPool::MemoryPool(size_t poolSize, size_t chunkSize)
     const size_t extraMemory = sizeof(bool) * _chunkAmount;
     const size_t extraChunks = calcChunkAmount(extraMemory);
 
-    _heap = ::operator new(extraChunks * _chunkSize + _poolSize);
-    _memoryMap = static_cast<bool*>(_heap);
-    _memory = _heap + _chunkSize * extraChunks;
+    void* heap = ::operator new(extraChunks * _chunkSize + _poolSize);
+    _memoryMap = static_cast<bool*>(heap);
+    _memory = heap + _chunkSize * extraChunks;
 
     std::fill(_memoryMap, _memoryMap + _chunkAmount, false);
 }
 
 MemoryPool::~MemoryPool()
 {
-    ::operator delete(_heap);
+    ::operator delete((void*) _memoryMap);
 }
 
 inline size_t MemoryPool::calcChunkAmount(size_t bytes) const
