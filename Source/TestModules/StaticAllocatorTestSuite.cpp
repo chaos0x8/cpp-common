@@ -62,6 +62,16 @@ TEST(StaticAllocatorTestSuite, shouldBeUsableInString)
     ASSERT_THAT(test, Eq("Hello world!"));
 }
 
+TEST(StaticAllocatorTestSuite, memoryShouldBeAligned)
+{
+    Common::StaticAllocator<int> sut;
+    int* p = sut.allocate(3);
+
+    ASSERT_THAT(reinterpret_cast<size_t>(p) % 64ul, Eq(0ul));
+
+    sut.deallocate(p, 3);
+}
+
 class StaticAllocatorStressTestSuite : public Test
 {
 public:
@@ -72,10 +82,10 @@ public:
         {
             t = std::thread([]
             {
-                for (size_t i = 0; i < 8; ++i)
+                for (size_t i = 0; i < 128; ++i)
                 {
                     string x = "hi";
-                    for (size_t k = 0; k < 1024 * 1024 * 128; ++k)
+                    for (size_t k = 0; k < 1024 * 1024; ++k)
                         x += "x";
                 }
             });

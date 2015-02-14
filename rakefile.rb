@@ -18,11 +18,25 @@ end
 INCLUDES = [ "Source" ]
 UT_LIBS = [ "-lgtest", "-lgmock", "-lpthread" ]
 
+file "Source/CacheLineSize.hpp" do |fileName|
+    CACHE_LINE_SIZE = `getconf LEVEL1_DCACHE_LINESIZE`.chomp
+
+    puts "Generating '#{fileName}'..."
+
+    f = File.open(fileName.to_s, "w")
+    f.write "#pragma once\n"
+    f.write "\n"
+    f.write "#define CACHE_LINE_SIZE (#{CACHE_LINE_SIZE}ul)\n"
+    f.write "\n"
+    f.close
+end
+
 Library.new do |t|
     t.name = "lib/libcppCommon.a"
     t.includes = INCLUDES
     t.flags = FLAGS
     t.files = FileList[ "Source/*.cpp", "Source/Exceptions/*.cpp" ]
+    t.dependencies = [ "Source/CacheLineSize.hpp" ]
 end
 
 Application.new do |t|

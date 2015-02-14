@@ -1,3 +1,4 @@
+#include <CacheLineSize.hpp>
 #include <StaticAllocator.hpp>
 #include <algorithm>
 #include <stdexcept>
@@ -11,6 +12,35 @@ namespace Common
 namespace Detail
 {
 
+template <class T = void>
+struct Align
+{
+private:
+    static constexpr size_t part_amount = sizeof(T) / CACHE_LINE_SIZE + (sizeof(T) % CACHE_LINE_SIZE == 0ul ? 0ul : 1ul);
+    static constexpr size_t value = CACHE_LINE_SIZE * part_amount;
+
+public:
+    static inline constexpr size_t memorySize(size_t n)
+    {
+        return n * value + CACHE_LINE_SIZE;
+    }
+    static inline constexpr T* item(void* p, size_t index)
+    {
+        return reinterpret_cast<T*>((reinterpret_cast<size_t>(p) + value * index + CACHE_LINE_SIZE) - (reinterpret_cast<size_t>(p) % CACHE_LINE_SIZE));
+    }
+};
+
+template <>
+struct Align<void>
+{
+    static inline constexpr void* memory(void* p)
+    {
+        return reinterpret_cast<void*>((reinterpret_cast<size_t>(p) + CACHE_LINE_SIZE) - (reinterpret_cast<size_t>(p) % CACHE_LINE_SIZE));
+    }
+};
+
+using AlignPool = Align<MemoryPool>;
+
 MemoryPool::MemoryPool(size_t poolSize, size_t chunkSize)
     : _poolSize(poolSize),
       _chunkSize(chunkSize),
@@ -22,16 +52,16 @@ MemoryPool::MemoryPool(size_t poolSize, size_t chunkSize)
     const size_t extraMemory = sizeof(bool) * _chunkAmount;
     const size_t extraChunks = calcChunkAmount(extraMemory);
 
-    void* heap = ::operator new(extraChunks * _chunkSize + _poolSize);
-    _memoryMap = static_cast<bool*>(heap);
-    _memory = heap + _chunkSize * extraChunks;
+    _heap = ::operator new(extraChunks * _chunkSize + _poolSize + CACHE_LINE_SIZE);
+    _memoryMap = reinterpret_cast<bool*>(Align<>::memory(_heap));
+    _memory = Align<>::memory(_heap) + _chunkSize * extraChunks;
 
     std::fill(_memoryMap, _memoryMap + _chunkAmount, false);
 }
 
 MemoryPool::~MemoryPool()
 {
-    ::operator delete((void*) _memoryMap);
+    ::operator delete((void*) _heap);
 }
 
 inline size_t MemoryPool::calcChunkAmount(size_t bytes) const
@@ -102,10 +132,10 @@ void ParallelMemoryPool::setUp(size_t poolSize, size_t chunkSize, size_t poolAmo
     assert(_memoryPools == nullptr);
 
     _poolAmount = poolAmount;
-    _memoryPools = static_cast<MemoryPool*>(::operator new(poolAmount * sizeof(MemoryPool)));
+    _memoryPools = static_cast<MemoryPool*>(::operator new(AlignPool::memorySize(poolAmount)));
 
     for (size_t i = 0; i < _poolAmount; ++i)
-        ::new((void*) &_memoryPools[i]) MemoryPool(poolSize, chunkSize);
+        ::new((void*) AlignPool::item(_memoryPools, i)) MemoryPool(poolSize, chunkSize);
 }
 
 void ParallelMemoryPool::tearDown()
@@ -113,7 +143,7 @@ void ParallelMemoryPool::tearDown()
     assert(_memoryPools);
 
     for (size_t i = 0; i < _poolAmount; ++i)
-        _memoryPools[i].~MemoryPool();
+        AlignPool::item(_memoryPools, i)->~MemoryPool();
 
     ::operator delete((void*) _memoryPools);
     _memoryPools = nullptr;
@@ -123,14 +153,14 @@ void* ParallelMemoryPool::_allocate(size_t bytes)
 {
     assert(_memoryPools);
 
-    static __thread const size_t preferedPoolId = std::hash<std::thread::id>()(
-        std::this_thread::get_id()) % _poolAmount;
+    static __thread MemoryPool* const preferedMemoryPool = AlignPool::item(_memoryPools,
+        std::hash<std::thread::id>()(std::this_thread::get_id()) % _poolAmount);
 
-    if (void* memory = _memoryPools[preferedPoolId]._allocate(bytes))
+    if (void* memory = preferedMemoryPool->_allocate(bytes))
         return memory;
 
     for (size_t i = 0; i < _poolAmount; ++i)
-        if (void* memory = _memoryPools[i]._allocate(bytes))
+        if (void* memory = AlignPool::item(_memoryPools, i)->_allocate(bytes))
             return memory;
 
 #ifndef NDEBUG
@@ -140,14 +170,12 @@ void* ParallelMemoryPool::_allocate(size_t bytes)
     return ::operator new(bytes);
 }
 
-#undef POOL_SELECTION_ALGORITHM
-
 void ParallelMemoryPool::_deallocate(void* p, size_t bytes)
 {
     assert(_memoryPools);
 
     for (size_t i = 0; i < _poolAmount; ++i)
-        if (_memoryPools[i]._deallocate(p, bytes))
+        if (AlignPool::item(_memoryPools, i)->_deallocate(p, bytes))
             return;
 
     ::operator delete(p);

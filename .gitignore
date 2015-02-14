@@ -50,3 +50,6 @@ tags
 
 # Blender backup files
 *.blend?
+
+# Generated files
+Source/CacheLineSize.hpp
