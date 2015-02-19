@@ -1,5 +1,5 @@
 #include <FileUtility.hpp>
-#include <Exceptions/Exceptions.hpp>
+#include <Exceptions/FileLoadError.hpp>
 #include <gmock/gmock.h>
 
 namespace Common

@@ -32,24 +32,49 @@ file "Source/CacheLineSize.hpp" do |fileName|
 end
 
 Library.new do |t|
-    t.name = "lib/libcppCommon.a"
+    t.name = "lib/libcommon.a"
     t.includes = INCLUDES
     t.flags = FLAGS
     t.files = FileList[ "Source/*.cpp", "Source/Exceptions/*.cpp" ]
     t.dependencies = [ "Source/CacheLineSize.hpp" ]
 end
 
+Library.new do |t|
+    t.name = "lib/libcommonSqLite.a"
+    t.includes = INCLUDES
+    t.flags = FLAGS
+    t.files = FileList[ "Source/SqLite/*.cpp" ]
+end
+
+Library.new do |t|
+    t.name = "lib/libcommonGtkmm.a"
+    t.includes = INCLUDES
+    t.flags = FLAGS
+    t.files = FileList[ "Source/Gtkmm/*.cpp" ]
+    t.libs = [ Pkg.new("gtkmm-3.0") ]
+end
+
 Application.new do |t|
-    t.name = "bin/cppCommon-ut"
+    t.name = "bin/common-ut"
     t.includes = INCLUDES
     t.flags = FLAGS
     t.files = FileList[ "Source/TestModules/*.cpp" ]
-    t.dependencies = [ "lib/libcppCommon.a" ]
-    t.libs = [ "-lgtest", "-lgmock", "-Llib", "-lcppCommon", "-lpthread" ]
+    t.dependencies = [ "lib/libcommon.a" ]
+    t.libs = [ "-lgtest", "-lgmock", "-Llib", "-lcommon", "-lpthread" ]
 end
 
-task :ut => [ "bin/cppCommon-ut" ] do
-    sh "bin/cppCommon-ut"
+Application.new do |t|
+    t.name = "bin/commonSqLite-ut"
+    t.includes = INCLUDES
+    t.flags = FLAGS
+    t.files = FileList[ "Source/SqLite/TestModules/*.cpp" ]
+    t.dependencies = [ "lib/libcommonSqLite.a" ]
+    t.libs = [ "-lgtest", "-lgmock", "-Llib", "-lcommonSqLite", "-lpthread" ]
 end
 
-task :default => [ "lib/libcppCommon.a", :ut ]
+task :ut => [ "bin/common-ut", "bin/commonSqLite-ut" ] do
+    sh "bin/common-ut"
+    sh "bin/commonSqLite-ut"
+end
+
+task :default => [ "lib/libcommon.a", "lib/libcommonSqLite.a", "lib/libcommonGtkmm.a", :ut ]
