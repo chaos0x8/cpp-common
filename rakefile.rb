@@ -17,7 +17,7 @@ end
 
 INCLUDES = [ "Source" ]
 UT_LIBS = [ "-lgtest", "-lgmock", "-lpthread" ]
-GENERATED_FILES = [ "Source/Parallel.hpp", "Source/Exceptions.hpp", "Source/Generated.hpp", "Source/Gtkmm.hpp", "Source/SqLite.hpp", "Source/Generated/CacheLineSize.hpp" ]
+GENERATED_FILES = [ "Source/Traits.hpp", "Source/Parallel.hpp", "Source/Exceptions.hpp", "Source/Generated.hpp", "Source/Gtkmm.hpp", "Source/SqLite.hpp", "Source/Generated/CacheLineSize.hpp" ]
 
 def generateDirectoryInclude *directories
     directories.each do |directory|
@@ -50,7 +50,7 @@ file "Source/Generated/CacheLineSize.hpp" => [ "Source/Generated", "rakefile.rb"
     f.close
 end
 
-generateDirectoryInclude "Parallel", "Exceptions", "Generated", "Gtkmm", "SqLite"
+generateDirectoryInclude "Traits", "Parallel", "Exceptions", "Generated", "Gtkmm", "SqLite"
 
 Library.new do |t|
     t.name = "lib/libcommon.a"
