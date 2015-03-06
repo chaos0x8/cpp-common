@@ -6,3 +6,4 @@
 #include <SqLite/Item.hpp>
 #include <SqLite/Row.hpp>
 #include <SqLite/SqLite3.hpp>
+

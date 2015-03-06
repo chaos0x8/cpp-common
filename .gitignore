@@ -52,4 +52,8 @@ tags
 *.blend?
 
 # Generated files
-Source/CacheLineSize.hpp
+Source/Generated/*
+Source/Exceptions.hpp
+Source/Generated.hpp
+Source/Gtkmm.hpp
+Source/SqLite.hpp
