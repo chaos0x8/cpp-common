@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Generated/CacheLineSize.hpp>
+#include <Parallel/Detail/Align.hpp>
 #include <thread>
 #include <atomic>
 #include <algorithm>
@@ -17,12 +18,19 @@ class ForEachContext
 {
 public:
     ForEachContext(T&& t, F&& f, size_t threadAmount)
-        : t(std::forward<T>(t)),
-          f(std::forward<F>(f)),
+        : data(std::forward<T>(t)),
+          functor(std::forward<F>(f)),
           threads(threadAmount)
     {
+        const size_t unaligned = Align<typename std::decay<T>::type::value_type>::unaligned(data.data());
+        currentIndex.fetch_add(unaligned);
+
         for (auto& thread : threads)
             thread = std::thread(&ForEachContext<T, F>::threadProcedure, this);
+
+        const size_t dataSize = data.size();
+        for (size_t k = 0; k < unaligned && k < dataSize; ++k)
+            functor(data[k]);
     }
     ForEachContext(const ForEachContext&) = delete;
     ForEachContext(ForEachContext&&) = delete;
@@ -43,19 +51,19 @@ public:
 private:
     void threadProcedure()
     {
-        const size_t dataSize = t.size();
+        const size_t dataSize = data.size();
         for (size_t i = currentIndex.fetch_add(PROGRESS); i < dataSize; i = currentIndex.fetch_add(PROGRESS))
         {
             const size_t partEnd = std::min(dataSize, i + PROGRESS);
             for (size_t k = i; k < partEnd; ++k)
-                f(t[k]);
+                functor(data[k]);
         }
     }
 
-    T t;
-    F f;
+    T data;
+    F functor;
 
-    static constexpr size_t PROGRESS = (CACHE_LINE_SIZE*2ul) / sizeof(typename std::decay<T>::type::value_type);
+    static constexpr size_t PROGRESS = Align<typename std::decay<T>::type::value_type>::progress;
     std::atomic<size_t> currentIndex{0};
     std::vector<std::thread> threads;
 };
