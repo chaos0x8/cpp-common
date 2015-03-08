@@ -30,7 +30,7 @@ public:
 
     void incrementCounterTwoTimes(ThreadPool* pool)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        incrementCounter();
         pool->queueTask(std::bind(&ThreadPoolTestSuite::incrementCounter, this));
     }
 
@@ -57,8 +57,8 @@ TEST_F(ThreadPoolTestSuite, shouldQueueMultipleTasksAtOnce)
 
 TEST_F(ThreadPoolTestSuite, shouldWorkWhenThreadPushedMoreTasks)
 {
-    expectedCount = 10;
-    for (size_t i = 0; i < expectedCount; ++i)
+    expectedCount = 20;
+    for (size_t i = 0; i < expectedCount / 2; ++i)
         sut->queueTask(std::bind(&ThreadPoolTestSuite::incrementCounterTwoTimes, this, sut.get()));
 }
 

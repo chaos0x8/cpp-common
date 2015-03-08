@@ -14,8 +14,8 @@ ThreadPool::ThreadPool(size_t threadAmount)
 
 ThreadPool::~ThreadPool()
 {
-    for (size_t i = 0; i < threads.size(); ++i)
-        q.push(ThreadPoolTask());
+    std::vector<ThreadPoolTask> emptyTasks(threads.size(), ThreadPoolTask());
+    q.push(std::begin(emptyTasks), std::end(emptyTasks));
 
     std::for_each(std::begin(threads), std::end(threads), std::mem_fn(&std::thread::join));
 
