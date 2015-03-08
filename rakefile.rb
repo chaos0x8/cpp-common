@@ -77,6 +77,14 @@ Library.new do |t|
     t.dependencies = GENERATED_FILES
 end
 
+Library.new do |t|
+    t.name = "lib/libcommonParallel.a"
+    t.includes = INCLUDES
+    t.flags = FLAGS
+    t.files = FileList[ "Source/Parallel/*.cpp" ]
+    t.dependencies = GENERATED_FILES
+end
+
 Application.new do |t|
     t.name = "bin/common-ut"
     t.includes = INCLUDES
@@ -91,8 +99,8 @@ Application.new do |t|
     t.includes = INCLUDES
     t.flags = FLAGS
     t.files = FileList[ "Source/Parallel/TestModules/*.cpp" ]
-    t.dependencies = GENERATED_FILES
-    t.libs = [ "-lgtest", "-lgmock", "-Llib", "-lcommon", "-lpthread" ]
+    t.dependencies = [ "lib/libcommonParallel.a" ] + GENERATED_FILES
+    t.libs = [ "-lgtest", "-lgmock", "-Llib", "-lcommonParallel", "-lpthread" ]
 end
 
 Application.new do |t|
@@ -110,5 +118,5 @@ task :ut => [ "bin/common-ut", "bin/commonSqLite-ut", "bin/commonParallel-ut" ] 
     sh "bin/commonParallel-ut"
 end
 
-task :default => [ "lib/libcommon.a", "lib/libcommonSqLite.a", "lib/libcommonGtkmm.a", :ut ]
+task :default => [ "lib/libcommon.a", "lib/libcommonSqLite.a", "lib/libcommonGtkmm.a", "lib/libcommonParallel.a", :ut ]
 task :generated => GENERATED_FILES
