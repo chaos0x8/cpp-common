@@ -16,6 +16,8 @@ namespace Detail
 template <class T, class F, class R>
 class ComputeContext
 {
+    using Allocator = typename std::decay<T>::type::allocator_type:: template rebind<R>::other;
+
 public:
     ComputeContext(T&& t, F&& f, size_t threadAmount)
         : data(std::forward<T>(t)),
@@ -49,7 +51,7 @@ public:
         threads.clear();
     }
 
-    std::vector<R> get()
+    std::vector<R, Allocator> get()
     {
         wait();
         return std::move(result);
@@ -73,7 +75,7 @@ private:
     static constexpr size_t PROGRESS = Align<R>::progress;
     std::atomic<size_t> currentIndex{0};
     std::vector<std::thread> threads;
-    std::vector<R> result;
+    std::vector<R, Allocator> result;
 };
 
 }
