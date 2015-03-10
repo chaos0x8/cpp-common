@@ -34,6 +34,16 @@ public:
         pool->queueTask(std::bind(&ThreadPoolTestSuite::incrementCounter, this));
     }
 
+    uint32_t getCount(uint32_t expectedCount)
+    {
+        auto start = std::chrono::high_resolution_clock::now();
+
+        while (count != expectedCount && start + std::chrono::seconds(1) > std::chrono::high_resolution_clock::now())
+            std::this_thread::yield();
+
+        return count;
+    }
+
     uint32_t expectedCount{0};
     std::atomic<uint32_t> count{0};
     std::unique_ptr<ThreadPool> sut{new ThreadPool};
@@ -72,6 +82,23 @@ TEST_F(ThreadPoolTestSuite, pushingEmptyTaskShouldDoNothing)
     tasks.push_back(std::bind(&ThreadPoolTestSuite::incrementCounter, this));
     tasks.push_back(ThreadPoolTask());
     sut->queueTasks(tasks);
+}
+
+TEST_F(ThreadPoolTestSuite, shouldQueueTaskWithArguments)
+{
+    expectedCount = 3;
+    sut->queueTask(std::mem_fn(&ThreadPoolTestSuite::incrementCounter), this);
+    sut->queueTask(std::mem_fn(&ThreadPoolTestSuite::incrementCounterTwoTimes), this, sut.get());
+}
+
+TEST_F(ThreadPoolTestSuite, shouldQueueFutures)
+{
+    expectedCount = 10;
+    for (size_t i = 0; i < expectedCount; ++i)
+        sut->queueTask(std::bind(&ThreadPoolTestSuite::incrementCounter, this));
+
+    std::future<uint32_t> fut = sut->queueFuture(std::mem_fn(&ThreadPoolTestSuite::getCount), this, expectedCount);
+    ASSERT_THAT(fut.get(), Eq(expectedCount));
 }
 
 }
