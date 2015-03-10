@@ -1,5 +1,4 @@
-#include <GetCurrentYear.hpp>
-#include <gtest/gtest.h>
+#include <Common/GetCurrentYear.hpp>
 #include <gmock/gmock.h>
 
 namespace Common

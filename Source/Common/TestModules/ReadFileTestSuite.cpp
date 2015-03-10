@@ -1,5 +1,5 @@
-#include <FileUtility.hpp>
-#include <Exceptions/FileLoadError.hpp>
+#include <Common/FileUtility.hpp>
+#include <Common/Exceptions/FileLoadError.hpp>
 #include <gmock/gmock.h>
 
 namespace Common
@@ -16,7 +16,7 @@ TEST(ReadFileTestSuite, shouldThrowWhenFileDoesntExist)
 
 TEST(ReadFileTestSuite, shouldReadDataFromFile)
 {
-    ASSERT_THAT(readFile("Source/TestModules/main.cpp"), Not(IsEmpty()));
+    ASSERT_THAT(readFile("Source/Common/TestModules/main.cpp"), Not(IsEmpty()));
 }
 
 }

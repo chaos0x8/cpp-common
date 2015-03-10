@@ -17,10 +17,12 @@ end
 
 INCLUDES = [ "Source" ]
 UT_LIBS = [ "-lgtest", "-lgmock", "-lpthread" ]
-GENERATED_FILES = [ "Source/Traits.hpp", "Source/Parallel.hpp", "Source/Exceptions.hpp", "Source/Generated.hpp", "Source/Gtkmm.hpp", "Source/SqLite.hpp", "Source/Generated/CacheLineSize.hpp" ]
+generatedFiles = [ "Source/Generated/CacheLineSize.hpp" ]
 
 def generateDirectoryInclude *directories
     directories.each do |directory|
+        yield "Source/#{directory}.hpp"
+
         file "Source/#{directory}.hpp" => "rakefile.rb" do |fileName|
             puts "Generating '#{fileName}'..."
 
@@ -50,14 +52,16 @@ file "Source/Generated/CacheLineSize.hpp" => [ "Source/Generated", "rakefile.rb"
     f.close
 end
 
-generateDirectoryInclude "Traits", "Parallel", "Exceptions", "Generated", "Gtkmm", "SqLite"
+generateDirectoryInclude "Traits", "Parallel", "Generated", "Gtkmm", "SqLite", "Common" do |fileName|
+    generatedFiles.push fileName
+end
 
 Library.new do |t|
     t.name = "lib/libcommon.a"
     t.includes = INCLUDES
     t.flags = FLAGS
-    t.files = FileList[ "Source/*.cpp", "Source/Exceptions/*.cpp" ]
-    t.dependencies = GENERATED_FILES
+    t.files = FileList[ "Source/Common/**/*.cpp" ]
+    t.dependencies = generatedFiles
 end
 
 Library.new do |t|
@@ -65,7 +69,7 @@ Library.new do |t|
     t.includes = INCLUDES
     t.flags = FLAGS
     t.files = FileList[ "Source/SqLite/*.cpp" ]
-    t.dependencies = GENERATED_FILES
+    t.dependencies = generatedFiles
 end
 
 Library.new do |t|
@@ -74,7 +78,7 @@ Library.new do |t|
     t.flags = FLAGS
     t.files = FileList[ "Source/Gtkmm/*.cpp" ]
     t.libs = [ Pkg.new("gtkmm-3.0") ]
-    t.dependencies = GENERATED_FILES
+    t.dependencies = generatedFiles
 end
 
 Library.new do |t|
@@ -82,15 +86,15 @@ Library.new do |t|
     t.includes = INCLUDES
     t.flags = FLAGS
     t.files = FileList[ "Source/Parallel/*.cpp" ]
-    t.dependencies = GENERATED_FILES
+    t.dependencies = generatedFiles
 end
 
 Application.new do |t|
     t.name = "bin/common-ut"
     t.includes = INCLUDES
     t.flags = FLAGS
-    t.files = FileList[ "Source/TestModules/*.cpp" ]
-    t.dependencies = [ "lib/libcommon.a" ] + GENERATED_FILES
+    t.files = FileList[ "Source/Common/TestModules/*.cpp" ]
+    t.dependencies = [ "lib/libcommon.a" ] + generatedFiles
     t.libs = [ "-lgtest", "-lgmock", "-Llib", "-lcommon", "-lpthread" ]
 end
 
@@ -99,7 +103,7 @@ Application.new do |t|
     t.includes = INCLUDES
     t.flags = FLAGS
     t.files = FileList[ "Source/Parallel/TestModules/*.cpp" ]
-    t.dependencies = [ "lib/libcommonParallel.a" ] + GENERATED_FILES
+    t.dependencies = [ "lib/libcommonParallel.a" ] + generatedFiles
     t.libs = [ "-lgtest", "-lgmock", "-Llib", "-lcommonParallel", "-lpthread" ]
 end
 
@@ -108,7 +112,7 @@ Application.new do |t|
     t.includes = INCLUDES
     t.flags = FLAGS
     t.files = FileList[ "Source/SqLite/TestModules/*.cpp" ]
-    t.dependencies = [ "lib/libcommonSqLite.a" ] + GENERATED_FILES
+    t.dependencies = [ "lib/libcommonSqLite.a" ] + generatedFiles
     t.libs = [ "-lgtest", "-lgmock", "-Llib", "-lcommonSqLite", "-lpthread" ]
 end
 
@@ -119,4 +123,4 @@ task :ut => [ "bin/common-ut", "bin/commonSqLite-ut", "bin/commonParallel-ut" ] 
 end
 
 task :default => [ "lib/libcommon.a", "lib/libcommonSqLite.a", "lib/libcommonGtkmm.a", "lib/libcommonParallel.a", :ut ]
-task :generated => GENERATED_FILES
+task :generated => generatedFiles
