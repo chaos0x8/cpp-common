@@ -19,6 +19,23 @@ INCLUDES = [ "Source" ]
 UT_LIBS = [ "-lgtest", "-lgmock", "-lpthread" ]
 generatedFiles = [ "Source/Generated/CacheLineSize.hpp" ]
 
+def authorNotice
+    f = File.open "LICENSE", "r"
+    data = f.read
+    f.close
+
+    text = "/*!\n"
+    data.split("\n").each do |line|
+        if line.strip == ""
+            text += "\n"
+        else
+            text += "    #{line}\n"
+        end
+    end
+
+    "#{text}*/\n\n"
+end
+
 def generateDirectoryInclude *directories
     directories.each do |directory|
         yield "Source/#{directory}.hpp"
@@ -29,6 +46,7 @@ def generateDirectoryInclude *directories
             files = FileList["Source/#{directory}/*.hpp"]
 
             f = File.open(fileName.to_s, "w")
+            f.write authorNotice
             f.write "#pragma once\n"
             f.write "\n"
             files.each { |x| f.write "#include <#{directory}/#{File.basename(x)}>\n" }
@@ -45,6 +63,7 @@ file "Source/Generated/CacheLineSize.hpp" => [ "Source/Generated", "rakefile.rb"
     puts "Generating '#{fileName}'..."
 
     f = File.open(fileName.to_s, "w")
+    f.write authorNotice
     f.write "#pragma once\n"
     f.write "\n"
     f.write "#define CACHE_LINE_SIZE (#{CACHE_LINE_SIZE}ul)\n"
