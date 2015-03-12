@@ -22,7 +22,7 @@
 #include <SqLite/Item.hpp>
 #include <vector>
 
-namespace Library
+namespace Common
 {
 namespace SqLite
 {

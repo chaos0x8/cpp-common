@@ -22,7 +22,7 @@
 #include <string>
 #include <vector>
 
-namespace Library
+namespace Common
 {
 namespace SqLite
 {

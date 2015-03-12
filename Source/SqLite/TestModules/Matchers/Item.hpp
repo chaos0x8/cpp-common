@@ -23,7 +23,7 @@
 #include <gmock/gmock.h>
 #include <SqLite/Item.hpp>
 
-namespace Library
+namespace Common
 {
 namespace SqLite
 {

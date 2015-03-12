@@ -22,7 +22,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace Library
+namespace Common
 {
 namespace SqLite
 {

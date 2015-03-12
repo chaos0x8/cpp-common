@@ -23,7 +23,7 @@
 #include <SqLite/DBCast.hpp>
 #include <boost/optional.hpp>
 
-namespace Library
+namespace Common
 {
 namespace SqLite
 {

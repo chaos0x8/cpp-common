@@ -24,7 +24,7 @@
 #include <SqLite/TestModules/Matchers/Item.hpp>
 #include <SqLite/TestModules/Printers/Item.hpp>
 
-namespace Library
+namespace Common
 {
 namespace SqLite
 {

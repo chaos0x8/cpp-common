@@ -22,7 +22,7 @@
 #include <boost/format.hpp>
 #include <boost/algorithm/string/replace.hpp>
 
-namespace Library
+namespace Common
 {
 namespace SqLite
 {

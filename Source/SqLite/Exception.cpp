@@ -21,7 +21,7 @@
 #include <SqLite/Exception.hpp>
 #include <boost/format.hpp>
 
-namespace Library
+namespace Common
 {
 namespace SqLite
 {

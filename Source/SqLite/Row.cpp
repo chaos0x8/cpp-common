@@ -23,7 +23,7 @@
 #include <cassert>
 #include <iostream>
 
-namespace Library
+namespace Common
 {
 namespace SqLite
 {

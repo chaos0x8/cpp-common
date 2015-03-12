@@ -24,7 +24,7 @@
 #include <SqLite/Row.hpp>
 #include <boost/format.hpp>
 
-namespace Library
+namespace Common
 {
 namespace SqLite
 {

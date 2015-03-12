@@ -26,7 +26,7 @@
 #include <vector>
 #include <cstdint>
 
-namespace Library
+namespace Common
 {
 namespace SqLite
 {

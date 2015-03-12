@@ -25,7 +25,7 @@
 #include <type_traits>
 #include <boost/optional.hpp>
 
-namespace Library
+namespace Common
 {
 namespace SqLite
 {

@@ -21,7 +21,7 @@
 #pragma once
 #include <boost/optional.hpp>
 
-namespace Library
+namespace Common
 {
 namespace Traits
 {
