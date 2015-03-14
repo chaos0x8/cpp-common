@@ -132,7 +132,7 @@ Application.new do |t|
     t.flags = FLAGS
     t.files = FileList[ "Source/Common/TestModules/*.cpp" ]
     t.dependencies = [ "lib/libcommon.a" ] + generatedFiles
-    t.libs = [ "-lgtest", "-lgmock", "-Llib", "-lcommon", "-lpthread" ]
+    t.libs = [ "-lgtest", "-lgmock", "-Llib", "-lcommon", "-lpthread", "-lrt" ]
 end
 
 Application.new do |t|
