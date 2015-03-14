@@ -126,6 +126,14 @@ Library.new do |t|
     t.dependencies = generatedFiles
 end
 
+Library.new do |t|
+    t.name = "lib/libcommonNetwork.a"
+    t.includes = INCLUDES
+    t.flags = FLAGS
+    t.files = FileList[ "Source/Network/*.cpp", "Source/Network/Exceptions/*.cpp" ]
+    t.dependencies = generatedFiles
+end
+
 Application.new do |t|
     t.name = "bin/common-ut"
     t.includes = INCLUDES
@@ -153,10 +161,20 @@ Application.new do |t|
     t.libs = [ "-lgtest", "-lgmock", "-Llib", "-lcommonSqLite", "-lpthread" ]
 end
 
-task :ut => [ "bin/common-ut", "bin/commonSqLite-ut", "bin/commonParallel-ut" ] do
+Application.new do |t|
+    t.name = "bin/commonNetwork-ut"
+    t.includes = INCLUDES
+    t.flags = FLAGS
+    t.files = FileList[ "Source/Network/TestModules/*.cpp" ]
+    t.dependencies = [ "lib/libcommonNetwork.a", "lib/libcommonParallel.a" ]
+    t.libs = [ "-lgtest", "-lgmock", "-Llib", "-lcommonParallel", "-lcommonNetwork", "-lpthread" ]
+end
+
+task :ut => [ "bin/common-ut", "bin/commonSqLite-ut", "bin/commonParallel-ut", "bin/commonNetwork-ut" ] do
     sh "bin/common-ut"
     sh "bin/commonSqLite-ut"
     sh "bin/commonParallel-ut"
+    sh "bin/commonNetwork-ut"
 end
 
 task :default => [ "lib/libcommon.a", "lib/libcommonSqLite.a", "lib/libcommonGtkmm.a", "lib/libcommonParallel.a", :ut ]
