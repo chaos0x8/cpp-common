@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <Network/ClientSocket.hpp>
+#include <Network/TcpIpClient.hpp>
 #include <Network/FileDescriptor.hpp>
 #include <Network/Exceptions/SocketError.hpp>
 #include <Network/Detail/AddrinfoDeleter.hpp>
@@ -16,26 +16,25 @@ namespace Common
 namespace Network
 {
 
-class ClientSocket
+class TcpIpClient
 {
 public:
-    ClientSocket()
+    TcpIpClient()
         : buffor(256)
     {
     }
 
-    ClientSocket(FileDescriptor fd)
-        : fd(std::move(fd)),
-          buffor(256)
+    TcpIpClient(FileDescriptor fd)
+        : buffor(256),
+          fd(std::move(fd))
     {
     }
 
     //! \throw Exceptions::SocketError
-    ClientSocket(const std::string& ip, const std::string& port)
+    TcpIpClient(const std::string& ip, const std::string& port)
     {
         addrinfo hints{};
         hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
-//        hints.ai_socktype = SOCK_DGRAM; /* Datagram socket */
         hints.ai_socktype = SOCK_STREAM;
         hints.ai_flags = AI_PASSIVE;    /* For wildcard IP address */
         hints.ai_protocol = 0;          /* Any protocol */
@@ -82,8 +81,8 @@ public:
     }
 
 private:
-    FileDescriptor fd;
     std::vector<char> buffor;
+    FileDescriptor fd;
 };
 
 }

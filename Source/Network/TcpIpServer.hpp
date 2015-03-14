@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <Network/ClientSocket.hpp>
+#include <Network/TcpIpClient.hpp>
 #include <Network/FileDescriptor.hpp>
 #include <Network/Exceptions/SocketError.hpp>
 #include <Network/Detail/AddrinfoDeleter.hpp>
@@ -16,15 +16,14 @@ namespace Common
 namespace Network
 {
 
-class ListeningSocket
+class TcpIpServer
 {
 public:
     //! \throw Exceptions::SocketError
-    ListeningSocket(const std::string& ip, const std::string& port)
+    TcpIpServer(const std::string& ip, const std::string& port)
     {
         addrinfo hints{};
         hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
-//        hints.ai_socktype = SOCK_DGRAM; /* Datagram socket */
         hints.ai_socktype = SOCK_STREAM;
         hints.ai_flags = AI_PASSIVE;    /* For wildcard IP address */
         hints.ai_protocol = 0;          /* Any protocol */
@@ -50,15 +49,15 @@ public:
     }
 
     //! \throw Exceptions::SocketError
-    ClientSocket accept()
+    TcpIpClient accept()
     {
         int acceptResult = ::accept(static_cast<int>(fd), nullptr, nullptr);
-        if (accept < 0)
+        if (acceptResult < 0)
         {
             fd = FileDescriptor{};
             throw Exceptions::SocketError(errno);
         }
-        return ClientSocket{FileDescriptor{acceptResult}};
+        return TcpIpClient{FileDescriptor{acceptResult}};
     }
 
 private:
