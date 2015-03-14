@@ -22,54 +22,54 @@
 #include <Common/Exceptions/TimerError.hpp>
 #include <cassert>
 #include <stdexcept>
+#include <pthread.h>
 
 namespace Common
 {
+namespace Detail
+{
 
-Timer::TimerData::TimerData(std::chrono::seconds sec, TimerCallback callback)
+Timer::Timer(std::chrono::seconds timeout, TimerCallback callback)
     : callback{std::move(callback)}
 {
     using namespace std::chrono;
 
-    assert(sec.count() > 0);
+    assert(timeout.count() > 0);
 
     sigevent sigEvent{};
     sigEvent.sigev_notify = SIGEV_THREAD;
-    sigEvent.sigev_notify_function = &TimerData::threadProcedure;
+    sigEvent.sigev_notify_function = &Timer::threadProcedure;
     sigEvent.sigev_value.sival_ptr = this;
 
-    if (timer_create(CLOCK_REALTIME, &sigEvent, &timerId) != 0)
+    if (::timer_create(CLOCK_REALTIME, &sigEvent, &timerId) != 0)
         throw Exceptions::TimerError(errno);
 
     itimerspec timeSpec{};
-    timeSpec.it_value.tv_sec = sec.count();
+    timeSpec.it_value.tv_sec = timeout.count();
 
-    if (timer_settime(timerId, 0, &timeSpec, nullptr) != 0)
+    if (::timer_settime(timerId, 0, &timeSpec, nullptr) != 0)
         throw Exceptions::TimerError(errno);
 }
 
-Timer::TimerData::~TimerData()
+Timer::~Timer()
 {
-    deleteTimer();
+    ::timer_delete(timerId);
 }
 
-void Timer::TimerData::threadProcedure(sigval arg)
+void Timer::threadProcedure(sigval arg)
 {
-    TimerData* _this = reinterpret_cast<TimerData*>(arg.sival_ptr);
-    _this->deleteTimer();
-    _this->callback();
+    Timer* _this = reinterpret_cast<Timer*>(arg.sival_ptr);
+    TimerCallback callback = std::move(_this->callback);
+    delete _this;
+
+    callback();
 }
 
-void Timer::TimerData::deleteTimer()
-{
-    if (timerId != timer_t{})
-        timer_delete(timerId);
-    timerId = timer_t{};
 }
 
-Timer::Timer(std::chrono::seconds sec, TimerCallback callback)
-    : timerData{new TimerData{std::move(sec), std::move(callback)}}
+void startTimer(std::chrono::seconds timeout, TimerCallback callback)
 {
+    new Detail::Timer(std::move(timeout), std::move(callback));
 }
 
 }

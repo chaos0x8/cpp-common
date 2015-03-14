@@ -41,43 +41,28 @@ public:
     }
 
     std::atomic<uint32_t> count{0};
-
-    Timer sut;
 };
 
-TEST_F(TimerTestSuite, shouldIncrementCounterAfterTimerExpires)
+TEST_F(TimerTestSuite, testTimer)
 {
-    sut = Timer(std::chrono::seconds(1), std::bind(&TimerTestSuite::incrementCount, this));
-
-    ASSERT_THAT(count, Eq(0));
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(1005));
-
-    ASSERT_THAT(count, Eq(1));
-}
-
-TEST_F(TimerTestSuite, shouldStopBeforeCalling)
-{
-    sut = Timer(std::chrono::seconds(2), std::bind(&TimerTestSuite::incrementCount, this));
-
-    ASSERT_THAT(count, Eq(0));
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(1995));
-
-    ASSERT_THAT(count, Eq(0));
-}
-
-TEST_F(TimerTestSuite, testFewTimers)
-{
-    auto sut2 = Timer(std::chrono::seconds(1), &TimerTestSuite::incrementCount, this);
-    sut = Timer(std::chrono::seconds(1), &TimerTestSuite::incrementCount, this);
-    sut = Timer(std::chrono::seconds(1), &TimerTestSuite::incrementCount, this);
+    startTimer(std::chrono::seconds(1), std::bind(&TimerTestSuite::incrementCount, this));
+    startTimer(std::chrono::seconds(2), &TimerTestSuite::incrementCount, this);
+    startTimer(std::chrono::seconds(1), &TimerTestSuite::incrementCount, this);
 
     ASSERT_THAT(count, Eq(0));
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1005));
 
     ASSERT_THAT(count, Eq(2));
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+    ASSERT_THAT(count, Eq(2));
+
+    while (count != 3)
+        std::this_thread::yield();
+
+    ASSERT_THAT(count, Eq(3));
 }
 
 }

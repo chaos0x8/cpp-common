@@ -31,48 +31,37 @@ namespace Common
 
 using TimerCallback = std::function<void ()>;
 
+namespace Detail
+{
+
 class Timer
 {
-    class TimerData
-    {
-    public:
-        //! \throw Exceptions::TimerError
-        TimerData(std::chrono::seconds sec, TimerCallback callback);
-        TimerData(const TimerData&) = delete;
-
-        ~TimerData();
-
-        TimerData& operator = (const TimerData&) = delete;
-
-        static void threadProcedure(sigval arg);
-
-        void deleteTimer();
-
-    private:
-        TimerCallback callback;
-        timer_t timerId{};
-    };
-
 public:
-    Timer() = default;
-    Timer(Timer&&) noexcept = default;
-
     //! \throw Exceptions::TimerError
-    Timer(std::chrono::seconds sec, TimerCallback callback);
+    Timer(std::chrono::seconds timeout, TimerCallback callback);
+    Timer(const Timer&) = delete;
 
-    //! \throw Exceptions::TimerError
-    template <class F, class... Args>
-    Timer(std::chrono::seconds sec, F&& f, Args&&... args)
-        : timerData{new TimerData{
-            std::move(sec),
-            std::bind(std::forward<F>(f), std::forward<Args>(args)...)}}
-    {
-    }
+    ~Timer();
 
-    Timer& operator = (Timer&&) noexcept = default;
+    Timer& operator = (const Timer&) = delete;
+
+    static void threadProcedure(sigval arg);
 
 private:
-    std::unique_ptr<TimerData> timerData{nullptr};
+    TimerCallback callback;
+    timer_t timerId{};
 };
+
+}
+
+//! \throw Exceptions::TimerError
+void startTimer(std::chrono::seconds timeout, TimerCallback);
+
+//! \throw Exceptions::TimerError
+template <class F, class... Args>
+void startTimer(std::chrono::seconds timeout, F&& f, Args&&... args)
+{
+    new Detail::Timer(std::move(timeout), std::bind(std::forward<F>(f), std::forward<Args>(args)...));
+}
 
 }
