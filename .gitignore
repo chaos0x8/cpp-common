@@ -53,9 +53,5 @@ tags
 
 # Generated files
 Source/Generated/*
-Source/Generated.hpp
-Source/Gtkmm.hpp
-Source/SqLite.hpp
-Source/Parallel.hpp
-Source/Traits.hpp
-Source/Common.hpp
+Source/*.hpp
+
