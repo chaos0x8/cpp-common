@@ -166,8 +166,8 @@ Application.new do |t|
     t.includes = INCLUDES
     t.flags = FLAGS
     t.files = FileList[ "Source/Network/TestModules/*.cpp" ]
-    t.dependencies = [ "lib/libcommonNetwork.a", "lib/libcommonParallel.a" ] + generatedFiles
-    t.libs = [ "-lgtest", "-lgmock", "-Llib", "-lcommonParallel", "-lcommonNetwork", "-lpthread" ]
+    t.dependencies = [ "lib/libcommonNetwork.a" ] + generatedFiles
+    t.libs = [ "-lgtest", "-lgmock", "-Llib", "-lcommonNetwork", "-lpthread" ]
 end
 
 task :ut => [ "bin/common-ut", "bin/commonSqLite-ut", "bin/commonParallel-ut", "bin/commonNetwork-ut" ] do

@@ -21,7 +21,7 @@
 #include <gmock/gmock.h>
 #include <Network/TcpIpServer.hpp>
 #include <Network/TcpIpClient.hpp>
-#include <Parallel/ThreadPool.hpp>
+#include <future>
 
 namespace Common
 {
@@ -37,10 +37,8 @@ class IcpIpSocketsTestSuite : public Test
 public:
     IcpIpSocketsTestSuite()
     {
-        acceptResult = pool.queueFuture([&] { return listener.accept(); });
+        acceptResult = std::async(std::launch::async, [&] { return listener.accept(); });
     }
-
-    Parallel::ThreadPool pool{4};
 
     TcpIpServer listener{LOCAL_HOST, PORT};
     std::future<TcpIpClient> acceptResult;
