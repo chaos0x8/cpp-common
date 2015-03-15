@@ -130,7 +130,7 @@ Library.new do |t|
     t.name = "lib/libcommonNetwork.a"
     t.includes = INCLUDES
     t.flags = FLAGS
-    t.files = FileList[ "Source/Network/*.cpp", "Source/Network/Exceptions/*.cpp" ]
+    t.files = FileList[ "Source/Network/*.cpp", "Source/Network/Detail/*.cpp", "Source/Network/Exceptions/*.cpp" ]
     t.dependencies = generatedFiles
 end
 
