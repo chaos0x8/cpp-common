@@ -51,6 +51,10 @@ FileDescriptor BaseSocket::bind(const std::string& ip, const std::string port, _
 {
     FdWithAddrinfo r = socket(ip, port, socketType);
 
+    int yes = 1;
+    if (::setsockopt(static_cast<FileDescriptor::value_type>(r.fd), SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
+        throw Exceptions::SystemError(errno);
+
     if (::bind(static_cast<FileDescriptor::value_type>(r.fd), r.address->ai_addr, static_cast<FileDescriptor::value_type>(r.address->ai_addrlen)) == -1)
         throw Exceptions::SystemError(errno);
 
