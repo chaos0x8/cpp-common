@@ -42,8 +42,6 @@ public:
 
     TcpIpServer listener{LOCAL_HOST, PORT};
     std::future<TcpIpClient> acceptResult;
-    TcpIpClient clientServerSide;
-    TcpIpClient clientClientSide;
 
     static const std::string LOCAL_HOST;
     static const std::string PORT;
@@ -54,10 +52,10 @@ const std::string IcpIpSocketsTestSuite::PORT = "3042";
 
 TEST_F(IcpIpSocketsTestSuite, socketTest)
 {
-    clientClientSide = TcpIpClient{LOCAL_HOST, PORT};
+    TcpIpClient clientClientSide = TcpIpClient{LOCAL_HOST, PORT};
     clientClientSide.send("Hello world");
 
-    clientServerSide = acceptResult.get();
+    TcpIpClient clientServerSide = acceptResult.get();
     ASSERT_THAT(clientServerSide.receive(), Eq("Hello world"));
 }
 

@@ -27,10 +27,6 @@ namespace Common
 namespace Network
 {
 
-TcpIpClient::TcpIpClient()
-{
-}
-
 TcpIpClient::TcpIpClient(const std::string& ip, const std::string& port)
 {
     fd = connect(ip, port, SOCK_STREAM);

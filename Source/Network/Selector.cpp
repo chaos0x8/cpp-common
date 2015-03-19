@@ -20,6 +20,7 @@
 
 #include <Network/Selector.hpp>
 #include <Common/Exceptions/SystemError.hpp>
+#include <iostream>
 
 namespace Common
 {

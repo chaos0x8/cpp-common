@@ -30,8 +30,6 @@ namespace Network
 class TcpIpClient : public Detail::BaseSocket
 {
 public:
-    TcpIpClient();
-
     //! \throw Exceptions::SystemError
     TcpIpClient(const std::string& ip, const std::string& port);
 
