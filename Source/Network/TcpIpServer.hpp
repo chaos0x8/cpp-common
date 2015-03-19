@@ -31,14 +31,11 @@ namespace Network
 class TcpIpServer : public Detail::BaseSocket
 {
 public:
-    //! \throw Exceptions::SocketError
+    //! \throw Exceptions::SystemError
     TcpIpServer(const std::string& ip, const std::string& port);
 
-    //! \throw Exceptions::SocketError
+    //! \throw Exceptions::SystemError
     TcpIpClient accept();
-
-private:
-    Detail::FileDescriptor fd;
 };
 
 }

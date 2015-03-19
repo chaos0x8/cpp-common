@@ -29,7 +29,7 @@ namespace Network
 namespace Detail
 {
 
-FileDescriptor::FileDescriptor(int fd)
+FileDescriptor::FileDescriptor(value_type fd)
     : fd(std::move(fd))
 {
 }
@@ -59,7 +59,7 @@ FileDescriptor::operator bool () const
     return fd != INVALID_VALUE;
 }
 
-FileDescriptor::operator int () const
+FileDescriptor::operator value_type () const
 {
     return fd;
 }

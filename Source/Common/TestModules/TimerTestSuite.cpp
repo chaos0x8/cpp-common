@@ -43,7 +43,7 @@ public:
     std::atomic<uint32_t> count{0};
 };
 
-TEST_F(TimerTestSuite, testTimer)
+TEST_F(TimerTestSuite, DISABLED_testTimer)
 {
     startTimer(std::chrono::seconds(1), std::bind(&TimerTestSuite::incrementCount, this));
     startTimer(std::chrono::seconds(2), &TimerTestSuite::incrementCount, this);

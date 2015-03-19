@@ -18,41 +18,44 @@
     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#include <Network/UdpMessage.hpp>
+#include <Network/Pipe.hpp>
 #include <Common/Exceptions/SystemError.hpp>
+#include <Network/Detail/BufforSize.hpp>
 #include <array>
+#include <unistd.h>
 
 namespace Common
 {
 namespace Network
 {
 
-UdpHost UdpMessage::getHost()
+Pipe::Pipe()
 {
-    UdpHost udpHost;
-
-    std::array<char, NI_MAXHOST> host;
-    std::array<char, NI_MAXSERV> service;
-
-    if (::getnameinfo(reinterpret_cast<sockaddr*>(&address), addressLength, host.data(), host.size(),
-        service.data(), service.size(), NI_NUMERICSERV) != 0)
-    {
+    int fds[2] = {};
+    if (::pipe(fds) == -1)
         throw Exceptions::SystemError(errno);
-    }
-
-    udpHost.name = host.data();
-    udpHost.service = service.data();
-
-    return udpHost;
+    readPipe = Detail::FileDescriptor{fds[0]};
+    writePipe = Detail::FileDescriptor{fds[1]};
 }
 
-UdpMessage UdpMessage::clone(const std::string& data) const
+std::string Pipe::read()
 {
-    UdpMessage cloned{};
-    cloned.data = data;
-    cloned.address = this->address;
-    cloned.addressLength = this->addressLength;
-    return cloned;
+    std::array<char, BUFFOR_SIZE> buffor;
+    ssize_t nread = ::read(static_cast<int>(readPipe), buffor.data(), buffor.size());
+    if (nread == -1)
+        throw Exceptions::SystemError(errno);
+    return std::string(buffor.data(), nread);
+}
+
+void Pipe::write(const std::string& buffor)
+{
+    if (::write(static_cast<int>(writePipe), buffor.data(), buffor.size()) == -1)
+        throw Exceptions::SystemError(errno);
+}
+
+std::array<int, 2> Pipe::getNativeHandler() const
+{
+    return { static_cast<int>(readPipe), static_cast<int>(writePipe) };
 }
 
 }

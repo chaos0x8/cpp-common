@@ -21,7 +21,6 @@
 #pragma once
 
 #include <Network/Detail/BaseSocket.hpp>
-#include <vector>
 
 namespace Common
 {
@@ -31,18 +30,14 @@ namespace Network
 class UdpClient : public Detail::BaseSocket
 {
 public:
-    //! \throw Exceptions::SocketError
+    //! \throw Exceptions::SystemError
     UdpClient(const std::string& ip, const std::string& port);
 
-    //! \throw Exceptions::SocketError
+    //! \throw Exceptions::SystemError
     void send(const std::string& data);
 
-    //! \throw Exceptions::SocketError
+    //! \throw Exceptions::SystemError
     std::string receive();
-
-private:
-    std::vector<char> buffor;
-    Detail::FileDescriptor fd;
 };
 
 }

@@ -27,12 +27,22 @@ namespace Network
 namespace Detail
 {
 
+FileDescriptor::value_type BaseSocket::getNativeHandler() const
+{
+    return static_cast<FileDescriptor::value_type>(fd);
+}
+
+BaseSocket::BaseSocket(FileDescriptor fd)
+    : fd(std::move(fd))
+{
+}
+
 FileDescriptor BaseSocket::connect(const std::string& ip, const std::string port, __socket_type socketType)
 {
     FdWithAddrinfo r = socket(ip, port, socketType);
 
-    if (::connect(static_cast<int>(r.fd), r.address->ai_addr, static_cast<int>(r.address->ai_addrlen)) == -1)
-        throw Exceptions::SocketError(errno);
+    if (::connect(static_cast<FileDescriptor::value_type>(r.fd), r.address->ai_addr, static_cast<FileDescriptor::value_type>(r.address->ai_addrlen)) == -1)
+        throw Exceptions::SystemError(errno);
 
     return std::move(r.fd);
 }
@@ -41,8 +51,8 @@ FileDescriptor BaseSocket::bind(const std::string& ip, const std::string port, _
 {
     FdWithAddrinfo r = socket(ip, port, socketType);
 
-    if (::bind(static_cast<int>(r.fd), r.address->ai_addr, static_cast<int>(r.address->ai_addrlen)) == -1)
-        throw Exceptions::SocketError(errno);
+    if (::bind(static_cast<FileDescriptor::value_type>(r.fd), r.address->ai_addr, static_cast<FileDescriptor::value_type>(r.address->ai_addrlen)) == -1)
+        throw Exceptions::SystemError(errno);
 
     return std::move(r.fd);
 }
@@ -51,8 +61,8 @@ FileDescriptor BaseSocket::listen(const std::string& ip, const std::string port)
 {
     FileDescriptor fd = bind(ip, port, SOCK_STREAM);
 
-    if (::listen(static_cast<int>(fd), SOMAXCONN) == -1)
-        throw Exceptions::SocketError(errno);
+    if (::listen(static_cast<FileDescriptor::value_type>(fd), SOMAXCONN) == -1)
+        throw Exceptions::SystemError(errno);
 
     return fd;
 }
@@ -67,13 +77,13 @@ BaseSocket::FdWithAddrinfo BaseSocket::socket(const std::string& ip, const std::
 
     addrinfo* address{nullptr};
     if (::getaddrinfo(ip.c_str(), port.c_str(), &hints, &address) != 0)
-        throw Exceptions::SocketError(errno);
+        throw Exceptions::SystemError(errno);
 
     std::unique_ptr<addrinfo, Detail::AddrinfoDeleter> _address{address};
 
     FileDescriptor fd{::socket(address->ai_family, address->ai_socktype, address->ai_protocol)};
     if (!fd)
-        throw Exceptions::SocketError(errno);
+        throw Exceptions::SystemError(errno);
 
     FdWithAddrinfo result;
     result.fd = std::move(fd);

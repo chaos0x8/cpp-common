@@ -19,6 +19,8 @@
 */
 
 #include <Network/UdpClient.hpp>
+#include <Network/Detail/BufforSize.hpp>
+#include <array>
 #include <unistd.h>
 
 namespace Common
@@ -27,7 +29,6 @@ namespace Network
 {
 
 UdpClient::UdpClient(const std::string& ip, const std::string& port)
-    : buffor(256)
 {
     fd = connect(ip, port, SOCK_DGRAM);
 }
@@ -35,14 +36,16 @@ UdpClient::UdpClient(const std::string& ip, const std::string& port)
 void UdpClient::send(const std::string& data)
 {
     if (::write(static_cast<int>(fd), data.data(), data.size()) == -1)
-        throw Exceptions::SocketError(errno);
+        throw Exceptions::SystemError(errno);
 }
 
 std::string UdpClient::receive()
 {
+    std::array<char, BUFFOR_SIZE> buffor;
+
     int nread = ::read(static_cast<int>(fd), buffor.data(), buffor.size());
     if (nread == -1)
-        throw Exceptions::SocketError(errno);
+        throw Exceptions::SystemError(errno);
     return std::string(buffor.data(), nread);
 }
 

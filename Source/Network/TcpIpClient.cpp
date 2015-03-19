@@ -19,6 +19,8 @@
 */
 
 #include <Network/TcpIpClient.hpp>
+#include <Network/Detail/BufforSize.hpp>
+#include <array>
 
 namespace Common
 {
@@ -26,7 +28,6 @@ namespace Network
 {
 
 TcpIpClient::TcpIpClient()
-    : buffor(256)
 {
 }
 
@@ -40,17 +41,19 @@ void TcpIpClient::send(const std::string& data)
     if (::send(static_cast<int>(fd), data.data(), data.size(), 0) == -1)
     {
         fd = Detail::FileDescriptor{};
-        throw Exceptions::SocketError(errno);
+        throw Exceptions::SystemError(errno);
     }
 }
 
 std::string TcpIpClient::receive()
 {
+    std::array<char, BUFFOR_SIZE> buffor;
+
     int r = ::recv(static_cast<int>(fd), buffor.data(), buffor.size(), 0);
     if (r == -1)
     {
         fd = Detail::FileDescriptor{};
-        throw Exceptions::SocketError(errno);
+        throw Exceptions::SystemError(errno);
     }
 
     if (r == 0)
@@ -60,8 +63,7 @@ std::string TcpIpClient::receive()
 }
 
 TcpIpClient::TcpIpClient(Detail::FileDescriptor fd)
-    : buffor(256),
-      fd(std::move(fd))
+    : BaseSocket(std::move(fd))
 {
 }
 

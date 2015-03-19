@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include <Network/Exceptions/SocketError.hpp>
+#include <Common/Exceptions/SystemError.hpp>
 #include <Network/Detail/AddrinfoDeleter.hpp>
 #include <Network/Detail/FileDescriptor.hpp>
 #include <string>
@@ -45,18 +45,26 @@ class BaseSocket
         std::unique_ptr<addrinfo, AddrinfoDeleter> address;
     };
 
+public:
+    FileDescriptor::value_type getNativeHandler() const;
+
 protected:
-    //! \throw Exceptions::SocketError
+    BaseSocket() = default;
+    BaseSocket(FileDescriptor);
+
+    //! \throw Exceptions::SystemError
     static FileDescriptor connect(const std::string& ip, const std::string port, __socket_type socketType);
 
-    //! \throw Exceptions::SocketError
+    //! \throw Exceptions::SystemError
     static FileDescriptor bind(const std::string& ip, const std::string port, __socket_type socketType);
 
-    //! \throw Exceptions::SocketError
+    //! \throw Exceptions::SystemError
     static FileDescriptor listen(const std::string& ip, const std::string port);
 
+    FileDescriptor fd{};
+
 private:
-    //! \throw Exceptions::SocketError
+    //! \throw Exceptions::SystemError
     static FdWithAddrinfo socket(const std::string& ip, const std::string port, __socket_type socketType);
 };
 

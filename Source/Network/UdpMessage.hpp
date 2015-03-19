@@ -37,7 +37,7 @@ struct UdpMessage
     sockaddr_storage address{};
     socklen_t addressLength{sizeof(sockaddr_storage)};
 
-    //! \throw Exceptions::SocketError
+    //! \throw Exceptions::SystemError
     UdpHost getHost();
 
     UdpMessage clone(const std::string& data) const;

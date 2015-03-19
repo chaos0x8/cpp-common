@@ -130,7 +130,7 @@ Library.new do |t|
     t.name = "lib/libcommonNetwork.a"
     t.includes = INCLUDES
     t.flags = FLAGS
-    t.files = FileList[ "Source/Network/*.cpp", "Source/Network/Detail/*.cpp", "Source/Network/Exceptions/*.cpp" ]
+    t.files = FileList[ "Source/Network/*.cpp", "Source/Network/Detail/*.cpp" ]
     t.dependencies = generatedFiles
 end
 
@@ -166,8 +166,8 @@ Application.new do |t|
     t.includes = INCLUDES
     t.flags = FLAGS
     t.files = FileList[ "Source/Network/TestModules/*.cpp" ]
-    t.dependencies = [ "lib/libcommonNetwork.a" ] + generatedFiles
-    t.libs = [ "-lgtest", "-lgmock", "-Llib", "-lcommonNetwork", "-lpthread" ]
+    t.dependencies = [ "lib/libcommon.a", "lib/libcommonNetwork.a" ] + generatedFiles
+    t.libs = [ "-lgtest", "-lgmock", "-Llib", "-lcommonNetwork", "-lcommon", "-lpthread" ]
 end
 
 task :ut => [ "bin/common-ut", "bin/commonSqLite-ut", "bin/commonParallel-ut", "bin/commonNetwork-ut" ] do

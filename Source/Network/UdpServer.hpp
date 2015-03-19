@@ -22,7 +22,6 @@
 
 #include <Network/Detail/BaseSocket.hpp>
 #include <Network/UdpMessage.hpp>
-#include <vector>
 
 namespace Common
 {
@@ -32,18 +31,14 @@ namespace Network
 class UdpServer : public Detail::BaseSocket
 {
 public:
-    //! \throw Exceptions::SocketError
+    //! \throw Exceptions::SystemError
     UdpServer(const std::string& ip, const std::string& port);
 
-    //! \throw Exceptions::SocketError
+    //! \throw Exceptions::SystemError
     UdpMessage receive();
 
-    //! \throw Exceptions::SocketError
+    //! \throw Exceptions::SystemError
     void send(UdpMessage msg);
-
-private:
-    std::vector<char> buffor;
-    Detail::FileDescriptor fd;
 };
 
 }

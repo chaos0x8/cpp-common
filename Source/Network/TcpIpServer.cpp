@@ -36,7 +36,7 @@ TcpIpClient TcpIpServer::accept()
     if (acceptResult < 0)
     {
         fd = Detail::FileDescriptor{};
-        throw Exceptions::SocketError(errno);
+        throw Exceptions::SystemError(errno);
     }
     return TcpIpClient{Detail::FileDescriptor{acceptResult}};
 }

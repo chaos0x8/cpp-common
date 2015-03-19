@@ -21,7 +21,6 @@
 #pragma once
 
 #include <Network/Detail/BaseSocket.hpp>
-#include <vector>
 
 namespace Common
 {
@@ -33,20 +32,17 @@ class TcpIpClient : public Detail::BaseSocket
 public:
     TcpIpClient();
 
-    //! \throw Exceptions::SocketError
+    //! \throw Exceptions::SystemError
     TcpIpClient(const std::string& ip, const std::string& port);
 
-    //! \throw Exceptions::SocketError
+    //! \throw Exceptions::SystemError
     void send(const std::string& data);
 
-    //! \throw Exceptions::SocketError
+    //! \throw Exceptions::SystemError
     std::string receive();
 
 private:
     TcpIpClient(Detail::FileDescriptor fd);
-
-    std::vector<char> buffor;
-    Detail::FileDescriptor fd;
 
     friend class TcpIpServer;
 };

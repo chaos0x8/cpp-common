@@ -18,22 +18,29 @@
     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#pragma once
-
-#include <stdexcept>
+#include <Network/Pipe.hpp>
+#include <gmock/gmock.h>
 
 namespace Common
 {
 namespace Network
 {
-namespace Exceptions
+namespace UT
 {
 
-class SocketError : public std::runtime_error
+using namespace testing;
+
+class PipeTestSuite : public Test
 {
 public:
-    explicit SocketError(int errnoValue);
+    Pipe sut;
 };
+
+TEST_F(PipeTestSuite, shouldReadAndWrite)
+{
+    sut.write("Hello world");
+    ASSERT_THAT(sut.read(), Eq("Hello world"));
+}
 
 }
 }

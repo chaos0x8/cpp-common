@@ -18,22 +18,35 @@
     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#include <Network/Exceptions/SocketError.hpp>
-#include <boost/format.hpp>
-#include <string.h>
+#pragma once
+
+#include <Network/Detail/FileDescriptor.hpp>
+#include <string>
+#include <array>
 
 namespace Common
 {
 namespace Network
 {
-namespace Exceptions
-{
 
-SocketError::SocketError(int errnoValue)
-    : std::runtime_error(boost::str(boost::format("Socket error: %1%") % strerror(errnoValue)))
+class Pipe
 {
-}
+public:
+    //! \throw Exceptions::SystemError
+    Pipe();
 
-}
+    //! \throw Exceptions::SystemError
+    std::string read();
+
+    //! \throw Exceptions::SystemError
+    void write(const std::string& buffor);
+
+    std::array<int, 2> getNativeHandler() const;
+
+private:
+    Detail::FileDescriptor readPipe;
+    Detail::FileDescriptor writePipe;
+};
+
 }
 }

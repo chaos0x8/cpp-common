@@ -19,6 +19,8 @@
 */
 
 #include <Network/UdpServer.hpp>
+#include <Network/Detail/BufforSize.hpp>
+#include <array>
 
 namespace Common
 {
@@ -26,18 +28,18 @@ namespace Network
 {
 
 UdpServer::UdpServer(const std::string& ip, const std::string& port)
-    : buffor(256)
 {
     fd = bind(ip, port, SOCK_DGRAM);
 }
 
 UdpMessage UdpServer::receive()
 {
+    std::array<char, BUFFOR_SIZE> buffor;
     UdpMessage msg{};
 
     ssize_t nread = ::recvfrom(static_cast<int>(fd), buffor.data(), buffor.size(), 0, reinterpret_cast<sockaddr*>(&msg.address), &msg.addressLength);
     if (nread == -1)
-        throw Exceptions::SocketError(errno);
+        throw Exceptions::SystemError(errno);
 
     msg.data = std::string(buffor.data(), nread);
 
@@ -47,7 +49,7 @@ UdpMessage UdpServer::receive()
 void UdpServer::send(UdpMessage msg)
 {
     if (::sendto(static_cast<int>(fd), msg.data.data(), msg.data.size(), 0, reinterpret_cast<sockaddr*>(&msg.address), msg.addressLength) != msg.data.size())
-        throw Exceptions::SocketError(errno);
+        throw Exceptions::SystemError(errno);
 }
 
 }

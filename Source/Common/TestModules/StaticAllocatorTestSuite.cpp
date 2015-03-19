@@ -92,6 +92,7 @@ TEST(StaticAllocatorTestSuite, memoryShouldBeAligned)
     sut.deallocate(p, 3);
 }
 
+#ifdef NDEBUG
 class StaticAllocatorStressTestSuite : public Test
 {
 public:
@@ -127,6 +128,7 @@ TEST_F(StaticAllocatorStressTestSuite, DISABLED_performanceString)
 {
     stringPerformanceTest<std::string>();
 }
+#endif
 
 }
 }
