@@ -52,7 +52,7 @@ void Selector::remove(int fd)
         internalCommunication.write("U");
 }
 
-void Selector::threadProcedure()
+void Selector::threadProcedure() try
 {
     fd_set fdSet;
 
@@ -82,6 +82,10 @@ void Selector::threadProcedure()
                 }
         }
     }
+}
+catch (Exceptions::SystemError& e)
+{
+    std::cerr << e.what() << std::endl;
 }
 
 void Selector::internalHandler()
