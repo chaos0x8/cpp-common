@@ -21,6 +21,7 @@
 #include <Network/Selector.hpp>
 #include <Common/Exceptions/SystemError.hpp>
 #include <iostream>
+#include <vector>
 
 namespace Common
 {
@@ -74,14 +75,17 @@ void Selector::threadProcedure() try
         if (::select(maxFd + 1, &fdSet, nullptr, nullptr, nullptr) == -1)
             throw Exceptions::SystemError(errno);
 
+        std::vector<SelectorCallback> callbacksToExecute;
+
         {
             std::unique_lock<std::mutex> lock(itemsMutex);
             for (const auto& val : items)
                 if (FD_ISSET(val.first, &fdSet))
-                {
-                    val.second();
-                }
+                    callbacksToExecute.push_back(val.second);
         }
+
+        for (auto& callback : callbacksToExecute)
+            callback();
     }
 }
 catch (Exceptions::SystemError& e)
