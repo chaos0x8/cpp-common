@@ -38,6 +38,9 @@ public:
 
     //! \throw Exceptions::SystemError
     std::string receive();
+
+    //! \throw Exceptions::SystemError
+    using Detail::BaseSocket::shutdown;
 };
 
 }

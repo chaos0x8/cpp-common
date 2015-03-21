@@ -36,6 +36,10 @@ public:
 
     //! \throw Exceptions::SystemError
     TcpIpClient accept();
+
+    //! \throw Exceptions::SystemError
+    //! \brief accepting connection after shutdown throw exception
+    using Detail::BaseSocket::shutdown;
 };
 
 }

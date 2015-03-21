@@ -61,6 +61,9 @@ protected:
     //! \throw Exceptions::SystemError
     static FileDescriptor listen(const std::string& ip, const std::string port);
 
+    //! \throw Exceptions::SystemError
+    void shutdown();
+
     FileDescriptor fd{};
 
 private:

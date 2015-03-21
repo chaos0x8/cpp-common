@@ -71,6 +71,12 @@ FileDescriptor BaseSocket::listen(const std::string& ip, const std::string port)
     return fd;
 }
 
+void BaseSocket::shutdown()
+{
+    if (::shutdown(static_cast<FileDescriptor::value_type>(fd), SHUT_RDWR) == -1)
+        throw Exceptions::SystemError(errno);
+}
+
 BaseSocket::FdWithAddrinfo BaseSocket::socket(const std::string& ip, const std::string port, __socket_type socketType)
 {
     addrinfo hints{};

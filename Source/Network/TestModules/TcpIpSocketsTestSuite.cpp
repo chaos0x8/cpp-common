@@ -21,6 +21,7 @@
 #include <gmock/gmock.h>
 #include <Network/TcpIpServer.hpp>
 #include <Network/TcpIpClient.hpp>
+#include <Common/Exceptions/SystemError.hpp>
 #include <future>
 
 namespace Common
@@ -32,10 +33,10 @@ namespace UT
 
 using namespace testing;
 
-class IcpIpSocketsTestSuite : public Test
+class TcpIpSocketsTestSuite : public Test
 {
 public:
-    IcpIpSocketsTestSuite()
+    TcpIpSocketsTestSuite()
     {
         acceptResult = std::async(std::launch::async, [&] { return listener.accept(); });
     }
@@ -47,16 +48,36 @@ public:
     static const std::string PORT;
 };
 
-const std::string IcpIpSocketsTestSuite::LOCAL_HOST = "127.0.0.1";
-const std::string IcpIpSocketsTestSuite::PORT = "3042";
+const std::string TcpIpSocketsTestSuite::LOCAL_HOST = "127.0.0.1";
+const std::string TcpIpSocketsTestSuite::PORT = "3042";
 
-TEST_F(IcpIpSocketsTestSuite, socketTest)
+TEST_F(TcpIpSocketsTestSuite, sendReceive)
 {
     TcpIpClient clientClientSide = TcpIpClient{LOCAL_HOST, PORT};
     clientClientSide.send("Hello world");
 
     TcpIpClient clientServerSide = acceptResult.get();
     ASSERT_THAT(clientServerSide.receive(), Eq("Hello world"));
+}
+
+TEST_F(TcpIpSocketsTestSuite, shoutdownClient)
+{
+    TcpIpClient clientClientSide = TcpIpClient{LOCAL_HOST, PORT};
+    TcpIpClient clientServerSide = acceptResult.get();
+
+    clientServerSide.shutdown();
+
+    ASSERT_THAT(clientClientSide.receive(), IsEmpty());
+    ASSERT_THAT(clientServerSide.receive(), IsEmpty());
+}
+
+TEST_F(TcpIpSocketsTestSuite, shutdownListener)
+{
+    TcpIpClient clientClientSide = TcpIpClient{LOCAL_HOST, PORT};
+    TcpIpClient clientServerSide = acceptResult.get();
+
+    listener.shutdown();
+    ASSERT_THROW(listener.accept(), Exceptions::SystemError);
 }
 
 }

@@ -21,6 +21,7 @@
 #include <gmock/gmock.h>
 #include <Network/UdpServer.hpp>
 #include <Network/UdpClient.hpp>
+#include <Common/Exceptions/SystemError.hpp>
 
 namespace Common
 {
@@ -34,6 +35,9 @@ using namespace testing;
 class UdpSocketsTestSuite : public Test
 {
 public:
+    UdpServer server{LOCAL_HOST, PORT};
+    UdpClient client{LOCAL_HOST, PORT};
+
     static const std::string LOCAL_HOST;
     static const std::string PORT;
 };
@@ -41,11 +45,8 @@ public:
 const std::string UdpSocketsTestSuite::LOCAL_HOST = "127.0.0.1";
 const std::string UdpSocketsTestSuite::PORT = "3042";
 
-TEST_F(UdpSocketsTestSuite, socketTest)
+TEST_F(UdpSocketsTestSuite, sendReceive)
 {
-    UdpServer server{LOCAL_HOST, PORT};
-    UdpClient client{LOCAL_HOST, PORT};
-
     client.send("Hello world");
     UdpMessage msg = server.receive();
     server.send(msg.clone("Hello back"));
@@ -55,6 +56,13 @@ TEST_F(UdpSocketsTestSuite, socketTest)
     UdpHost host = msg.getHost();
     ASSERT_THAT(host.name, Eq("localhost"));
     ASSERT_THAT(host.service, Not(IsEmpty()));
+}
+
+TEST_F(UdpSocketsTestSuite, shutdownClient)
+{
+    client.shutdown();
+
+    ASSERT_THAT(client.receive(), IsEmpty());
 }
 
 }
