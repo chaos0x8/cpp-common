@@ -34,10 +34,7 @@ TcpIpClient TcpIpServer::accept()
 {
     int acceptResult = ::accept(static_cast<int>(fd), nullptr, nullptr);
     if (acceptResult < 0)
-    {
-        fd = Detail::FileDescriptor{};
         throw Exceptions::SystemError(errno);
-    }
     return TcpIpClient{Detail::FileDescriptor{acceptResult}};
 }
 

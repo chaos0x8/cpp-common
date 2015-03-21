@@ -35,10 +35,7 @@ TcpIpClient::TcpIpClient(const std::string& ip, const std::string& port)
 void TcpIpClient::send(const std::string& data)
 {
     if (::send(static_cast<int>(fd), data.data(), data.size(), 0) == -1)
-    {
-        fd = Detail::FileDescriptor{};
         throw Exceptions::SystemError(errno);
-    }
 }
 
 std::string TcpIpClient::receive()
@@ -47,13 +44,7 @@ std::string TcpIpClient::receive()
 
     int r = ::recv(static_cast<int>(fd), buffor.data(), buffor.size(), 0);
     if (r == -1)
-    {
-        fd = Detail::FileDescriptor{};
         throw Exceptions::SystemError(errno);
-    }
-
-    if (r == 0)
-        fd = Detail::FileDescriptor{};
 
     return std::string(buffor.data(), r);
 }
