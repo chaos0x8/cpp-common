@@ -49,7 +49,7 @@ public:
     FileDescriptor::value_type getNativeHandler() const;
 
 protected:
-    BaseSocket() = default;
+    BaseSocket() noexcept = default;
     BaseSocket(FileDescriptor);
 
     //! \throw Exceptions::SystemError

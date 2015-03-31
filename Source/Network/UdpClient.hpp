@@ -30,6 +30,8 @@ namespace Network
 class UdpClient : public Detail::BaseSocket
 {
 public:
+    UdpClient() noexcept = default;
+
     //! \throw Exceptions::SystemError
     UdpClient(const std::string& ip, const std::string& port);
 
