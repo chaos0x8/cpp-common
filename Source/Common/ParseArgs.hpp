@@ -26,6 +26,6 @@
 namespace Common
 {
 
-std::vector<std::string> parseArgs(int argc, const char** argv);
+std::vector<std::string> parseArgs(int argc, char** argv);
 
 }

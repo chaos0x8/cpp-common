@@ -23,7 +23,7 @@
 namespace Common
 {
 
-std::vector<std::string> parseArgs(int argc, const char** argv)
+std::vector<std::string> parseArgs(int argc, char** argv)
 {
     std::vector<std::string> result;
     for (int i = 1; i < argc; ++i)

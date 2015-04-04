@@ -32,7 +32,7 @@ TEST(ParseArgsTestSuite, testParsing)
 {
     int argc = 4;
     const char* argv[4] = { "program", "argument1", "arg2", "arg3" };
-    ASSERT_THAT(parseArgs(argc, argv), ElementsAre("argument1", "arg2", "arg3"));
+    ASSERT_THAT(parseArgs(argc, const_cast<char**>(argv)), ElementsAre("argument1", "arg2", "arg3"));
 }
 
 }
