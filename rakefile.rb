@@ -97,7 +97,7 @@ Library.new do |t|
     t.name = "lib/libcommon.a"
     t.includes = INCLUDES
     t.flags = FLAGS
-    t.files = FileList[ "Source/Common/**/*.cpp" ]
+    t.files = FileList[ "Source/Common/*.cpp", "Source/Common/Exceptions/*.cpp" ]
     t.dependencies = generatedFiles
 end
 
