@@ -89,7 +89,7 @@ file "Source/Generated/CacheLineSize.hpp" => [ "Source/Generated", "rakefile.rb"
     f.close
 end
 
-generateDirectoryInclude "Traits", "Parallel", "Generated", "Gtkmm", "SqLite", "Common", "Network" do |fileName|
+generateDirectoryInclude "Traits", "Parallel", "Generated", "Gtkmm", "SqLite", "Common", "Network", "Sfml", "GL" do |fileName|
     generatedFiles.push fileName
 end
 
@@ -134,6 +134,22 @@ Library.new do |t|
     t.dependencies = generatedFiles
 end
 
+Library.new do |t|
+    t.name = "lib/libcommonGL.a"
+    t.includes = INCLUDES
+    t.flags = FLAGS
+    t.files = FileList[ "Source/GL/*.cpp", "Source/GL/Detail/*.cpp" ]
+    t.dependencies = generatedFiles
+end
+
+Library.new do |t|
+    t.name = "lib/libcommonSfml.a"
+    t.includes = INCLUDES
+    t.flags = FLAGS
+    t.files = FileList[ "Source/Sfml/*.cpp", "Source/Sfml/Detail/*.cpp" ]
+    t.dependencies = generatedFiles
+end
+
 Application.new do |t|
     t.name = "bin/common-ut"
     t.includes = INCLUDES
@@ -170,12 +186,32 @@ Application.new do |t|
     t.libs = [ "-lgtest", "-lgmock", "-Llib", "-lcommonNetwork", "-lcommon", "-lpthread" ]
 end
 
-task :ut => [ "bin/common-ut", "bin/commonSqLite-ut", "bin/commonParallel-ut", "bin/commonNetwork-ut" ] do
-    sh "bin/common-ut"
-    sh "bin/commonSqLite-ut"
-    sh "bin/commonParallel-ut"
-    sh "bin/commonNetwork-ut"
+Application.new do |t|
+    t.name = "bin/commonGL-ut"
+    t.includes = INCLUDES
+    t.flags = FLAGS
+    t.files = FileList[ "Source/GL/**TestModules/*.cpp" ]
+    t.dependencies = [ "lib/libcommon.a", "lib/libcommonGL.a" ] + generatedFiles
+    t.libs = [ "-lgtest", "-lgmock", "-Llib", "-lcommonGL", "-lcommon", "-lpthread", Pkg.new('glew') ]
 end
 
-task :default => [ "lib/libcommonGtkmm.a", :ut ]
+task :commonUT => "bin/common-ut" do
+    sh "bin/common-ut"
+end
+task :commonSqLiteUT => "bin/commonSqLite-ut" do
+    sh "bin/commonSqLite-ut"
+end
+task :commonParallelUT => "bin/commonParallel-ut" do
+    sh "bin/commonParallel-ut"
+end
+task :commonNetworkUT => "bin/commonNetwork-ut" do
+    sh "bin/commonNetwork-ut"
+end
+task :commonGlUT => "bin/commonGL-ut" do
+    sh "bin/commonGL-ut"
+end
+
+task :ut => [ :commonUT, :commonSqLiteUT, :commonParallelUT, :commonNetworkUT, :commonGlUT ]
+
+task :default => [ "lib/libcommonGtkmm.a", "lib/libcommonSfml.a", :ut ]
 task :generated => generatedFiles
