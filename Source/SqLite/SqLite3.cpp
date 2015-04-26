@@ -51,17 +51,17 @@ void SqLite3::open(const std::string& fileName)
 
 SelectResult SqLite3::select(const std::string& select)
 {
-    SelectResult result = SelectResult();
+    std::pair<SelectResult, bool> selData{SelectResult{}, false};
 
     char* rawErrorMsg = 0;
-    int err = sqlite3_exec(db.get(), select.c_str(), SqLite3::selectCallBack, &result, &rawErrorMsg);
+    int err = sqlite3_exec(db.get(), select.c_str(), SqLite3::selectCallBack, &selData, &rawErrorMsg);
     if (err != SQLITE_OK)
     {
         std::unique_ptr<char, SqLiteDeleter> errorMsg(rawErrorMsg, SqLiteDeleter());
         throw Exception(boost::str(boost::format("Error during select[%1%]: '%2%'") % err % errorMsg.get()));
     }
 
-    return result;
+    return std::move(selData.first);
 }
 
 void SqLite3::execute(const std::string& query)
@@ -87,15 +87,18 @@ SqLite3::operator bool() const
 
 int SqLite3::selectCallBack(void* data, int argc, char** argv, char** colName)
 {
-    SelectResult* result = static_cast<SelectResult*>(data);
+    auto result = static_cast<std::pair<SelectResult, bool>*>(data);
+
+    if (!result->second)
+        for (size_t i = 0; i < argc; ++i)
+            result->first.addColumn(colName[i], i);
 
     SelectResult::Row newRow;
     for (size_t i = 0; i < argc; ++i)
-    {
-        result->addColumn(colName[i], i);
         newRow.push_back((argv[i] ? std::string(argv[i]) : std::string()));
-    }
-    result->push_back(std::move(newRow));
+
+    result->first.push_back(std::move(newRow));
+    result->second = true;
 
     return 0;
 }
