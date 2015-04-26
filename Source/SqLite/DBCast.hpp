@@ -31,6 +31,82 @@ namespace SqLite
 {
 namespace DBCast
 {
+namespace Detail
+{
+
+template <class T>
+struct ConvertableNumber
+{
+    static constexpr bool value = std::is_same<unsigned, T>::value
+                               || std::is_same<unsigned long, T>::value
+                               || std::is_same<unsigned long long, T>::value
+                               || std::is_same<int, T>::value
+                               || std::is_same<long, T>::value
+                               || std::is_same<long long, T>::value
+                               || std::is_same<double, T>::value
+                               || std::is_same<long double, T>::value;
+};
+
+template <typename T>
+inline T convNumber(const std::string&);
+
+template <>
+inline unsigned convNumber<unsigned>(const std::string& data)
+{
+    return std::stoul(data);
+}
+
+template <>
+inline unsigned long convNumber<unsigned long>(const std::string& data)
+{
+    return std::stoul(data);
+}
+
+template <>
+inline unsigned long long convNumber<unsigned long long>(const std::string& data)
+{
+    return std::stoull(data);
+}
+
+template <>
+inline int convNumber<int>(const std::string& data)
+{
+    return std::stoi(data);
+}
+
+template <>
+inline long convNumber<long>(const std::string& data)
+{
+    return std::stol(data);
+}
+
+template <>
+inline long long convNumber<long long>(const std::string& data)
+{
+    return std::stoll(data);
+}
+
+template <>
+inline double convNumber<double>(const std::string& data)
+{
+    return std::stold(data);
+}
+
+template <>
+inline long double convNumber<long double>(const std::string& data)
+{
+    return std::stold(data);
+}
+
+}
+
+template <typename T>
+inline T fromDBFormat(
+    std::string& data,
+    typename std::enable_if<!Traits::IsOptional<T>::value &&  std::is_same<T, std::string>::value>::type* = 0)
+{
+    return std::move(data);
+}
 
 template <typename T>
 inline T fromDBFormat(
@@ -43,7 +119,15 @@ inline T fromDBFormat(
 template <typename T>
 inline T fromDBFormat(
     const std::string& data,
-    typename std::enable_if<!Traits::IsOptional<T>::value && !std::is_same<T, std::string>::value>::type* = 0)
+    typename std::enable_if<!Traits::IsOptional<T>::value && !std::is_same<T, std::string>::value &&  Detail::ConvertableNumber<T>::value>::type* = 0)
+{
+    return Detail::convNumber<T>(data);
+}
+
+template <typename T>
+inline T fromDBFormat(
+    const std::string& data,
+    typename std::enable_if<!Traits::IsOptional<T>::value && !std::is_same<T, std::string>::value && !Detail::ConvertableNumber<T>::value>::type* = 0)
 {
     std::stringstream ss;
     ss << data;

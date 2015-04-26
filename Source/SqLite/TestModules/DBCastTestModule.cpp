@@ -55,6 +55,21 @@ TEST(DBCastTestSuite, shouldCastFromDbFormat)
     ASSERT_THAT(fromDBFormat<boost::optional<std::string>>(std::string()), Eq(boost::none));
 }
 
+TEST(DBCastTestSuite, integralCastFromDbFormat)
+{
+    ASSERT_TRUE(fromDBFormat<bool>("1"));
+    ASSERT_FALSE(fromDBFormat<bool>("0"));
+    ASSERT_EQ('s', fromDBFormat<char>("s"));
+    ASSERT_EQ(-42, fromDBFormat<int>("-42"));
+    ASSERT_EQ(-42, fromDBFormat<long>("-42"));
+    ASSERT_EQ(-42, fromDBFormat<long long>("-42"));
+    ASSERT_EQ(42, fromDBFormat<unsigned int>("42"));
+    ASSERT_EQ(42, fromDBFormat<unsigned long>("42"));
+    ASSERT_EQ(42, fromDBFormat<unsigned long long>("42"));
+    ASSERT_DOUBLE_EQ(42.2, fromDBFormat<double>("42.2"));
+    ASSERT_DOUBLE_EQ(-42.2, fromDBFormat<long double>("-42.2"));
+}
+
 }
 }
 }

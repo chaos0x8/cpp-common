@@ -94,8 +94,9 @@ int SqLite3::selectCallBack(void* data, int argc, char** argv, char** colName)
             result->first.addColumn(colName[i], i);
 
     SelectResult::Row newRow;
-    for (size_t i = 0; i < argc; ++i)
-        newRow.push_back((argv[i] ? std::string(argv[i]) : std::string()));
+    newRow.reserve(argc);
+    std::transform(argv, argv + argc, std::back_inserter(newRow),
+        [](char* value) { return value ? std::string(value) : std::string(); });
 
     result->first.push_back(std::move(newRow));
     result->second = true;
