@@ -19,6 +19,8 @@
 */
 
 #pragma once
+
+#include <SqLite/SelectResult.hpp>
 #include <string>
 #include <vector>
 
@@ -26,9 +28,6 @@ namespace Common
 {
 namespace SqLite
 {
-
-class Row;
-typedef std::vector<Row> SelectResult;
 
 class ISqLite
 {

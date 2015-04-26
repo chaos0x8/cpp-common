@@ -20,8 +20,6 @@
 
 #include <SqLite/SqLite3.hpp>
 #include <SqLite/Exception.hpp>
-#include <SqLite/Item.hpp>
-#include <SqLite/Row.hpp>
 #include <boost/format.hpp>
 
 namespace Common
@@ -91,14 +89,13 @@ int SqLite3::selectCallBack(void* data, int argc, char** argv, char** colName)
 {
     SelectResult* result = static_cast<SelectResult*>(data);
 
-    Row newRow;
-
-    for (int i = 0; i < argc; ++i)
+    SelectResult::Row newRow;
+    for (size_t i = 0; i < argc; ++i)
     {
-        newRow.push_back(Item(colName[i], argv[i]));
+        result->addColumn(colName[i], i);
+        newRow.push_back((argv[i] ? std::string(argv[i]) : std::string()));
     }
-
-    result->push_back(newRow);
+    result->push_back(std::move(newRow));
 
     return 0;
 }
