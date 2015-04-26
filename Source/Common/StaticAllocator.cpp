@@ -74,7 +74,7 @@ MemoryPool::MemoryPool(size_t poolSize, size_t chunkSize)
 
     _heap = ::operator new(extraChunks * _chunkSize + _poolSize + CACHE_LINE_SIZE);
     _memoryMap = reinterpret_cast<bool*>(Align<>::memory(_heap));
-    _memory = Align<>::memory(_heap) + _chunkSize * extraChunks;
+    _memory = reinterpret_cast<void*>(reinterpret_cast<size_t>(Align<>::memory(_heap)) + _chunkSize * extraChunks);
 
     std::fill(_memoryMap, _memoryMap + _chunkAmount, false);
 }
@@ -100,7 +100,7 @@ inline size_t MemoryPool::calcChunkAmount(size_t bytes) const
                 _chunkHint = i + 1u; \
                 const size_t firstAssignedChunkIndex = (i + 1u) - requiredChunks; \
                 std::fill(_memoryMap + firstAssignedChunkIndex, _memoryMap + firstAssignedChunkIndex + requiredChunks, true); \
-                return _memory + (firstAssignedChunkIndex * _chunkSize); \
+                return reinterpret_cast<void*>(reinterpret_cast<size_t>(_memory) + (firstAssignedChunkIndex * _chunkSize)); \
             } \
         } \
         else \
@@ -131,7 +131,7 @@ inline void* MemoryPool::_allocate(size_t bytes)
 
 inline bool MemoryPool::_deallocate(void* p, size_t bytes)
 {
-    if (p >= _memory && p < _memory + _poolSize)
+    if (p >= _memory && p < reinterpret_cast<void*>(reinterpret_cast<size_t>(_memory) + _poolSize))
     {
         std::unique_lock<std::mutex> lock(_mutex);
         const size_t requiredChunks = calcChunkAmount(bytes);
@@ -173,7 +173,7 @@ void* ParallelMemoryPool::_allocate(size_t bytes)
 {
     assert(_memoryPools);
 
-    static __thread MemoryPool* const preferedMemoryPool = AlignPool::item(_memoryPools,
+    static thread_local MemoryPool* const preferedMemoryPool = AlignPool::item(_memoryPools,
         std::hash<std::thread::id>()(std::this_thread::get_id()) % _poolAmount);
 
     if (void* memory = preferedMemoryPool->_allocate(bytes))
