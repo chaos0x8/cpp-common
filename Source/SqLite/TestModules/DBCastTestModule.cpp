@@ -43,6 +43,7 @@ TEST(DBCastTestSuite, shouldCastToDbFormat)
     ASSERT_THAT(toDBFormat(boost::optional<std::string>("15")), Eq("'15'"));
     ASSERT_THAT(toDBFormat(boost::optional<std::string>()), Eq("null"));
     ASSERT_THAT(toDBFormat("Hello'World"), Eq("'Hello''World'"));
+    ASSERT_THAT(toDBFormat(boost::optional<double>(12.7)), Eq("12.7"));
 }
 
 TEST(DBCastTestSuite, shouldCastFromDbFormat)
@@ -53,6 +54,7 @@ TEST(DBCastTestSuite, shouldCastFromDbFormat)
     ASSERT_THAT(fromDBFormat<boost::optional<int>>("15"), Eq(15));
     ASSERT_THAT(fromDBFormat<boost::optional<std::string>>("15"), Eq(std::string("15")));
     ASSERT_THAT(fromDBFormat<boost::optional<std::string>>(std::string()), Eq(boost::none));
+    ASSERT_DOUBLE_EQ(12.7, fromDBFormat<boost::optional<double>>("12.7").get_value_or(0.));
 }
 
 TEST(DBCastTestSuite, integralCastFromDbFormat)
@@ -66,6 +68,7 @@ TEST(DBCastTestSuite, integralCastFromDbFormat)
     ASSERT_EQ(42, fromDBFormat<unsigned int>("42"));
     ASSERT_EQ(42, fromDBFormat<unsigned long>("42"));
     ASSERT_EQ(42, fromDBFormat<unsigned long long>("42"));
+    ASSERT_FLOAT_EQ(42.2f, fromDBFormat<float>("42.2"));
     ASSERT_DOUBLE_EQ(42.2, fromDBFormat<double>("42.2"));
     ASSERT_DOUBLE_EQ(-42.2, fromDBFormat<long double>("-42.2"));
 }

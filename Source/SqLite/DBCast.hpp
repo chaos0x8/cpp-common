@@ -43,6 +43,7 @@ struct ConvertableNumber
                                || std::is_same<int, T>::value
                                || std::is_same<long, T>::value
                                || std::is_same<long long, T>::value
+                               || std::is_same<float, T>::value
                                || std::is_same<double, T>::value
                                || std::is_same<long double, T>::value;
 };
@@ -87,9 +88,15 @@ inline long long convNumber<long long>(const std::string& data)
 }
 
 template <>
+inline float convNumber<float>(const std::string& data)
+{
+    return std::stof(data);
+}
+
+template <>
 inline double convNumber<double>(const std::string& data)
 {
-    return std::stold(data);
+    return std::stod(data);
 }
 
 template <>
