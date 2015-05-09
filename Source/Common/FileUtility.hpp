@@ -19,12 +19,17 @@
 */
 
 #pragma once
+
 #include <string>
+#include <istream>
 
 namespace Common
 {
 
 bool doesFileExist(const std::string& fileName);
+
+size_t fileSize(std::istream& stream);
+size_t fileSize(const std::string& fileName);
 
 std::string readFile(const std::string& fileName);
 

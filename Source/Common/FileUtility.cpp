@@ -35,17 +35,33 @@ bool doesFileExist(const std::string& fileName)
     return true;
 }
 
+size_t fileSize(std::istream& stream)
+{
+    size_t currentPos = stream.tellg();
+    stream.seekg(0u, std::ios::end);
+    size_t length = stream.tellg();
+    stream.seekg(currentPos, std::ios::beg);
+    return length;
+}
+
+size_t fileSize(const std::string& fileName)
+{
+    std::ifstream file(fileName.c_str());
+    if (!file.is_open())
+        throw Exceptions::FileLoadError(fileName);
+
+    size_t length = fileSize(file);
+    file.close();
+    return length;
+}
+
 std::string readFile(const std::string& fileName)
 {
     std::ifstream file(fileName.c_str());
     if (!file.is_open())
         throw Exceptions::FileLoadError(fileName);
 
-    file.seekg(0u, std::ios::end);
-    size_t length = file.tellg();
-    file.seekg(0u, std::ios::beg);
-
-    std::vector<char> bufor(length);
+    std::vector<char> bufor(fileSize(file));
     file.read(bufor.data(), bufor.size());
     file.close();
 
