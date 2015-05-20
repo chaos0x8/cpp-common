@@ -23,7 +23,7 @@ def web_require url
     require_relative File.basename(url)
 end
 
-web_require "https://raw.github.com/chaos0x8/ruby/master/rake-builder/RakeBuilder.rb"
+web_require "https://raw.github.com/chaos0x8/rake-builder/master/RakeBuilder.rb"
 
 if ARGV.index("nodebug").nil?
     FLAGS = [ "--std=c++1y", "-g" ]
