@@ -8,7 +8,7 @@ namespace Common
 namespace HexCoding
 {
 
-std::string encode(const std::string& input)
+std::string encrypt(const std::string& input)
 {
     std::stringstream ss;
     ss.setf(std::ios::hex, std::ios::basefield);
@@ -18,13 +18,13 @@ std::string encode(const std::string& input)
     return ss.str();
 }
 
-std::string encode(const std::vector<char>& input)
+std::string encrypt(const std::vector<char>& input)
 {
-    return encode(std::string(input.data(), input.size()));
+    return encrypt(std::string(input.data(), input.size()));
 
 }
 
-std::string decode(const std::string& input)
+std::string decrypt(const std::string& input)
 {
     assert(input.size() % 2 == 0);
 
@@ -45,9 +45,9 @@ std::string decode(const std::string& input)
     return std::string(result.data(), result.size());
 }
 
-std::string decode(const std::vector<char>& input)
+std::string decrypt(const std::vector<char>& input)
 {
-    return decode(std::string(input.data(), input.size()));
+    return decrypt(std::string(input.data(), input.size()));
 }
 
 }

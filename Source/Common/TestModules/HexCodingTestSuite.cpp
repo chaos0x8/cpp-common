@@ -22,24 +22,24 @@ public:
 
 TEST_F(HexCodingTestSuite, encodeCharacters)
 {
-    ASSERT_THAT(encode(V{'0', 28, 30}), Eq("301c1e"));
+    ASSERT_THAT(encrypt(V{'0', 28, 30}), Eq("301c1e"));
 }
 
 TEST_F(HexCodingTestSuite, encodeCharactersWithPadding)
 {
-    ASSERT_THAT(encode(V{7, 15, 12}), Eq("070f0c"));
+    ASSERT_THAT(encrypt(V{7, 15, 12}), Eq("070f0c"));
 }
 
 TEST_F(HexCodingTestSuite, decodesCharacters)
 {
-    ASSERT_THAT(decode("305f6e"), Eq("0_n"));
+    ASSERT_THAT(decrypt("305f6e"), Eq("0_n"));
 }
 
 TEST_F(HexCodingTestSuite, decodesEncodedData)
 {
-    const std::string encoded = encode(TEXT);
+    const std::string encoded = encrypt(TEXT);
 
-    ASSERT_THAT(decode(encoded), Eq(TEXT));
+    ASSERT_THAT(decrypt(encoded), Eq(TEXT));
 }
 
 std::string HexCodingTestSuite::binaryString()
@@ -52,9 +52,9 @@ std::string HexCodingTestSuite::binaryString()
 
 TEST_F(HexCodingTestSuite, decodesEncodedBinaryData)
 {
-    const std::string encoded = encode(binaryString());
+    const std::string encoded = encrypt(binaryString());
 
-    ASSERT_THAT(decode(encoded), Eq(binaryString()));
+    ASSERT_THAT(decrypt(encoded), Eq(binaryString()));
 }
 
 }

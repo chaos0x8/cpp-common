@@ -8,10 +8,10 @@ namespace Common
 namespace HexCoding
 {
 
-std::string encode(const std::string&);
-std::string encode(const std::vector<char>&);
-std::string decode(const std::string&);
-std::string decode(const std::vector<char>&);
+std::string encrypt(const std::string&);
+std::string encrypt(const std::vector<char>&);
+std::string decrypt(const std::string&);
+std::string decrypt(const std::vector<char>&);
 
 }
 }
