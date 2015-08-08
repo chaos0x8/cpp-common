@@ -35,10 +35,21 @@ class HexCodingTestSuite : public Test
 public:
     using V = std::vector<char>;
 
-    static std::string binaryString();
+    static std::string binaryString()
+    {
+        const std::vector<char> vec = binaryData();
+        return std::string(vec.data(), vec.size());
+    }
+    static std::vector<char> binaryData();
 
     const std::string TEXT = "a cat";
 };
+
+MATCHER_P(EqToString, text, "text is equal")
+{
+    return std::lexicographical_compare(std::begin(arg), std::end(arg), std::begin(text), std::end(text)) == false
+        && std::lexicographical_compare(std::begin(text), std::end(text), std::begin(arg), std::end(arg)) == false;
+}
 
 TEST_F(HexCodingTestSuite, encodeCharacters)
 {
@@ -52,29 +63,29 @@ TEST_F(HexCodingTestSuite, encodeCharactersWithPadding)
 
 TEST_F(HexCodingTestSuite, decodesCharacters)
 {
-    ASSERT_THAT(decrypt("305f6e"), Eq("0_n"));
+    ASSERT_THAT(decrypt("305f6e"), EqToString(std::string("0_n")));
 }
 
 TEST_F(HexCodingTestSuite, decodesEncodedData)
 {
     const std::string encoded = encrypt(TEXT);
 
-    ASSERT_THAT(decrypt(encoded), Eq(TEXT));
+    ASSERT_THAT(decrypt(encoded), EqToString(TEXT));
 }
 
-std::string HexCodingTestSuite::binaryString()
+std::vector<char> HexCodingTestSuite::binaryData()
 {
     std::vector<char> binary(256);
     for (size_t i = 0; i < binary.size(); ++i)
         binary[i] = i;
-    return std::string(binary.data(), binary.size());
+    return binary;
 }
 
 TEST_F(HexCodingTestSuite, decodesEncodedBinaryData)
 {
     const std::string encoded = encrypt(binaryString());
 
-    ASSERT_THAT(decrypt(encoded), Eq(binaryString()));
+    ASSERT_THAT(decrypt(encoded), EqToString(binaryData()));
 }
 
 }

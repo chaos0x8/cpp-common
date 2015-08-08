@@ -30,6 +30,11 @@ namespace HexCoding
 
 std::string encrypt(const std::string& input)
 {
+    return encrypt(std::vector<char>(std::begin(input), std::end(input)));
+}
+
+std::string encrypt(const std::vector<char>& input)
+{
     std::stringstream ss;
     ss.setf(std::ios::hex, std::ios::basefield);
     ss.fill('0');
@@ -38,13 +43,12 @@ std::string encrypt(const std::string& input)
     return ss.str();
 }
 
-std::string encrypt(const std::vector<char>& input)
+std::vector<char> decrypt(const std::string& input)
 {
-    return encrypt(std::string(input.data(), input.size()));
-
+    return decrypt(std::vector<char>(std::begin(input), std::end(input)));
 }
 
-std::string decrypt(const std::string& input)
+std::vector<char> decrypt(const std::vector<char>& input)
 {
     assert(input.size() % 2 == 0);
 
@@ -62,12 +66,7 @@ std::string decrypt(const std::string& input)
         result[i/2] = static_cast<char>(value);
     }
 
-    return std::string(result.data(), result.size());
-}
-
-std::string decrypt(const std::vector<char>& input)
-{
-    return decrypt(std::string(input.data(), input.size()));
+    return result;
 }
 
 }
