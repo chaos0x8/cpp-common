@@ -20,6 +20,7 @@
 
 #include <SqLite/SqLite3.hpp>
 #include <SqLite/Exception.hpp>
+#include <SqLite/Transaction.hpp>
 #include <boost/format.hpp>
 
 namespace Common
@@ -78,6 +79,28 @@ void SqLite3::execute(const std::string& query)
 int64_t SqLite3::getLastInsertedId()
 {
     return sqlite3_last_insert_rowid(db.get());
+}
+
+bool SqLite3::transaction(std::function<void ()> operation)
+{
+    try
+    {
+        Transaction transaction(*this);
+        operation();
+        transaction.commit();
+    }
+    catch (std::exception&)
+    {
+        return false;
+    }
+    return true;
+}
+
+void SqLite3::setTestMode()
+{
+    execute(
+        "PRAGMA synchronous = OFF;"
+        "PRAGMA journal_mode = MEMORY;");
 }
 
 SqLite3::operator bool() const

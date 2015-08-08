@@ -38,17 +38,17 @@ public:
 
     bool empty() const
     {
-        return _rows.empty();
+        return rows.empty();
     }
 
     size_type size() const
     {
-        return _rows.size();
+        return rows.size();
     }
 
     void push_back(Row row)
     {
-        _rows.push_back(std::move(row));
+        rows.push_back(std::move(row));
     }
 
     void addColumn(std::string column, size_t index)
@@ -56,24 +56,14 @@ public:
         _columnMap[column] = index;
     }
 
-    std::vector<Row>& rows()
-    {
-        return _rows;
-    }
-
-    const std::vector<Row>& rows() const
-    {
-        return _rows;
-    }
-
     std::string& at(size_t index, const std::string& key)
     {
-        return _rows[index][_columnMap.at(key)];
+        return rows[index][_columnMap.at(key)];
     }
 
     const std::string& at(size_t index, const std::string& key) const
     {
-        return _rows[index][_columnMap.at(key)];
+        return rows[index][_columnMap.at(key)];
     }
 
     template <class... Args>
@@ -82,9 +72,10 @@ public:
         return std::make_tuple(_columnMap.at(args)...);
     }
 
+    std::vector<Row> rows;
+
 private:
     std::unordered_map<std::string, size_t> _columnMap;
-    std::vector<Row> _rows;
 };
 
 }

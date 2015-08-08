@@ -174,7 +174,7 @@ Application.new do |t|
     t.flags = FLAGS
     t.files = FileList[ "Source/SqLite/TestModules/*.cpp" ]
     t.dependencies = [ "lib/libcommonSqLite.a" ] + generatedFiles
-    t.libs = [ "-lgtest", "-lgmock", "-Llib", "-lcommonSqLite", "-lpthread" ]
+    t.libs = [ "-lgtest", "-lgmock", "-Llib", "-lcommonSqLite", "-lpthread", Pkg.new('sqlite3') ]
 end
 
 Application.new do |t|

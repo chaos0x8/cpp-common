@@ -79,9 +79,8 @@ TEST_F(SelectResultTestSuite, testFewElements)
     ASSERT_THAT(value, Eq(2));
     ASSERT_THAT(name, Eq(1));
 
-    const std::vector<SelectResult::Row>& rows = sut.rows();
-    ASSERT_THAT(rows[0][value], Eq("dal"));
-    ASSERT_THAT(rows[1][name], Eq("kyra"));
+    ASSERT_THAT(sut.rows[0][value], Eq("dal"));
+    ASSERT_THAT(sut.rows[1][name], Eq("kyra"));
 }
 
 }

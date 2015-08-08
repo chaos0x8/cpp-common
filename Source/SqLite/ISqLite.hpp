@@ -21,6 +21,7 @@
 #pragma once
 
 #include <SqLite/SelectResult.hpp>
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -38,6 +39,10 @@ public:
     virtual SelectResult select(const std::string& select) = 0;
     virtual void execute(const std::string& query) = 0;
     virtual int64_t getLastInsertedId() = 0;
+
+    virtual bool transaction(std::function<void ()> operation) = 0;
+
+    virtual void setTestMode() = 0;
 
     virtual operator bool() const = 0;
 };

@@ -34,12 +34,16 @@ namespace SqLite
 class SqLite3 : public ISqLite
 {
 public:
-    void open(const std::string& fileName);
-    SelectResult select(const std::string& select);
-    void execute(const std::string& query);
-    int64_t getLastInsertedId();
+    void open(const std::string& fileName) override;
+    SelectResult select(const std::string& select) override;
+    void execute(const std::string& query) override;
+    int64_t getLastInsertedId() override;
 
-    operator bool() const;
+    bool transaction(std::function<void ()> operation) override;
+
+    void setTestMode() override;
+
+    operator bool() const override;
 
 private:
     class SqLiteDeleter
