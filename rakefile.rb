@@ -89,7 +89,7 @@ file "Source/Generated/CacheLineSize.hpp" => [ "Source/Generated", "rakefile.rb"
     f.close
 end
 
-generateDirectoryInclude "Traits", "Parallel", "Generated", "Gtkmm", "SqLite", "Common", "Network", "Sfml", "GL" do |fileName|
+generateDirectoryInclude "Traits", "Parallel", "Generated", "Gtkmm", "SqLite", "Common/Exceptions", "Common", "Network", "Sfml", "GL" do |fileName|
     generatedFiles.push fileName
 end
 
