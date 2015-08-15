@@ -56,7 +56,7 @@ std::unique_ptr<sf::Window> createDefaultWindow(const std::string& title)
     const auto style = sf::Style::Default;
     #endif
 
-    sf::ContextSettings settings = {};
+    sf::ContextSettings settings{};
     settings.antialiasingLevel = 4;
 
     std::unique_ptr<sf::Window> window(new sf::Window(vm, title, style, settings));

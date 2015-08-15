@@ -26,9 +26,9 @@ end
 web_require "https://raw.github.com/chaos0x8/rake-builder/master/RakeBuilder.rb"
 
 if ARGV.index("nodebug").nil?
-    FLAGS = [ "--std=c++1y", "-g" ]
+    FLAGS = [ "--std=c++14", "-g" ]
 else
-    FLAGS = [ "--std=c++1y", "-O3", "-s", "-DNDEBUG" ]
+    FLAGS = [ "--std=c++14", "-O3", "-s", "-DNDEBUG" ]
 
     task :nodebug
 end
