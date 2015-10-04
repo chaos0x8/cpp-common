@@ -56,6 +56,8 @@ end
 
 def generateDirectoryInclude *directories
     directories.each do |directory|
+        raise RuntimeError.new("Directory doesn't exist: 'Source/#{directory}'") unless File.directory?("Source/#{directory}")
+
         yield "Source/#{directory}.hpp"
 
         file "Source/#{directory}.hpp" => "rakefile.rb" do |fileName|
@@ -89,7 +91,7 @@ file "Source/Generated/CacheLineSize.hpp" => [ "Source/Generated", "rakefile.rb"
     f.close
 end
 
-generateDirectoryInclude "Traits", "Parallel", "Generated", "Gtkmm", "SqLite", "Common/Exceptions", "Common", "Network", "Sfml", "GL" do |fileName|
+generateDirectoryInclude "Traits", "Parallel", "Generated", "Gtkmm", "SqLite", "Common/Exceptions", "Common", "Network", "Sfml", "GL", "GtestExtras" do |fileName|
     generatedFiles.push fileName
 end
 
