@@ -151,6 +151,14 @@ Library.new do |t|
     t.dependencies = generatedFiles
 end
 
+Library.new do |t|
+    t.name = 'lib/libcommonNCurses.a'
+    t.includes = INCLUDES
+    t.flags = FLAGS
+    t.files = FileList[ 'Source/NCurses/*.cpp' ]
+    t.libs = [ Pkg.new('ncurses') ]
+end
+
 Application.new do |t|
     t.name = "bin/common-ut"
     t.includes = INCLUDES
@@ -214,5 +222,5 @@ end
 
 task :ut => [ :commonUT, :commonSqLiteUT, :commonParallelUT, :commonNetworkUT, :commonGlUT ]
 
-task :default => [ "lib/libcommonGtkmm.a", "lib/libcommonSfml.a", :ut ]
+task :default => [ "lib/libcommonGtkmm.a", "lib/libcommonSfml.a", 'lib/libcommonNCurses.a', :ut ]
 task :generated => generatedFiles
