@@ -56,11 +56,10 @@ end
 
 def generateDirectoryInclude *directories
     directories.each do |directory|
-        raise RuntimeError.new("Directory doesn't exist: 'Source/#{directory}'") unless File.directory?("Source/#{directory}")
-
         yield "Source/#{directory}.hpp"
 
         file "Source/#{directory}.hpp" => "rakefile.rb" do |fileName|
+            raise RuntimeError.new("Directory doesn't exist: 'Source/#{directory}'") unless File.directory?("Source/#{directory}")
             puts "Generating '#{fileName}'..."
 
             files = FileList["Source/#{directory}/*.hpp"]
