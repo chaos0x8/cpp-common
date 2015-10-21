@@ -28,6 +28,8 @@ namespace NCurses
 {
 
 std::tuple<int, int> screenSize();
+void clear();
+void curs_set(bool visibility);
 
 }
 }
