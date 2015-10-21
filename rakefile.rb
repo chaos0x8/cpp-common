@@ -204,23 +204,14 @@ Application.new do |t|
     t.libs = [ "-lgtest", "-lgmock", "-Llib", "-lcommonGL", "-lcommon", "-lpthread", Pkg.new('glew') ]
 end
 
-task :commonUT => "bin/common-ut" do
-    sh "bin/common-ut"
-end
-task :commonSqLiteUT => "bin/commonSqLite-ut" do
-    sh "bin/commonSqLite-ut"
-end
-task :commonParallelUT => "bin/commonParallel-ut" do
-    sh "bin/commonParallel-ut"
-end
-task :commonNetworkUT => "bin/commonNetwork-ut" do
-    sh "bin/commonNetwork-ut"
-end
-task :commonGlUT => "bin/commonGL-ut" do
-    sh "bin/commonGL-ut"
+utList = { :commonUT => 'bin/common-ut', :commonSqLiteUT => 'bin/commonSqLite-ut', :commonParallelUT => 'bin/commonParallel-ut',
+           :commonNetworkUT => 'bin/commonNetwork-ut', :commonGlUT => 'bin/commonGL-ut' }
+utList.each do |target, file|
+    task target => file { sh file }
 end
 
-task :ut => [ :commonUT, :commonSqLiteUT, :commonParallelUT, :commonNetworkUT, :commonGlUT ]
+subProjects = Dir['*/**/rakefile.rb']
 
-task :default => [ "lib/libcommonGtkmm.a", "lib/libcommonSfml.a", 'lib/libcommonNCurses.a', :ut ]
+task :ut => utList.keys
 task :generated => generatedFiles
+task :default => Target.tasks(/\.a$/) + utList.keys
