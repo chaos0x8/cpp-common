@@ -33,11 +33,6 @@ std::tuple<int, int> screenSize()
     return std::make_tuple(h, w);
 }
 
-void clear()
-{
-    ::clear();
-}
-
 void curs_set(bool visibility)
 {
     ::curs_set(visibility ? TRUE : FALSE);

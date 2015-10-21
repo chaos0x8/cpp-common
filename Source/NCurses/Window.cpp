@@ -44,6 +44,11 @@ Window::~Window()
     delwin(win);
 }
 
+void Window::clear()
+{
+    wclear(win);
+}
+
 void Window::refresh()
 {
     wrefresh(win);

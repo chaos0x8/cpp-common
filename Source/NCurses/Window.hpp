@@ -33,9 +33,11 @@ class Window
 {
 public:
     Window();
+    Window(const Window&) = delete;
     Window(int height, int width, int y, int x);
     ~Window();
 
+    void clear();
     void refresh();
     bool refresh(std::function<void ()>);
     void move(int y, int x);
@@ -48,6 +50,8 @@ public:
 
     int width() const { return _width; }
     int height() const { return _height; }
+
+    Window& operator = (const Window&) = delete;
 
 private:
     int _width;

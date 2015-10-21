@@ -29,7 +29,10 @@ class Init
 {
 public:
     Init();
+    Init(const Init&) = delete;
     ~Init();
+
+    Init& operator = (const Init&) = delete;
 };
 
 }
