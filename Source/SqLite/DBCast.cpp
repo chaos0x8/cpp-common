@@ -31,7 +31,7 @@ namespace DBCast
 
 std::string toDBFormat(const std::string& value)
 {
-    return boost::str(boost::format("'%1%'") % boost::replace_all_copy(value, "'", "''"));
+    return std::string("'") + boost::replace_all_copy(value, "'", "''") + "'";
 }
 
 std::string toDBFormat(const char* value)

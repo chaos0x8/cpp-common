@@ -30,6 +30,14 @@ namespace Common
 namespace SqLite
 {
 
+struct FirstLetterHash
+{
+    size_t operator()(const std::string& text) const
+    {
+        return text[0];
+    }
+};
+
 class SelectResult
 {
 public:
@@ -51,7 +59,7 @@ public:
         rows.push_back(std::move(row));
     }
 
-    void addColumn(std::string column, size_t index)
+    void addColumn(const std::string& column, size_t index)
     {
         _columnMap[column] = index;
     }
@@ -75,7 +83,7 @@ public:
     std::vector<Row> rows;
 
 private:
-    std::unordered_map<std::string, size_t> _columnMap;
+    std::unordered_map<std::string, size_t, FirstLetterHash> _columnMap;
 };
 
 }
