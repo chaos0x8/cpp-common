@@ -24,6 +24,8 @@
 #include <sstream>
 #include <type_traits>
 #include <boost/optional.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string/replace.hpp>
 
 namespace Common
 {
@@ -136,13 +138,7 @@ inline T fromDBFormat(
     const std::string& data,
     typename std::enable_if<!Traits::IsOptional<T>::value && !std::is_same<T, std::string>::value && !Detail::ConvertableNumber<T>::value>::type* = 0)
 {
-    std::stringstream ss;
-    ss << data;
-
-    T result = T();
-    ss >> result;
-
-    return result;
+    return boost::lexical_cast<T>(data);
 }
 
 template <typename T>
@@ -155,13 +151,15 @@ inline T fromDBFormat(
     return fromDBFormat<typename Traits::IsOptional<T>::type>(data);
 }
 
-std::string toDBFormat(const std::string& value);
-std::string toDBFormat(const char* value);
-
 template <typename T>
 inline std::string toDBFormat(const T& val)
 {
-    std::stringstream ss;
+    return boost::lexical_cast<std::string>(val);
+}
+
+inline std::string toDBFormat(const double& val)
+{
+    std::ostringstream ss;
     ss << val;
     return ss.str();
 }
@@ -172,6 +170,16 @@ inline std::string toDBFormat(const boost::optional<T>& val)
     if (!val)
         return "null";
     return toDBFormat(*val);
+}
+
+inline std::string toDBFormat(const std::string& value)
+{
+    return std::string("'") + boost::replace_all_copy(value, "'", "''") + "'";
+}
+
+inline std::string toDBFormat(const char* value)
+{
+    return toDBFormat(std::string(value));
 }
 
 }

@@ -207,7 +207,9 @@ end
 utList = { :commonUT => 'bin/common-ut', :commonSqLiteUT => 'bin/commonSqLite-ut', :commonParallelUT => 'bin/commonParallel-ut',
            :commonNetworkUT => 'bin/commonNetwork-ut', :commonGlUT => 'bin/commonGL-ut' }
 utList.each do |target, file|
-    task target => file { sh file }
+    task target => file do
+        sh file
+    end
 end
 
 subProjects = Dir['*/**/rakefile.rb']
