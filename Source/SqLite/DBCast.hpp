@@ -164,14 +164,6 @@ inline std::string toDBFormat(const double& val)
     return ss.str();
 }
 
-template <typename T>
-inline std::string toDBFormat(const boost::optional<T>& val)
-{
-    if (!val)
-        return "null";
-    return toDBFormat(*val);
-}
-
 inline std::string toDBFormat(const std::string& value)
 {
     return std::string("'") + boost::replace_all_copy(value, "'", "''") + "'";
@@ -180,6 +172,14 @@ inline std::string toDBFormat(const std::string& value)
 inline std::string toDBFormat(const char* value)
 {
     return toDBFormat(std::string(value));
+}
+
+template <typename T>
+inline std::string toDBFormat(const boost::optional<T>& val)
+{
+    if (!val)
+        return "null";
+    return toDBFormat(*val);
 }
 
 }
