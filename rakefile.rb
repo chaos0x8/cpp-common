@@ -55,7 +55,10 @@ def authorNotice
 end
 
 def generateDirectoryInclude *directories
-    directories.each do |directory|
+    existing = Dir.glob("Source/*").select { |d| File.directory?(d) }
+    existing = existing.collect { |d| File.basename(d) }
+
+    (directories + (existing - directories)).each do |directory|
         yield "Source/#{directory}.hpp"
 
         file "Source/#{directory}.hpp" => "rakefile.rb" do |fileName|
@@ -90,7 +93,7 @@ file "Source/Generated/CacheLineSize.hpp" => [ "Source/Generated", "rakefile.rb"
     f.close
 end
 
-generateDirectoryInclude "Traits", "Parallel", "Generated", "Gtkmm", "SqLite", "Common/Exceptions", "Common", "Network", "Sfml", "GL", "GtestExtras", 'NCurses' do |fileName|
+generateDirectoryInclude 'Generated', 'Common/Exceptions' do |fileName|
     generatedFiles.push fileName
 end
 
@@ -157,6 +160,16 @@ Library.new do |t|
     t.flags = FLAGS
     t.files = FileList[ 'Source/NCurses/*.cpp' ]
     t.libs = [ Pkg.new('ncurses') ]
+    t.dependencies = generatedFiles
+end
+
+Library.new do |t|
+    t.name = 'lib/libcommonEmbededRuby.a'
+    t.includes = INCLUDES
+    t.flags = FLAGS
+    t.files = FileList[ 'Source/EmbededRuby/*.cpp' ]
+    t.libs = [ Pkg.new('ruby-1.9') ]
+    t.dependencies = generatedFiles
 end
 
 Application.new do |t|
@@ -204,16 +217,31 @@ Application.new do |t|
     t.libs = [ "-lgtest", "-lgmock", "-Llib", "-lcommonGL", "-lcommon", "-lpthread", Pkg.new('glew') ]
 end
 
+Application.new do |t|
+    t.name = 'bin/commonEmbededRuby-ut'
+    t.includes = INCLUDES
+    t.flags = FLAGS
+    t.files = FileList[ 'Source/EmbededRuby/**TestModules/*.cpp' ]
+    t.dependencies = [ 'lib/libcommon.a', 'lib/libcommonEmbededRuby.a' ] + generatedFiles
+    t.libs = [ '-lgtest', '-lgmock', '-Llib', '-lcommonEmbededRuby', '-lcommon', '-lpthread', Pkg.new('ruby-1.9') ]
+end
+
 utList = { :commonUT => 'bin/common-ut', :commonSqLiteUT => 'bin/commonSqLite-ut', :commonParallelUT => 'bin/commonParallel-ut',
-           :commonNetworkUT => 'bin/commonNetwork-ut', :commonGlUT => 'bin/commonGL-ut' }
-utList.each do |target, file|
-    task target => file do
-        sh file
+           :commonNetworkUT => 'bin/commonNetwork-ut', :commonGlUT => 'bin/commonGL-ut', :commonEmbededRubyUT => 'bin/commonEmbededRuby-ut' }
+utList.each do |tar, res|
+    desc "Compiles and runs ut fule #{res}"
+    multitask tar => res do
+        sh res
     end
 end
 
 subProjects = Dir['*/**/rakefile.rb']
 
+desc 'Compile and run all uts'
 task :ut => utList.keys
-task :generated => generatedFiles
-task :default => Target.tasks(/\.a$/) + utList.keys
+
+desc 'Compile all libs'
+multitask :libs => Target.tasks(/\.a$/)
+
+desc 'Compile all libs and run all uts'
+task :default => [ :libs, :ut ]
