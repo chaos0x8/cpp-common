@@ -18,6 +18,7 @@
     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
+#include <EmbededRuby/Init.hpp>
 #include <EmbededRuby/Evaluate.hpp>
 #include <EmbededRuby/Exception.hpp>
 #include <gmock/gmock.h>

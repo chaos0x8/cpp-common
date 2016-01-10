@@ -167,7 +167,7 @@ Library.new do |t|
     t.name = 'lib/libcommonEmbededRuby.a'
     t.includes = INCLUDES
     t.flags = FLAGS
-    t.files = FileList[ 'Source/EmbededRuby/*.cpp' ]
+    t.files = FileList[ 'Source/EmbededRuby/*.cpp', 'Source/EmbededRuby/Detail/*.cpp' ]
     t.libs = [ Pkg.new('ruby-1.9') ]
     t.dependencies = generatedFiles
 end

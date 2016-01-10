@@ -18,44 +18,21 @@
     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#include <EmbededRuby/Evaluate.hpp>
-#include <EmbededRuby/Exception.hpp>
 #include <EmbededRuby/Detail/Utility.hpp>
-#include <memory>
-#include <ruby.h>
 
 namespace Common
 {
 namespace EmbededRuby
 {
-
-bool execute(const char* code)
+namespace Detail
 {
-    int status = 0;
-    rb_eval_string_protect(code, &status);
-    return status == 0;
+
+std::string toString(VALUE value)
+{
+    auto str = rb_funcall(value, rb_intern("to_s"), 0);
+    return std::string(RSTRING_PTR(str), RSTRING_LEN(str));
 }
 
-bool execute(const std::string& code)
-{
-    return execute(code.c_str());
 }
-
-std::string evaluate(const char* code)
-{
-    int status = 0;
-    auto v = rb_eval_string_protect(code, &status);
-
-    if (status != 0)
-        throw EvaluateFailed();
-
-    return Detail::toString(v);
-}
-
-std::string evaluate(const std::string& code)
-{
-    return evaluate(code.c_str());
-}
-
 }
 }

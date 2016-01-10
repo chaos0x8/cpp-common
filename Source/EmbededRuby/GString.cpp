@@ -18,10 +18,8 @@
     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#include <EmbededRuby/Evaluate.hpp>
-#include <EmbededRuby/Exception.hpp>
+#include <EmbededRuby/GString.hpp>
 #include <EmbededRuby/Detail/Utility.hpp>
-#include <memory>
 #include <ruby.h>
 
 namespace Common
@@ -29,32 +27,25 @@ namespace Common
 namespace EmbededRuby
 {
 
-bool execute(const char* code)
+GString::GString(const std::string& name, const std::string& value)
+    : _name(name)
 {
-    int status = 0;
-    rb_eval_string_protect(code, &status);
-    return status == 0;
+    VALUE v = rb_str_new_cstr(value.c_str());
+    rb_gv_set(_name.c_str(), v);
 }
 
-bool execute(const std::string& code)
+GString& GString::operator = (const char* value)
 {
-    return execute(code.c_str());
+    VALUE v = rb_str_new_cstr(value);
+    rb_gv_set(_name.c_str(), v);
+
+    return *this;
 }
 
-std::string evaluate(const char* code)
+GString::operator std::string() const
 {
-    int status = 0;
-    auto v = rb_eval_string_protect(code, &status);
-
-    if (status != 0)
-        throw EvaluateFailed();
-
+    VALUE v = rb_gv_get(_name.c_str());
     return Detail::toString(v);
-}
-
-std::string evaluate(const std::string& code)
-{
-    return evaluate(code.c_str());
 }
 
 }

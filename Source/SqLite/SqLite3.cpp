@@ -22,6 +22,7 @@
 #include <SqLite/Exception.hpp>
 #include <SqLite/Transaction.hpp>
 #include <boost/format.hpp>
+#include <iostream>
 
 namespace Common
 {
@@ -89,8 +90,9 @@ bool SqLite3::transaction(std::function<void ()> operation)
         operation();
         transaction.commit();
     }
-    catch (std::exception&)
+    catch (std::exception& e)
     {
+        std::cerr << "Transaction failed: " << e.what() << std::endl;
         return false;
     }
     return true;

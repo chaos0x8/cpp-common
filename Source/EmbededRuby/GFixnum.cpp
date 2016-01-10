@@ -18,10 +18,7 @@
     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#include <EmbededRuby/Evaluate.hpp>
-#include <EmbededRuby/Exception.hpp>
-#include <EmbededRuby/Detail/Utility.hpp>
-#include <memory>
+#include <EmbededRuby/GFixnum.hpp>
 #include <ruby.h>
 
 namespace Common
@@ -29,32 +26,25 @@ namespace Common
 namespace EmbededRuby
 {
 
-bool execute(const char* code)
+GFixnum::GFixnum(const std::string& name, long value)
+    : _name(name)
 {
-    int status = 0;
-    rb_eval_string_protect(code, &status);
-    return status == 0;
+    VALUE v = LONG2FIX(value);
+    rb_gv_set(_name.c_str(), v);
 }
 
-bool execute(const std::string& code)
+GFixnum& GFixnum::operator = (long value)
 {
-    return execute(code.c_str());
+    VALUE v = LONG2FIX(value);
+    rb_gv_set(_name.c_str(), v);
+
+    return *this;
 }
 
-std::string evaluate(const char* code)
+GFixnum::operator long() const
 {
-    int status = 0;
-    auto v = rb_eval_string_protect(code, &status);
-
-    if (status != 0)
-        throw EvaluateFailed();
-
-    return Detail::toString(v);
-}
-
-std::string evaluate(const std::string& code)
-{
-    return evaluate(code.c_str());
+    VALUE v = rb_gv_get(_name.c_str());
+    return FIX2LONG(v);
 }
 
 }

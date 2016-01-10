@@ -68,4 +68,20 @@ std::string readFile(const std::string& fileName)
     return std::string(bufor.data(), bufor.size());
 }
 
+std::string basename(const std::string& fileName)
+{
+    auto pos = fileName.find_last_of("/");
+    if (pos == std::string::npos)
+        return fileName;
+    return fileName.substr(pos+1, fileName.size());
+}
+
+std::string noExtension(const std::string& fileName)
+{
+    auto pos = fileName.find_last_of("/.");
+    if (pos == std::string::npos or fileName[pos] == '/')
+        return fileName;
+    return fileName.substr(0, pos);
+}
+
 }

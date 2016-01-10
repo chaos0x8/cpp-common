@@ -33,4 +33,7 @@ size_t fileSize(const std::string& fileName);
 
 std::string readFile(const std::string& fileName);
 
+std::string basename(const std::string& fileName);
+std::string noExtension(const std::string& fileName);
+
 }

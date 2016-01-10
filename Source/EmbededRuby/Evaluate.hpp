@@ -21,13 +21,12 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 namespace Common
 {
 namespace EmbededRuby
 {
-
-void init();
 
 bool execute(const char* code);
 bool execute(const std::string& code);

@@ -46,6 +46,19 @@ TEST_F(FileUtilityTestSuite, shouldReadDataFromFile)
     ASSERT_THAT(readFile(EXISTING_FILE), Not(IsEmpty()));
 }
 
+TEST_F(FileUtilityTestSuite, testBasename)
+{
+    EXPECT_THAT(basename("filename.ext"), Eq("filename.ext"));
+    EXPECT_THAT(basename("directory/filename.ext"), Eq("filename.ext"));
+}
+
+TEST_F(FileUtilityTestSuite, testNoExtension)
+{
+    EXPECT_THAT(noExtension("file.ext"), Eq("file"));
+    EXPECT_THAT(noExtension("file"), Eq("file"));
+    EXPECT_THAT(noExtension("path.d/file"), Eq("path.d/file"));
+}
+
 class FileSizeTest : public FileUtilityTestSuite
 {
 public:
