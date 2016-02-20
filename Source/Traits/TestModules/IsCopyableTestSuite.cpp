@@ -18,23 +18,29 @@
     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#include <Common/Exceptions/TimerError.hpp>
-#include <boost/format.hpp>
-#include <string.h>
+#include <Traits/IsCopyable.hpp>
+#include <gmock/gmock.h>
+#include <memory>
+#include <thread>
 
 namespace Common
 {
-namespace Exceptions
+namespace Traits
 {
 
-TimerError::TimerError(int errnoValue)
-    : std::runtime_error(boost::str(boost::format("Timer error: %1%") % strerror(errnoValue)))
+using namespace testing;
+
+TEST(IsCopyableTestSuite, isCopyableWhenHaveCopyConstructor)
 {
+    EXPECT_THAT(IsCopyable<int>::value, Eq(true));
+    EXPECT_THAT(IsCopyable<std::string>::value, Eq(true));
+    EXPECT_THAT(IsCopyable<std::shared_ptr<int>>::value, Eq(true));
 }
 
-TimerError::TimerError(const std::string& msg)
-    : std::runtime_error(boost::str(boost::format("Timer error: '%1%'") % msg))
+TEST(IsCopyableTestSuite, isCopyableWhenCopyConstructorIsDisabled)
 {
+    EXPECT_THAT(IsCopyable<std::unique_ptr<int>>::value, Eq(false));
+    EXPECT_THAT(IsCopyable<std::thread>::value, Eq(false));
 }
 
 }

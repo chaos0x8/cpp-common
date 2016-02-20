@@ -20,11 +20,9 @@
 
 #pragma once
 
-#include <time.h>
-#include <signal.h>
 #include <functional>
+#include <cstddef>
 #include <chrono>
-#include <memory>
 
 namespace Common
 {
@@ -34,34 +32,47 @@ using TimerCallback = std::function<void ()>;
 namespace Detail
 {
 
-class Timer
+struct TimerContext;
+
+struct Timer
 {
 public:
     //! \throw Exceptions::TimerError
     Timer(std::chrono::seconds timeout, TimerCallback callback);
-    Timer(const Timer&) = delete;
+    Timer(Timer&& other)
+        : context(other.context),
+          contextId(other.contextId)
+    {
+        other.context = nullptr;
+    }
 
     ~Timer();
 
-    Timer& operator = (const Timer&) = delete;
+    Timer& operator = (std::nullptr_t);
+    Timer& operator = (Timer&& other);
 
-    static void threadProcedure(sigval arg);
+    #if (UT_MODE == 1)
+    size_t _contextId() const { return contextId; }
+    #endif
 
 private:
-    TimerCallback callback;
-    timer_t timerId{};
+    TimerContext* context { nullptr };
+    size_t contextId { 0u };
 };
 
 }
 
+void initTimers(size_t maxTimers = 32);
+void cleanupTimers();
+
 //! \throw Exceptions::TimerError
-void startTimer(std::chrono::seconds timeout, TimerCallback);
+Detail::Timer startTimer(std::chrono::seconds timeout, TimerCallback);
 
 //! \throw Exceptions::TimerError
 template <class F, class... Args>
-void startTimer(std::chrono::seconds timeout, F&& f, Args&&... args)
+Detail::Timer startTimer(std::chrono::seconds timeout, F&& f, Args&&... args)
 {
-    new Detail::Timer(std::move(timeout), std::bind(std::forward<F>(f), std::forward<Args>(args)...));
+    return Detail::Timer(std::move(timeout), std::bind(std::forward<F>(f), std::forward<Args>(args)...));
 }
 
 }

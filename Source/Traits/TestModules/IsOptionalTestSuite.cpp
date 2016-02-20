@@ -18,23 +18,21 @@
     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#include <Common/Exceptions/TimerError.hpp>
-#include <boost/format.hpp>
-#include <string.h>
+#include <Traits/IsOptional.hpp>
+#include <boost/optional.hpp>
+#include <gmock/gmock.h>
 
 namespace Common
 {
-namespace Exceptions
+namespace Traits
 {
 
-TimerError::TimerError(int errnoValue)
-    : std::runtime_error(boost::str(boost::format("Timer error: %1%") % strerror(errnoValue)))
-{
-}
+using namespace testing;
 
-TimerError::TimerError(const std::string& msg)
-    : std::runtime_error(boost::str(boost::format("Timer error: '%1%'") % msg))
+TEST(IsOptionalTestSuite, isOptional)
 {
+    EXPECT_THAT(IsOptional<boost::optional<int>>::value, Eq(true));
+    EXPECT_THAT(IsOptional<int>::value, Eq(false));
 }
 
 }

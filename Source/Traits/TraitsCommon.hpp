@@ -18,24 +18,21 @@
     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#include <Common/Exceptions/TimerError.hpp>
-#include <boost/format.hpp>
-#include <string.h>
+#pragma once
+
+#include <cstdint>
 
 namespace Common
 {
-namespace Exceptions
+namespace Traits
 {
 
-TimerError::TimerError(int errnoValue)
-    : std::runtime_error(boost::str(boost::format("Timer error: %1%") % strerror(errnoValue)))
-{
-}
+using _true = uint8_t;
+using _false = uint16_t;
 
-TimerError::TimerError(const std::string& msg)
-    : std::runtime_error(boost::str(boost::format("Timer error: '%1%'") % msg))
-{
-}
+template <class T> T& _ref();
+template <class T> const T& _cref();
+template <class T> T&& _rref();
 
 }
 }

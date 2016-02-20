@@ -18,23 +18,30 @@
     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#include <Common/Exceptions/TimerError.hpp>
-#include <boost/format.hpp>
-#include <string.h>
+#include <Traits/IsMoveable.hpp>
+#include <gmock/gmock.h>
+#include <memory>
+#include <thread>
+#include <atomic>
 
 namespace Common
 {
-namespace Exceptions
+namespace Traits
 {
 
-TimerError::TimerError(int errnoValue)
-    : std::runtime_error(boost::str(boost::format("Timer error: %1%") % strerror(errnoValue)))
+using namespace testing;
+
+TEST(IsMoveableTestSuite, isCopyableWhenHaveMoveConstructor)
 {
+    EXPECT_THAT(IsMoveable<int>::value, Eq(true));
+    EXPECT_THAT(IsMoveable<std::string>::value, Eq(true));
+    EXPECT_THAT(IsMoveable<std::shared_ptr<int>>::value, Eq(true));
+    EXPECT_THAT(IsMoveable<std::thread>::value, Eq(true));
 }
 
-TimerError::TimerError(const std::string& msg)
-    : std::runtime_error(boost::str(boost::format("Timer error: '%1%'") % msg))
+TEST(IsMoveableTestSuite, isCopyableWhenMoveConstructorIsDisabled)
 {
+    EXPECT_THAT(IsMoveable<std::atomic<int>>::value, Eq(false));
 }
 
 }

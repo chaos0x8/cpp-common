@@ -18,24 +18,27 @@
     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#include <Common/Exceptions/TimerError.hpp>
-#include <boost/format.hpp>
-#include <string.h>
+#pragma once
+
+#include <Traits/TraitsCommon.hpp>
 
 namespace Common
 {
-namespace Exceptions
+namespace Traits
 {
 
-TimerError::TimerError(int errnoValue)
-    : std::runtime_error(boost::str(boost::format("Timer error: %1%") % strerror(errnoValue)))
+template <class T>
+class IsMoveable
 {
-}
+    template <class U>
+    static _true test(char(*)[sizeof(U(_rref<U>()))]);
 
-TimerError::TimerError(const std::string& msg)
-    : std::runtime_error(boost::str(boost::format("Timer error: '%1%'") % msg))
-{
-}
+    template <class U>
+    static _false test(...);
+
+public:
+    enum { value = sizeof(test<T>(nullptr)) == sizeof(_true) };
+};
 
 }
 }

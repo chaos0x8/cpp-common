@@ -31,6 +31,7 @@ class TimerError : public std::runtime_error
 {
 public:
     explicit TimerError(int errnoValue);
+    explicit TimerError(const std::string&);
 };
 
 }

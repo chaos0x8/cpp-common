@@ -34,7 +34,6 @@ else
 end
 
 INCLUDES = [ "Source" ]
-UT_LIBS = [ "-lgtest", "-lgmock", "-lpthread" ]
 generatedFiles = [ "Source/Generated/CacheLineSize.hpp" ]
 
 def authorNotice
@@ -175,10 +174,18 @@ end
 Application.new do |t|
     t.name = "bin/common-ut"
     t.includes = INCLUDES
-    t.flags = FLAGS
+    t.flags = FLAGS + [ '-DUT_MODE=1' ]
     t.files = FileList[ "Source/Common/TestModules/*.cpp" ]
     t.dependencies = [ "lib/libcommon.a" ] + generatedFiles
     t.libs = [ "-lgtest", "-lgmock", "-Llib", "-lcommon", "-lpthread", "-lrt" ]
+end
+
+Application.new do |t|
+    t.name = "bin/commonTraits-ut"
+    t.includes = INCLUDES
+    t.flags = FLAGS
+    t.files = FileList[ "Source/Traits/TestModules/*.cpp" ]
+    t.libs = [ "-lgtest", "-lgmock", "-lpthread" ]
 end
 
 Application.new do |t|
@@ -226,7 +233,7 @@ Application.new do |t|
     t.libs = [ '-lgtest', '-lgmock', '-Llib', '-lcommonEmbededRuby', '-lcommon', '-lpthread', Pkg.new('ruby-1.9') ]
 end
 
-utList = { :commonUT => 'bin/common-ut', :commonSqLiteUT => 'bin/commonSqLite-ut', :commonParallelUT => 'bin/commonParallel-ut',
+utList = { :commonUT => 'bin/common-ut', :commonTraitsUT => 'bin/commonTraits-ut', :commonSqLiteUT => 'bin/commonSqLite-ut', :commonParallelUT => 'bin/commonParallel-ut',
            :commonNetworkUT => 'bin/commonNetwork-ut', :commonGlUT => 'bin/commonGL-ut', :commonEmbededRubyUT => 'bin/commonEmbededRuby-ut' }
 utList.each do |tar, res|
     desc "Compiles and runs ut fule #{res}"

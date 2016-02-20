@@ -18,24 +18,11 @@
     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#include <Common/Exceptions/TimerError.hpp>
-#include <boost/format.hpp>
-#include <string.h>
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
-namespace Common
+int main(int argc, char** argv)
 {
-namespace Exceptions
-{
-
-TimerError::TimerError(int errnoValue)
-    : std::runtime_error(boost::str(boost::format("Timer error: %1%") % strerror(errnoValue)))
-{
-}
-
-TimerError::TimerError(const std::string& msg)
-    : std::runtime_error(boost::str(boost::format("Timer error: '%1%'") % msg))
-{
-}
-
-}
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

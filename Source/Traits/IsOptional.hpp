@@ -29,14 +29,14 @@ namespace Traits
 template <typename T>
 struct IsOptional
 {
-    static constexpr bool value = false;
+    enum { value = false };
 };
 
 template <typename T>
 struct IsOptional <boost::optional<T>>
 {
     typedef T type;
-    static constexpr bool value = true;
+    enum { value = true };
 };
 
 }
