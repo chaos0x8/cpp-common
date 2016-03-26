@@ -48,7 +48,7 @@ class PtrFieldMatcher : public testing::MatcherInterface<typename UnPtr<U>::matc
 public:
     using C = typename UnPtr<U>::type;
 
-    explicit PtrFieldMatcher(T C::*field, const T& expected)
+    explicit PtrFieldMatcher(T C::*field, const typename std::decay<T>::type& expected)
         : field(field), expected(expected) { }
 
     bool MatchAndExplain(typename UnPtr<U>::matcher_type object, testing::MatchResultListener* listener) const override
@@ -68,7 +68,7 @@ public:
 
 private:
     T C::*field;
-    T expected;
+    typename std::decay<T>::type expected;
 };
 
 template <class T, class U>
@@ -77,7 +77,7 @@ class PtrPropertyMatcher : public testing::MatcherInterface<typename UnPtr<U>::m
 public:
     using C = typename UnPtr<U>::type;
 
-    explicit PtrPropertyMatcher(T (C::*property)() const, const T& expected)
+    explicit PtrPropertyMatcher(T (C::*property)() const, const typename std::decay<T>::type& expected)
         : property(property), expected(expected) { }
 
     bool MatchAndExplain(typename UnPtr<U>::matcher_type object, testing::MatchResultListener* listener) const override
@@ -97,7 +97,7 @@ public:
 
 private:
     T (C::*property)() const;
-    T expected;
+    typename std::decay<T>::type expected;
 };
 
 }
@@ -105,13 +105,13 @@ private:
 template <template <class, class...> class Ptr, class U, class T, class K>
 inline testing::Matcher<typename Detail::UnPtr<Ptr<U>>::matcher_type> PtrField(T U::*field, const K& expected)
 {
-    return MakeMatcher(new Detail::PtrFieldMatcher<T, Ptr<U>>(field, static_cast<T>(expected)));
+    return MakeMatcher(new Detail::PtrFieldMatcher<T, Ptr<U>>(field, expected));
 }
 
 template <template <class, class...> class Ptr, class U, class T, class K>
 inline testing::Matcher<typename Detail::UnPtr<Ptr<U>>::matcher_type> PtrProperty(T (U::*property)() const, const K& expected)
 {
-    return MakeMatcher(new Detail::PtrPropertyMatcher<T, Ptr<U>>(property, static_cast<T>(expected)));
+    return MakeMatcher(new Detail::PtrPropertyMatcher<T, Ptr<U>>(property, expected));
 }
 
 }
