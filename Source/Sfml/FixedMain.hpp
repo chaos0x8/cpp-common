@@ -36,7 +36,7 @@
             glewExperimental = GL_TRUE; \
             glewInit(); \
             \
-            app = std::unique_ptr<ApplicationClass>(new ApplicationClass(argc, argv)); \
+            app = std::make_unique<ApplicationClass>(argc, argv); \
             assert(app->window != nullptr); \
         } \
         \
