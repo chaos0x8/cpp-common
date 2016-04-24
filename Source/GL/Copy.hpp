@@ -1,7 +1,7 @@
 /*!
  *  \author <https://github.com/chaos0x8>
  *  \copyright
- *  Copyright (c) 2015 - 2016, <https://github.com/chaos0x8>
+ *  Copyright (c) 2016, <https://github.com/chaos0x8>
  *
  *  \copyright
  *  Permission to use, copy, modify, and/or distribute this software for any
@@ -18,34 +18,21 @@
  *  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <GL/Utility.hpp>
-#include <gmock/gmock.h>
+#pragma once
+
+#include <GL/glew.h>
 
 namespace Common
 {
 namespace GL
 {
-namespace Ut
+
+template <GLint BufferType, GLint DrawType, typename T, typename B>
+inline void copyBufferData(const std::vector<T>& source, B& target)
 {
-
-using namespace testing;
-
-TEST(UtilityTestSuite, testToSeconds)
-{
-    using namespace std::chrono;
-
-    ASSERT_THAT(toSeconds(milliseconds(500)), FloatEq(0.5f));
-    ASSERT_THAT(toSeconds(milliseconds(1700)), FloatEq(1.7f));
-    ASSERT_THAT(toSeconds(milliseconds(234)), FloatEq(0.234f));
+    glBindBuffer(BufferType, target);
+    glBufferData(BufferType, sizeof(T) * source.size(), source.data(), DrawType);
 }
 
-TEST(UtilityTestSuite, testMinXMax)
-{
-    EXPECT_THAT(min_x_max(3.f, 1.f, 5.f), FloatEq(3.f));
-    EXPECT_THAT(min_x_max(3.f, 10.f, 5.f), FloatEq(5.f));
-    EXPECT_THAT(min_x_max(3.f, 3.7f, 5.f), FloatEq(3.7f));
-}
-
-}
 }
 }

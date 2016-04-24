@@ -26,6 +26,16 @@
 #include <chrono>
 #include <glm/glm.hpp>
 
+#define AQUIRE(type, field) \
+    type field = type(); \
+    \
+    type aquire_ ## field() \
+    { \
+        const type result = field; \
+        field = 0; \
+        return result; \
+    }
+
 namespace Common
 {
 namespace Sfml
@@ -47,9 +57,13 @@ protected:
 
     glm::vec2 lockCursor() const;
 
+    AQUIRE(int, mouseWheelDelta);
+
     std::vector<std::string> args;
     sf::Vector2u windowSize = { };
 };
 
 }
 }
+
+#undef AQUIRE

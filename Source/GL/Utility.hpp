@@ -36,5 +36,11 @@ inline T toSeconds(std::chrono::milliseconds t)
     return t.count() / sec;
 }
 
+template <typename T>
+inline T min_x_max(T min, T val, T max)
+{
+    return (val > max ? max : val < min ? min : val);
+}
+
 }
 }

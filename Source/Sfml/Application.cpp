@@ -40,6 +40,9 @@ void Application::handleEvent(const sf::Event& event)
         case sf::Event::KeyPressed:
             keyPressed(event.key);
         break;
+        case sf::Event::MouseWheelMoved:
+            mouseWheelDelta = event.mouseWheel.delta;
+        break;
         case sf::Event::Resized:
             resized(event.size);
         break;
