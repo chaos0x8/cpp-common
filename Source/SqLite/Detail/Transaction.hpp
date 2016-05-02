@@ -1,7 +1,7 @@
 /*!
  *  \author <https://github.com/chaos0x8>
  *  \copyright
- *  Copyright (c) 2015 - 2016, <https://github.com/chaos0x8>
+ *  Copyright (c) 2016, <https://github.com/chaos0x8>
  *
  *  \copyright
  *  Permission to use, copy, modify, and/or distribute this software for any
@@ -18,47 +18,51 @@
  *  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <SqLite/Transaction.hpp>
-#include <SqLite/TestModules/Mocks/SqLiteMock.hpp>
-#include <gmock/gmock.h>
+#pragma once
 
 namespace Common
 {
 namespace SqLite
 {
-namespace UT
+namespace Detail
 {
 
-using namespace testing;
-
-class TransactionTestSuite : public Test
+enum class TransactionState : uint8_t
 {
-public:
-    StrictMock<SqLiteMock> sqLite;
+    None,
+    Started,
+    Commited
 };
 
-TEST_F(TransactionTestSuite, successfulTransaction)
+struct Transaction
 {
-    InSequence dummy;
-    EXPECT_CALL(sqLite, execute("begin transaction"));
-    EXPECT_CALL(sqLite, execute("commit transaction"));
+    explicit Transaction(SqLite3& sqLite)
+        : _sqLite(sqLite) { }
+    Transaction(const Transaction&) = delete;
 
+    ~Transaction()
     {
-        Transaction sut(sqLite);
-        sut.commit();
+        if (_state == TransactionState::Started)
+            _sqLite.execute("rollback");
     }
-}
 
-TEST_F(TransactionTestSuite, rollback)
-{
-    InSequence dummy;
-    EXPECT_CALL(sqLite, execute("begin transaction"));
-    EXPECT_CALL(sqLite, execute("rollback"));
+    Transaction& operator = (const Transaction&) = delete;
 
+    void commit(const std::function<void ()> operation)
     {
-        Transaction sut(sqLite);
+        _sqLite.execute("begin transaction");
+        _state = TransactionState::Started;
+
+        operation();
+
+        _sqLite.execute("commit transaction");
+        _state = TransactionState::Commited;
     }
-}
+
+private:
+    SqLite3& _sqLite;
+    TransactionState _state = TransactionState::None;
+};
 
 }
 }

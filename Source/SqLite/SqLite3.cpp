@@ -20,7 +20,7 @@
 
 #include <SqLite/SqLite3.hpp>
 #include <SqLite/Exception.hpp>
-#include <SqLite/Transaction.hpp>
+#include <SqLite/Detail/Transaction.hpp>
 #include <boost/format.hpp>
 
 namespace Common
@@ -85,9 +85,8 @@ bool SqLite3::transaction(std::function<void ()> operation, std::ostream& out)
 {
     try
     {
-        Transaction transaction(*this);
-        operation();
-        transaction.commit();
+        Detail::Transaction t(*this);
+        t.commit(operation);
     }
     catch (std::exception& e)
     {
