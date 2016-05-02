@@ -24,6 +24,7 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include <iostream>
 
 namespace Common
 {
@@ -40,7 +41,7 @@ public:
     virtual void execute(const std::string& query) = 0;
     virtual int64_t getLastInsertedId() = 0;
 
-    virtual bool transaction(std::function<void ()> operation) = 0;
+    virtual bool transaction(std::function<void ()> operation, std::ostream& = std::cerr) = 0;
 
     virtual void setTestMode() = 0;
 

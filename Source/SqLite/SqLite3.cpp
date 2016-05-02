@@ -22,7 +22,6 @@
 #include <SqLite/Exception.hpp>
 #include <SqLite/Transaction.hpp>
 #include <boost/format.hpp>
-#include <iostream>
 
 namespace Common
 {
@@ -82,7 +81,7 @@ int64_t SqLite3::getLastInsertedId()
     return sqlite3_last_insert_rowid(db.get());
 }
 
-bool SqLite3::transaction(std::function<void ()> operation)
+bool SqLite3::transaction(std::function<void ()> operation, std::ostream& out)
 {
     try
     {
@@ -92,7 +91,7 @@ bool SqLite3::transaction(std::function<void ()> operation)
     }
     catch (std::exception& e)
     {
-        std::cerr << "Transaction failed: " << e.what() << std::endl;
+        out << "Transaction failed: " << e.what() << std::endl;
         return false;
     }
     return true;

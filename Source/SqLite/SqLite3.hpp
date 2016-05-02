@@ -39,7 +39,7 @@ public:
     void execute(const std::string& query) override;
     int64_t getLastInsertedId() override;
 
-    bool transaction(std::function<void ()> operation) override;
+    bool transaction(std::function<void ()> operation, std::ostream& = std::cerr) override;
 
     void setTestMode() override;
 

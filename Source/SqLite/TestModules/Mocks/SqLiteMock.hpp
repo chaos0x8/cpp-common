@@ -38,7 +38,7 @@ public:
     MOCK_METHOD1(execute, void(const std::string&));
     MOCK_METHOD0(getLastInsertedId, int64_t());
 
-    MOCK_METHOD1(transaction, bool(std::function<void ()>));
+    MOCK_METHOD2(transaction, bool(std::function<void ()>, std::ostream&));
 
     MOCK_METHOD0(setTestMode, void());
 

@@ -80,7 +80,7 @@ public:
 constexpr size_t TimerTestSuite::MAX_TIMERS;
 
 #if (UT_MODE == 1)
-TEST_F(TimerTestSuite, testTimerRingBufferIndexAssign)
+TEST_F(TimerTestSuite, DISABLED_testTimerRingBufferIndexAssign)
 {
     for (size_t i = 0; i < MAX_TIMERS; ++i)
     {
@@ -94,7 +94,7 @@ TEST_F(TimerTestSuite, testTimerRingBufferIndexAssign)
     delayedExpectThat(count, 1, 1125ms);
 }
 
-TEST_F(TimerTestSuite, testTimerRingBufferIndexOverflow)
+TEST_F(TimerTestSuite, DISABLED_testTimerRingBufferIndexOverflow)
 {
     std::vector<Detail::Timer> t;
 
@@ -106,7 +106,7 @@ TEST_F(TimerTestSuite, testTimerRingBufferIndexOverflow)
     delayedExpectThat(count, MAX_TIMERS, 1125ms);
 }
 
-TEST_F(TimerTestSuite, testTimerRingBufferUsedAndLastReleasedIndexIsSkipped)
+TEST_F(TimerTestSuite, DISABLED_testTimerRingBufferUsedAndLastReleasedIndexIsSkipped)
 {
     std::vector<Detail::Timer> t;
 
@@ -131,14 +131,14 @@ TEST_F(TimerTestSuite, testTimerRingBufferUsedAndLastReleasedIndexIsSkipped)
 }
 #endif
 
-TEST_F(TimerTestSuite, isNotCopyable)
+TEST_F(TimerTestSuite, DISABLED_isNotCopyable)
 {
     EXPECT_THAT(std::is_trivially_copyable<Detail::Timer>::value, Eq(false));
     EXPECT_THAT(Traits::IsCopyable<Detail::Timer>::value, Eq(false));
     EXPECT_THAT(Traits::IsMoveable<Detail::Timer>::value, Eq(true));
 }
 
-TEST_F(TimerTestSuite, testTimer)
+TEST_F(TimerTestSuite, DISABLED_testTimer)
 {
     auto t1 = startTimer(1s, std::bind(&TimerTestSuite::incrementCount, this));
     auto t2 = startTimer(2s, &TimerTestSuite::incrementCount, this);
@@ -149,7 +149,7 @@ TEST_F(TimerTestSuite, testTimer)
     delayedExpectThat(count, 3, 1125ms);
 }
 
-TEST_F(TimerTestSuite, testStopTimerWhenNullptrAssigned)
+TEST_F(TimerTestSuite, DISABLED_testStopTimerWhenNullptrAssigned)
 {
     auto t = startTimer(1s, &TimerTestSuite::incrementCount, this);
 
@@ -158,14 +158,14 @@ TEST_F(TimerTestSuite, testStopTimerWhenNullptrAssigned)
     delayedExpectThat(count, 0, 0s, 1125ms);
 }
 
-TEST_F(TimerTestSuite, testStopTimerWhenDestructorCalled)
+TEST_F(TimerTestSuite, DISABLED_testStopTimerWhenDestructorCalled)
 {
     startTimer(1s, &TimerTestSuite::incrementCount, this);
 
     delayedExpectThat(count, 0, 0s, 1125ms);
 }
 
-TEST_F(TimerTestSuite, testMove)
+TEST_F(TimerTestSuite, DISABLED_testMove)
 {
     auto t1a = startTimer(1s, &TimerTestSuite::incrementCount, this);
     auto t1b = std::move(t1a);

@@ -45,7 +45,7 @@ class SqLite3TestSuite : public Test
 public:
     static void SetUpTestCase()
     {
-        sut = std::unique_ptr<SqLite3>(new SqLite3);
+        sut = std::make_unique<SqLite3>();
         sut->open(DB_FILE);
 
         sut->setTestMode();
@@ -107,6 +107,7 @@ public:
     static const std::string DB_FILE;
 
     static std::unique_ptr<SqLite3> sut;
+    std::stringstream outputStream;
 
 private:
     std::vector<Field> fieldToDelete;
@@ -129,7 +130,7 @@ TEST_F(SqLite3TestSuite, sucessfulTransaction)
         {
             insertField(FIELD_1);
             insertField(FIELD_2);
-        });
+        }, outputStream);
 
     ASSERT_TRUE(transactionStatus);
     ASSERT_THAT(loadFields(), UnorderedElementsAre(FIELD_1, FIELD_2));
@@ -145,7 +146,7 @@ TEST_F(SqLite3TestSuite, failedTransaction)
             insertField(FIELD_2, false);
             insertField(FIELD_3, false);
             sut->execute("insert into not_existing (field) ('value')");
-        });
+        }, outputStream);
 
     ASSERT_FALSE(transactionStatus);
     ASSERT_THAT(loadFields(), UnorderedElementsAre(FIELD_1));
@@ -161,7 +162,7 @@ TEST_F(SqLite3TestSuite, failedTransactionWithUserException)
             insertField(FIELD_2, false);
             insertField(FIELD_3, false);
             throw std::exception();
-        });
+        }, outputStream);
 
     ASSERT_FALSE(transactionStatus);
     ASSERT_THAT(loadFields(), UnorderedElementsAre(FIELD_1));
