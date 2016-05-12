@@ -143,13 +143,13 @@ Dir['Source/*'].select{ |x| File.directory?(x) }.each { |dir|
 }
 
 desc 'Builds all generated files'
-multitask(:generated => generated.collect{|x|x.name})
+multitask(:generated => RakeBuilder::Names[generated])
 
 desc 'Builds all libraries'
-multitask(:libraries => libraries.collect{|x|x.name})
+multitask(:libraries => RakeBuilder::Names[libraries])
 
 desc 'Builds everything & runs uts'
-multitask(:default => uts.collect{|x|x.name}) {
+multitask(:default => RakeBuilder::Names[uts]) {
     uts.each { |x|
         sh x.name
     }
