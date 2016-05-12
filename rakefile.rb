@@ -28,7 +28,7 @@ end
 
 web_require 'https://raw.github.com/chaos0x8/rake-builder/master/lib/RakeBuilder.rb'
 
-flags = [ '--std=c++14', '-O3', '-s', '-DNDEBUG' ]
+FLAGS = [ '--std=c++14', '-O3', '-s', '-DNDEBUG' ]
 
 license = File.open('LICENSE', 'r') { |f|
     result = Array.new
@@ -87,12 +87,10 @@ tmp.uniq.each { |dir|
     }
 }
 
-librariesCommon = Array.new
-
-librariesCommon << Library.new { |t|
+libCommon = Library.new { |t|
     t.name = 'lib/libcommon.a'
     t.includes = [ 'Source' ]
-    t.flags = [ flags ]
+    t.flags = [ FLAGS ]
     t.files = generated
     t.sources = Dir['Source/Common/**/*.cpp'] - Dir['Source/Common/TestModules/*.cpp']
     t.description = "Builds library '#{t.name}'"
@@ -107,10 +105,10 @@ tmp.each { |dir|
     libraries << Library.new { |t|
         t.name = "lib/libcommon#{File.basename(dir)}.a"
         t.includes = [ 'Source' ]
-        t.flags = [ flags ]
+        t.flags = [ FLAGS ]
         t.files = generated
         t.sources = sources
-        t.libs = librariesCommon
+        t.libs = [ libCommon ]
         t.description = "Builds library '#{t.name}'"
 
         case t.name
@@ -134,12 +132,12 @@ Dir['Source/*'].select{ |x| File.directory?(x) }.each { |dir|
     uts << Executable.new { |t|
         t.name = "bin/#{File.basename(dir)}-ut"
         t.includes = [ 'Source' ]
-        t.flags = [ flags, '-pthread' ]
+        t.flags = [ FLAGS, '-pthread' ]
         t.files = generated
         t.sources = sources
         t.libs = [ '-lgtest', '-lgmock' ]
         t.libs += libraries.select { |l| l.name == "lib/libcommon#{File.basename(dir)}.a" }
-        t.libs << librariesCommon
+        t.libs << libCommon
         t.description = "Builds ut target '#{t.name}'"
     } if sources.size > 0
 }
