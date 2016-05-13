@@ -25,7 +25,7 @@
 #include <Common/IndexList.hpp>
 #include <thread>
 #include <atomic>
-#include <algorithm>
+#include <numeric>
 
 namespace Common
 {
