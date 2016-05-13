@@ -25,6 +25,7 @@
 #include <thread>
 #include <atomic>
 #include <algorithm>
+#include <vector>
 
 namespace Common
 {

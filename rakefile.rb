@@ -28,6 +28,7 @@ end
 
 web_require 'https://raw.github.com/chaos0x8/rake-builder/master/lib/RakeBuilder.rb'
 
+#FLAGS = [ '--std=c++14', '-g' ]
 FLAGS = [ '--std=c++14', '-O3', '-s', '-DNDEBUG' ]
 
 license = File.open('LICENSE', 'r') { |f|
@@ -97,9 +98,32 @@ libCommon = Library.new { |t|
 }
 
 libraries = Array.new
+uts = Array.new
+
+uts << Executable.new { |t|
+    t.name = "bin/Common-ut"
+    t.includes = [ 'Source' ]
+    t.flags = [ FLAGS, '-pthread' ]
+    t.files = generated
+    t.sources = Dir['Source/Common/TestModules/*.cpp']
+    t.libs << [ '-lgtest', '-lgmock' ]
+    t.libs << [ libCommon ]
+    t.description = "Builds ut target '#{t.name}'"
+}
 
 tmp = Dir['Source/*'].select{ |x| File.directory?(x) } - [ 'Source/Common' ]
 tmp.each { |dir|
+    pkgs = case File.basename(dir)
+           when 'Gtkmm'
+               Pkg['gtkmm-3.0']
+           when 'EmbededRuby'
+               Pkg['ruby-1.9']
+           when 'SqLite'
+               Pkg['sqlite3']
+           when 'GL'
+               Pkg['glew']
+           end
+
     sources = Dir["#{dir}/**/*.cpp"] - Dir["#{dir}/**/TestModules/*.cpp"]
 
     libraries << Library.new { |t|
@@ -108,25 +132,11 @@ tmp.each { |dir|
         t.flags = [ FLAGS ]
         t.files = generated
         t.sources = sources
-        t.libs = [ libCommon ]
+        t.libs << [ libCommon, pkgs ]
         t.description = "Builds library '#{t.name}'"
 
-        case t.name
-        when 'lib/libcommonGtkmm.a'
-            t.libs << Pkg['gtkmm-3.0']
-        when 'lib/libcommonEmbededRuby.a'
-            t.libs << Pkg['ruby-1.9']
-        when 'lib/libcommonSqLite.a'
-            t.libs << Pkg['sqlite3']
-        when 'lib/libcommonGL.a'
-            t.libs << Pkg['glew']
-        end
     } if sources.size > 0
-}
 
-uts = Array.new
-
-Dir['Source/*'].select{ |x| File.directory?(x) }.each { |dir|
     sources = Dir["#{dir}/**/TestModules/*.cpp"]
 
     uts << Executable.new { |t|
@@ -135,9 +145,9 @@ Dir['Source/*'].select{ |x| File.directory?(x) }.each { |dir|
         t.flags = [ FLAGS, '-pthread' ]
         t.files = generated
         t.sources = sources
-        t.libs = [ '-lgtest', '-lgmock' ]
-        t.libs += libraries.select { |l| l.name == "lib/libcommon#{File.basename(dir)}.a" }
-        t.libs << libCommon
+        t.libs << [ '-lgtest', '-lgmock' ]
+        t.libs << libraries.select { |l| l.name == "lib/libcommon#{File.basename(dir)}.a" }
+        t.libs << [ libCommon, pkgs ]
         t.description = "Builds ut target '#{t.name}'"
     } if sources.size > 0
 }
@@ -149,7 +159,7 @@ desc 'Builds all libraries'
 multitask(:libraries => RakeBuilder::Names[libraries])
 
 desc 'Builds everything & runs uts'
-multitask(:default => RakeBuilder::Names[uts]) {
+multitask(:default => RakeBuilder::Names[libraries, uts]) {
     uts.each { |x|
         sh x.name
     }
