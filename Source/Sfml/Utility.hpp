@@ -31,7 +31,8 @@ namespace Sfml
 {
 
 sf::VideoMode getFullScreenVideoMode();
-std::unique_ptr<sf::Window> createDefaultWindow(const std::string& title);
+std::unique_ptr<sf::Window> createWindow(const std::string& title, sf::VideoMode = sf::VideoMode(1280, 720));
+std::unique_ptr<sf::Window> createFillScreenWindow(const std::string& title);
 
 std::pair<GLfloat, GLfloat> getWsadSpeedFactor();
 std::pair<GLfloat, GLfloat> getArrowSpeedFactor();

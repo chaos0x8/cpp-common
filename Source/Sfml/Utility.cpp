@@ -46,23 +46,28 @@ sf::VideoMode getFullScreenVideoMode()
     return vm.back();
 }
 
-std::unique_ptr<sf::Window> createDefaultWindow(const std::string& title)
+namespace Detail
 {
-    #ifdef NDEBUG
-    const sf::VideoMode vm = Common::Sfml::getFullScreenVideoMode();
-    const auto style = sf::Style::Fullscreen;
-    #else
-    const sf::VideoMode vm = sf::VideoMode(1280, 720);
-    const auto style = sf::Style::Default;
-    #endif
+    std::unique_ptr<sf::Window> createWindow(const std::string& title, sf::VideoMode vm, int style)
+    {
+        sf::ContextSettings settings{};
+        settings.antialiasingLevel = 4;
 
-    sf::ContextSettings settings{};
-    settings.antialiasingLevel = 4;
+        auto window = std::make_unique<sf::Window>(vm, title, style, settings);
+        window->setVerticalSyncEnabled(true);
 
-    std::unique_ptr<sf::Window> window(new sf::Window(vm, title, style, settings));
-    window->setVerticalSyncEnabled(true);
+        return window;
+    }
+}
 
-    return window;
+std::unique_ptr<sf::Window> createWindow(const std::string& title, sf::VideoMode vm)
+{
+    return Detail::createWindow(title, vm, sf::Style::Default);
+}
+
+std::unique_ptr<sf::Window> createFillScreenWindow(const std::string& title)
+{
+    return Detail::createWindow(title, getFullScreenVideoMode(), sf::Style::Fullscreen);
 }
 
 std::pair<GLfloat, GLfloat> getWsadSpeedFactor()
