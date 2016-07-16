@@ -31,6 +31,12 @@ namespace Algorithm
 template <typename Container> const Container& ref(const Container& c) { return c; };
 template <typename Container> const Container& ref(const Container* c) { return *c; }
 
+template <typename Container, typename Functor>
+inline bool any(const Container& c, Functor&& f)
+{
+  return std::any_of(std::cbegin(ref(c)), std::cend(ref(c)), std::forward<Functor>(f));
+}
+
 template <typename Container, typename Item>
 inline bool includes(const Container& c, const Item& i)
 {

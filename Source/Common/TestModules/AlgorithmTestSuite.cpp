@@ -31,10 +31,13 @@ namespace UT
 
 using namespace testing;
 
-struct AlgorithmTestSuite_includes : public Test
+struct AlgorithmTestSuite : public Test
 {
   const std::vector<int> data = { 1, 3, 4 };
 };
+
+struct AlgorithmTestSuite_includes : public AlgorithmTestSuite
+  { };
 
 TEST_F(AlgorithmTestSuite_includes, returnsTrueWhenIncludesElement)
 {
@@ -46,6 +49,19 @@ TEST_F(AlgorithmTestSuite_includes, returnsFalseWhenDoesntIncludeElement)
 {
   EXPECT_THAT(includes(data, 42), Eq(false));
   EXPECT_THAT(includes_if(data, [](auto x) { return x == 42; }), Eq(false));
+}
+
+struct AlgorithmTestSuite_any : public AlgorithmTestSuite
+  { };
+
+TEST_F(AlgorithmTestSuite_any, returnsTrueWhenOneOfElementsFullfilsCondition)
+{
+  EXPECT_THAT(any(data, [](auto x) { return x % 2 == 0; }), Eq(true));
+}
+
+TEST_F(AlgorithmTestSuite_any, returnsFalseWhenNoneOfElementsFullfilsCondition)
+{
+  EXPECT_THAT(any(data, [](auto x) { return x % 10 == 0; }), Eq(false));
 }
 
 }
