@@ -18,33 +18,34 @@
  *  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <Common/Algo.hpp>
+#include <Common/Algorithm.hpp>
 #include <vector>
 #include <gmock/gmock.h>
 
 namespace Common
 {
-namespace Algo
+namespace Algorithm
 {
 namespace UT
 {
 
 using namespace testing;
 
-struct AlgoTestSuite_includes : public Test
+struct AlgorithmTestSuite_includes : public Test
 {
-    const std::vector<int> data = { 1, 3, 4 };
+  const std::vector<int> data = { 1, 3, 4 };
 };
 
-
-TEST_F(AlgoTestSuite_includes, returnsTrueWhenIncludesElement)
+TEST_F(AlgorithmTestSuite_includes, returnsTrueWhenIncludesElement)
 {
-    EXPECT_THAT(includes(data, 3), Eq(true));
+  EXPECT_THAT(includes(data, 3), Eq(true));
+  EXPECT_THAT(includes_if(data, [](auto x) { return x == 3; }), Eq(true));
 }
 
-TEST_F(AlgoTestSuite_includes, returnsFalseWhenDoesntIncludeElement)
+TEST_F(AlgorithmTestSuite_includes, returnsFalseWhenDoesntIncludeElement)
 {
-    EXPECT_THAT(includes(data, 42), Eq(false));
+  EXPECT_THAT(includes(data, 42), Eq(false));
+  EXPECT_THAT(includes_if(data, [](auto x) { return x == 42; }), Eq(false));
 }
 
 }

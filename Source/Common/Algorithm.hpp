@@ -25,13 +25,22 @@
 
 namespace Common
 {
-namespace Algo
+namespace Algorithm
 {
+
+template <typename Container> const Container& ref(const Container& c) { return c; };
+template <typename Container> const Container& ref(const Container* c) { return *c; }
 
 template <typename Container, typename Item>
 inline bool includes(const Container& c, const Item& i)
 {
-    return std::find(std::cbegin(c), std::cend(c), i) != std::cend(c);
+  return std::find(std::cbegin(ref(c)), std::cend(ref(c)), i) != std::cend(ref(c));
+}
+
+template <typename Container, typename Functor>
+inline bool includes_if(const Container& c, Functor&& f)
+{
+  return std::find_if(std::cbegin(ref(c)), std::cend(ref(c)), std::forward<Functor>(f)) != std::cend(ref(c));
 }
 
 }
