@@ -80,6 +80,11 @@ void FileChooserDialog::addFilter(const std::string& name, const std::string& pa
     filters.push_back(Detail::createFilter(name, patern));
 }
 
+void FileChooserDialog::setFileName(const std::string& fileName)
+{
+  set_filename(fileName);
+}
+
 std::string FileChooserDialog::execute()
 {
     Detail::FilterActivator activator(*this);

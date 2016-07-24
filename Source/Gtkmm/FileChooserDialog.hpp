@@ -33,6 +33,7 @@ public:
     FileChooserDialog(Gtk::Window& parent, const Glib::ustring& prompt, Gtk::FileChooserAction action);
 
     void addFilter(const std::string& name, const std::string& patern);
+    void setFileName(const std::string& fileName);
 
     std::string execute();
 
