@@ -63,7 +63,7 @@ namespace Common
       }
 
     private:
-      bool _valid = false;
+      bool _valid;
       F _functor;
     };
   }
