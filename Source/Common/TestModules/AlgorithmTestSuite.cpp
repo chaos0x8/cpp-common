@@ -20,6 +20,7 @@
 
 #include <Common/Algorithm.hpp>
 #include <vector>
+#include <list>
 #include <gmock/gmock.h>
 
 namespace Common
@@ -37,31 +38,81 @@ struct AlgorithmTestSuite : public Test
 };
 
 struct AlgorithmTestSuite_includes : public AlgorithmTestSuite
-  { };
+{
+  auto functor(int v)
+  {
+    return [v](auto x) { return x == v; };
+  }
+};
 
 TEST_F(AlgorithmTestSuite_includes, returnsTrueWhenIncludesElement)
 {
   EXPECT_THAT(includes(data, 3), Eq(true));
-  EXPECT_THAT(includes_if(data, [](auto x) { return x == 3; }), Eq(true));
+  EXPECT_THAT(includes_if(data, functor(3)), Eq(true));
 }
 
 TEST_F(AlgorithmTestSuite_includes, returnsFalseWhenDoesntIncludeElement)
 {
   EXPECT_THAT(includes(data, 42), Eq(false));
-  EXPECT_THAT(includes_if(data, [](auto x) { return x == 42; }), Eq(false));
+  EXPECT_THAT(includes_if(data, functor(42)), Eq(false));
 }
 
 struct AlgorithmTestSuite_any : public AlgorithmTestSuite
-  { };
+{
+  auto functor(int v)
+  {
+    return [v](auto x) { return x % v == 0; };
+  }
+};
 
 TEST_F(AlgorithmTestSuite_any, returnsTrueWhenOneOfElementsFullfilsCondition)
 {
-  EXPECT_THAT(any(data, [](auto x) { return x % 2 == 0; }), Eq(true));
+  EXPECT_THAT(any(data, functor(2)), Eq(true));
 }
 
 TEST_F(AlgorithmTestSuite_any, returnsFalseWhenNoneOfElementsFullfilsCondition)
 {
-  EXPECT_THAT(any(data, [](auto x) { return x % 10 == 0; }), Eq(false));
+  EXPECT_THAT(any(data, functor(10)), Eq(false));
+}
+
+struct AlgorithmTestSuite_transform : public AlgorithmTestSuite
+{
+  auto functor()
+  {
+    return [](auto& x) { return std::to_string(x); };
+  }
+};
+
+TEST_F(AlgorithmTestSuite_transform, returnsDifferentTypes)
+{
+  const std::vector<std::string> res = transform(data, functor());
+  EXPECT_THAT(res, ElementsAre("1", "3", "4"));
+}
+
+TEST_F(AlgorithmTestSuite_transform, returnsDifferentTypesWithSpecifiesContainer)
+{
+  const std::list<std::string> res = transform<std::list>(data, functor());
+  EXPECT_THAT(res, ElementsAre("1", "3", "4"));
+}
+
+struct AlgorithmTestSuite_filtered : public AlgorithmTestSuite
+{
+  auto predicate()
+  {
+    return [](auto& x) { return x == 1 or x == 4; };
+  }
+};
+
+TEST_F(AlgorithmTestSuite_filtered, returnsDifferentTypes)
+{
+  const std::vector<int> res = filtered(data, predicate());
+  EXPECT_THAT(res, ElementsAre(1, 4));
+}
+
+TEST_F(AlgorithmTestSuite_filtered, returnsDifferentTypesWithSpecifiesContainer)
+{
+  const std::list<int> res = filtered<std::list>(data, predicate());
+  EXPECT_THAT(res, ElementsAre(1, 4));
 }
 
 }

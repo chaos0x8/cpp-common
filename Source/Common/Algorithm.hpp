@@ -22,6 +22,8 @@
 
 #include <algorithm>
 #include <iterator>
+#include <vector>
+#include <Common/TypeTraces.hpp>
 
 namespace Common
 {
@@ -47,6 +49,30 @@ template <typename Container, typename Functor>
 inline bool includes_if(const Container& c, Functor&& f)
 {
   return std::find_if(std::cbegin(ref(c)), std::cend(ref(c)), std::forward<Functor>(f)) != std::cend(ref(c));
+}
+
+template <
+  template <typename, typename...> class Output = std::vector,
+  typename Functor = void,
+  typename Container = void
+>
+inline auto transform(const Container& c, Functor&& f)
+{
+  auto out = Output<decltype(TypeTraces::ref<Functor>()(TypeTraces::ref<typename Container::value_type>()))>{};
+  std::transform(std::cbegin(c), std::cend(c), std::inserter(out, std::end(out)), std::forward<Functor>(f));
+  return out;
+}
+
+template <
+  template <typename, typename...> class Output = std::vector,
+  typename Functor = void,
+  typename Container = void
+>
+inline auto filtered(const Container& c, Functor&& f)
+{
+  auto out = Output<typename Container::value_type>{};
+  std::copy_if(std::cbegin(c), std::cend(c), std::inserter(out, std::end(out)), std::forward<Functor>(f));
+  return out;
 }
 
 }
