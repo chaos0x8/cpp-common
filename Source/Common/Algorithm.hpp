@@ -68,11 +68,17 @@ template <
   typename Functor = void,
   typename Container = void
 >
-inline auto filtered(const Container& c, Functor&& f)
+inline auto filter(const Container& c, Functor&& f)
 {
   auto out = Output<typename Container::value_type>{};
   std::copy_if(std::cbegin(c), std::cend(c), std::inserter(out, std::end(out)), std::forward<Functor>(f));
   return out;
+}
+
+template <typename Container, typename Functor>
+inline auto first(Container& c, Functor&& f)
+{
+  return std::find_if(std::begin(c), std::end(c), std::forward<Functor>(f));
 }
 
 }

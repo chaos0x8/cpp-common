@@ -95,7 +95,7 @@ TEST_F(AlgorithmTestSuite_transform, returnsDifferentTypesWithSpecifiesContainer
   EXPECT_THAT(res, ElementsAre("1", "3", "4"));
 }
 
-struct AlgorithmTestSuite_filtered : public AlgorithmTestSuite
+struct AlgorithmTestSuite_filter : public AlgorithmTestSuite
 {
   auto predicate()
   {
@@ -103,16 +103,39 @@ struct AlgorithmTestSuite_filtered : public AlgorithmTestSuite
   }
 };
 
-TEST_F(AlgorithmTestSuite_filtered, returnsDifferentTypes)
+TEST_F(AlgorithmTestSuite_filter, returnsDifferentTypes)
 {
-  const std::vector<int> res = filtered(data, predicate());
+  const std::vector<int> res = filter(data, predicate());
   EXPECT_THAT(res, ElementsAre(1, 4));
 }
 
-TEST_F(AlgorithmTestSuite_filtered, returnsDifferentTypesWithSpecifiesContainer)
+TEST_F(AlgorithmTestSuite_filter, returnsDifferentTypesWithSpecifiesContainer)
 {
-  const std::list<int> res = filtered<std::list>(data, predicate());
+  const std::list<int> res = filter<std::list>(data, predicate());
   EXPECT_THAT(res, ElementsAre(1, 4));
+}
+
+struct AlgorithmTestSuite_first : public AlgorithmTestSuite
+{
+  auto functor(int v)
+  {
+    return [v](auto x) { return x >= v; };
+  }
+};
+
+TEST_F(AlgorithmTestSuite_first, returnsFirstElementWhichFullfilsCondition)
+{
+  auto res = first(data, functor(2));
+
+  ASSERT_THAT(res, Not(Eq(std::end(data))));
+  ASSERT_THAT(*res, Eq(3));
+}
+
+TEST_F(AlgorithmTestSuite_first, returnsEndIteratorWhenElementIsNotFound)
+{
+  auto res = first(data, functor(5));
+
+  ASSERT_THAT(res, Eq(std::end(data)));
 }
 
 }
