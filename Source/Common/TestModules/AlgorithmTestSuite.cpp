@@ -35,26 +35,31 @@ using namespace testing;
 struct AlgorithmTestSuite : public Test
 {
   const std::vector<int> data = { 1, 3, 4 };
-};
 
-struct AlgorithmTestSuite_includes : public AlgorithmTestSuite
-{
-  auto functor(int v)
+  auto eq(int v)
   {
     return [v](auto x) { return x == v; };
   }
+
+  auto ge(int v)
+  {
+    return [v](auto x) { return x >= v; };
+  }
 };
+
+struct AlgorithmTestSuite_includes : public AlgorithmTestSuite
+  { };
 
 TEST_F(AlgorithmTestSuite_includes, returnsTrueWhenIncludesElement)
 {
   EXPECT_THAT(includes(data, 3), Eq(true));
-  EXPECT_THAT(includes_if(data, functor(3)), Eq(true));
+  EXPECT_THAT(includes(data, eq(3)), Eq(true));
 }
 
 TEST_F(AlgorithmTestSuite_includes, returnsFalseWhenDoesntIncludeElement)
 {
   EXPECT_THAT(includes(data, 42), Eq(false));
-  EXPECT_THAT(includes_if(data, functor(42)), Eq(false));
+  EXPECT_THAT(includes(data, eq(42)), Eq(false));
 }
 
 struct AlgorithmTestSuite_any : public AlgorithmTestSuite
@@ -116,16 +121,11 @@ TEST_F(AlgorithmTestSuite_filter, returnsDifferentTypesWithSpecifiesContainer)
 }
 
 struct AlgorithmTestSuite_first : public AlgorithmTestSuite
-{
-  auto functor(int v)
-  {
-    return [v](auto x) { return x >= v; };
-  }
-};
+  { };
 
 TEST_F(AlgorithmTestSuite_first, returnsFirstElementWhichFullfilsCondition)
 {
-  auto res = first(data, functor(2));
+  auto res = first(data, ge(2));
 
   ASSERT_THAT(res, Not(Eq(std::end(data))));
   ASSERT_THAT(*res, Eq(3));
@@ -133,9 +133,21 @@ TEST_F(AlgorithmTestSuite_first, returnsFirstElementWhichFullfilsCondition)
 
 TEST_F(AlgorithmTestSuite_first, returnsEndIteratorWhenElementIsNotFound)
 {
-  auto res = first(data, functor(5));
+  auto res = first(data, ge(5));
 
   ASSERT_THAT(res, Eq(std::end(data)));
+}
+
+struct AlgorithmTestSuite_count : public AlgorithmTestSuite
+    { };
+
+TEST_F(AlgorithmTestSuite_count, returnsNumberOfElements)
+{
+  ASSERT_THAT(count(data, 3), Eq(1));
+  ASSERT_THAT(count(data, 5), Eq(0));
+
+  ASSERT_THAT(count(data, ge(2)), Eq(2));
+  ASSERT_THAT(count(data, ge(1)), Eq(3));
 }
 
 }

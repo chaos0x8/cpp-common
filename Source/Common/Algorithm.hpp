@@ -39,14 +39,22 @@ inline bool any(const Container& c, Functor&& f)
   return std::any_of(std::cbegin(ref(c)), std::cend(ref(c)), std::forward<Functor>(f));
 }
 
-template <typename Container, typename Item>
+template <
+  typename Container,
+  typename Item,
+  typename std::enable_if< TypeTraces::IsComparable<typename Container::value_type, Item>::value, int>::type = 0
+>
 inline bool includes(const Container& c, const Item& i)
 {
   return std::find(std::cbegin(ref(c)), std::cend(ref(c)), i) != std::cend(ref(c));
 }
 
-template <typename Container, typename Functor>
-inline bool includes_if(const Container& c, Functor&& f)
+template <
+  typename Container,
+  typename Functor,
+  typename std::enable_if<!TypeTraces::IsComparable<typename Container::value_type, Functor>::value, int>::type = 0
+>
+inline bool includes(const Container& c, Functor&& f)
 {
   return std::find_if(std::cbegin(ref(c)), std::cend(ref(c)), std::forward<Functor>(f)) != std::cend(ref(c));
 }
@@ -79,6 +87,26 @@ template <typename Container, typename Functor>
 inline auto first(Container& c, Functor&& f)
 {
   return std::find_if(std::begin(c), std::end(c), std::forward<Functor>(f));
+}
+
+template <
+  typename Container,
+  typename Item,
+  typename std::enable_if< TypeTraces::IsComparable<typename Container::value_type, Item>::value, int>::type = 0
+>
+inline typename Container::size_type count(const Container& c, const Item& i)
+{
+  return std::count(std::cbegin(ref(c)), std::cend(ref(c)), i);
+}
+
+template <
+  typename Container,
+  typename Functor,
+  typename std::enable_if<!TypeTraces::IsComparable<typename Container::value_type, Functor>::value, int>::type = 0
+>
+inline typename Container::size_type count(const Container& c, Functor&& f)
+{
+  return std::count_if(std::cbegin(ref(c)), std::cend(ref(c)), std::forward<Functor>(f));
 }
 
 }

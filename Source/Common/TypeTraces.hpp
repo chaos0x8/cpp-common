@@ -24,8 +24,24 @@ namespace Common
 {
 namespace TypeTraces
 {
+namespace Detail
+{
+  using YES = uint8_t;
+  using NO = uint16_t;
+}
 
 template <class T> T& ref();
+
+template <class T, class U>
+struct IsComparable
+{
+  template <class A, class B>
+  static Detail::YES check(decltype(ref<A>() == ref<B>())*);
+  template <class A, class B>
+  static Detail::NO check(...);
+
+  enum { value = sizeof(check<T, U>(nullptr)) == sizeof(Detail::YES) };
+};
 
 }
 }
