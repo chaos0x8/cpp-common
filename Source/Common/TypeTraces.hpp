@@ -20,6 +20,10 @@
 
 #pragma once
 
+#include <cstdint>
+#include <cstddef>
+#include <type_traits>
+
 namespace Common
 {
 namespace TypeTraces
@@ -36,12 +40,57 @@ template <class T, class U>
 struct IsComparable
 {
   template <class A, class B>
-  static Detail::YES check(decltype(ref<A>() == ref<B>())*);
+  static Detail::YES check(decltype(TypeTraces::ref<A>() == TypeTraces::ref<B>())*);
   template <class A, class B>
   static Detail::NO check(...);
 
   enum { value = sizeof(check<T, U>(nullptr)) == sizeof(Detail::YES) };
 };
+
+template <class T>
+struct IsCArray
+{
+  template <class U, size_t N>
+  static Detail::YES check(const U(&)[N]);
+  template <class U>
+  static Detail::NO check(const U&);
+
+  enum { value = sizeof(check(ref<T>())) == sizeof(Detail::YES) };
+};
+
+template <class T>
+struct ValueType
+{
+  template <class U>
+  static auto check(void*) -> typename U::value_type;
+  template <class U>
+  static auto check(...) -> typename std::decay<decltype(TypeTraces::ref<U>()[0])>::type;
+
+  using type = decltype(check<typename std::decay<T>::type>(nullptr));
+};
+
+template <class T>
+using ValueType_t = typename ValueType<T>::type;
+
+template <class T>
+struct HasDereference
+{
+  template <class U>
+  static Detail::YES check(std::decay_t<decltype(*TypeTraces::ref<std::decay_t<U>>())>*);
+  template <class U>
+  static Detail::NO check(...);
+
+  enum { value = sizeof(check<T>(nullptr)) == sizeof(Detail::YES) };
+};
+
+template <class T>
+struct DereferenceType
+{
+  using type = decltype(*TypeTraces::ref<T>());
+};
+
+template <class T>
+using DereferenceType_t = typename DereferenceType<T>::type;
 
 }
 }

@@ -18,8 +18,8 @@
  *  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <Common/TestExtension/PtrProperty.hpp>
-#include <Common/TestExtension/MockFunction.hpp>
+#include <GtestExtras/PtrProperty.hpp>
+#include <GtestExtras/MockFunction.hpp>
 #include <gmock/gmock.h>
 
 namespace Common

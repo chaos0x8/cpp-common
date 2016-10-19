@@ -18,56 +18,12 @@
  *  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#pragma once
-
-#include <regex>
-#include <sstream>
+#include <thread>
+#include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-namespace Common
+int main(int argc, char** argv)
 {
-
-using namespace testing;
-
-namespace Detail
-{
-
-class SmatchMatcher
-{
-public:
-    SmatchMatcher(const std::string& regex)
-        : regex(regex)
-    {
-    }
-
-    template <class T>
-    bool MatchAndExplain(const T& obj, MatchResultListener*) const
-    {
-        std::stringstream ss;
-        ss << obj;
-        return std::regex_match(ss.str(), std::regex(regex));
-    }
-
-    void DescribeTo(std::ostream* out) const
-    {
-        *out << "to match regex '" << regex << "'";
-    }
-
-    void DescribeNegationTo(std::ostream* out) const
-    {
-        *out << "not ";
-        DescribeTo(out);
-    }
-
-private:
-    std::string regex;
-};
-
-}
-
-inline PolymorphicMatcher<Detail::SmatchMatcher> Smatch(const std::string& regex)
-{
-    return MakePolymorphicMatcher(Detail::SmatchMatcher(regex));
-}
-
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
