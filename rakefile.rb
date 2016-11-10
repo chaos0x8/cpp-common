@@ -117,7 +117,7 @@ tmp.each { |dir|
            when 'Gtkmm'
                Pkg['gtkmm-3.0']
            when 'EmbededRuby'
-               Pkg['ruby-1.9']
+               Pkg['ruby']
            when 'SqLite'
                Pkg['sqlite3']
            when 'GL'
