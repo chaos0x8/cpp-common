@@ -22,11 +22,11 @@ require 'date'
 require 'pathname'
 
 def web_require url
-    system "wget #{url}" unless File.exist?(File.basename(url))
-    require_relative File.basename(url)
+  system "wget #{url}" unless File.exist?(File.basename(url))
+  require_relative File.basename(url)
 end
 
-web_require 'https://raw.github.com/chaos0x8/rake-builder/master/lib/RakeBuilder.rb'
+web_require 'https://raw.github.com/chaos0x8/rake-builder/v3/lib/RakeBuilder.rb'
 
 #FLAGS = [ '--std=c++14', '-g' ]
 FLAGS = [ '--std=c++14', '-O3', '-s', '-DNDEBUG' ]
@@ -47,7 +47,7 @@ license = File.open('LICENSE', 'r') { |f|
 
 generated = Array.new
 
-generated << Generated.new { |t|
+generated << GeneratedFile.new { |t|
     t.name = "Source/Generated/CacheLineSize.hpp"
     t.code = Proc.new {
         puts "Generating '#{t.name}'..."
@@ -67,7 +67,7 @@ generated << Generated.new { |t|
 
 tmp = [ 'Source/Generated', 'Source/Common/Exceptions' ] + Dir['Source/*'].select{ |x| File.directory?(x) }
 tmp.uniq.each { |dir|
-    generated << Generated.new { |t|
+    generated << GeneratedFile.new { |t|
         t.name = "#{dir}.hpp"
         t.code = Proc.new {
             puts "Generating '#{t.name}'..."
@@ -90,10 +90,10 @@ tmp.uniq.each { |dir|
 
 libCommon = Library.new { |t|
     t.name = 'lib/libcommon.a'
-    t.includes = [ 'Source' ]
-    t.flags = [ FLAGS ]
-    t.files = generated
-    t.sources = Dir['Source/Common/**/*.cpp'] - Dir['Source/Common/TestModules/*.cpp']
+    t.includes << [ 'Source' ]
+    t.flags << [ FLAGS ]
+    t.requirements << generated
+    t.sources << Dir['Source/Common/**/*.cpp'] - Dir['Source/Common/TestModules/*.cpp']
     t.description = "Builds library '#{t.name}'"
 }
 
@@ -102,12 +102,12 @@ uts = Array.new
 
 uts << Executable.new { |t|
     t.name = "bin/Common-ut"
-    t.includes = [ 'Source' ]
-    t.flags = [ FLAGS, '-pthread' ]
-    t.files = generated
-    t.sources = Dir['Source/Common/TestModules/*.cpp']
+    t.includes << [ 'Source' ]
+    t.flags << [ FLAGS, '-pthread' ]
+    t.requirements << generated
     t.libs << [ '-lgtest', '-lgmock' ]
     t.libs << [ libCommon ]
+    t.sources << Dir['Source/Common/TestModules/*.cpp']
     t.description = "Builds ut target '#{t.name}'"
 }
 
@@ -115,24 +115,25 @@ tmp = Dir['Source/*'].select{ |x| File.directory?(x) } - [ 'Source/Common' ]
 tmp.each { |dir|
     pkgs = case File.basename(dir)
            when 'Gtkmm'
-               Pkg['gtkmm-3.0']
+               ['gtkmm-3.0']
            when 'EmbededRuby'
-               Pkg['ruby']
+               ['ruby']
            when 'SqLite'
-               Pkg['sqlite3']
+               ['sqlite3']
            when 'GL'
-               Pkg['glew']
+               ['glew']
            end
 
     sources = Dir["#{dir}/**/*.cpp"] - Dir["#{dir}/**/TestModules/*.cpp"]
 
     libraries << Library.new { |t|
         t.name = "lib/libcommon#{File.basename(dir)}.a"
-        t.includes = [ 'Source' ]
-        t.flags = [ FLAGS ]
-        t.files = generated
-        t.sources = sources
-        t.libs << [ libCommon, pkgs ]
+        t.includes << [ 'Source' ]
+        t.flags << [ FLAGS ]
+        t.requirements << generated
+        t.libs << libCommon
+        t.pkgs << pkgs
+        t.sources << sources
         t.description = "Builds library '#{t.name}'"
 
     } if sources.size > 0
@@ -141,14 +142,15 @@ tmp.each { |dir|
 
     uts << Executable.new { |t|
         t.name = "bin/#{File.basename(dir)}-ut"
-        t.includes = [ 'Source' ]
-        t.flags = [ FLAGS, '-pthread' ]
-        t.files = generated
-        t.sources = sources
+        t.description = "Builds ut target '#{t.name}'"
+        t.includes << [ 'Source' ]
+        t.flags << [ FLAGS, '-pthread' ]
+        t.requirements << generated
         t.libs << [ '-lgtest', '-lgmock' ]
         t.libs << libraries.select { |l| l.name == "lib/libcommon#{File.basename(dir)}.a" }
-        t.libs << [ libCommon, pkgs ]
-        t.description = "Builds ut target '#{t.name}'"
+        t.libs << libCommon
+        t.pkgs << pkgs
+        t.sources << sources
     } if sources.size > 0
 }
 
