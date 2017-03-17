@@ -28,11 +28,11 @@ namespace Gui
 namespace Detail
 {
 
-Glib::RefPtr<Gtk::FileFilter> createFilter(const std::string& decription, const std::string& patern)
+Glib::RefPtr<Gtk::FileFilter> createFilter(const std::string& decription, const std::string& pattern)
 {
     Glib::RefPtr<Gtk::FileFilter> filter = Gtk::FileFilter::create();
     filter->set_name(decription);
-    filter->add_pattern(patern);
+    filter->add_pattern(pattern);
     return filter;
 }
 
@@ -75,9 +75,9 @@ FileChooserDialog::FileChooserDialog(Gtk::Window& parent, const Glib::ustring& p
     initDefaultButtons();
 }
 
-void FileChooserDialog::addFilter(const std::string& name, const std::string& patern)
+void FileChooserDialog::addFilter(const std::string& name, const std::string& pattern)
 {
-    filters.push_back(Detail::createFilter(name, patern));
+    filters.push_back(Detail::createFilter(name, pattern));
 }
 
 void FileChooserDialog::setFileName(const std::string& fileName)
