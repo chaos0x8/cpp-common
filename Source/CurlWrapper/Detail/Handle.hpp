@@ -1,7 +1,7 @@
 /*!
  *  \author <https://github.com/chaos0x8>
  *  \copyright
- *  Copyright (c) 2015 - 2017, <https://github.com/chaos0x8>
+ *  Copyright (c) 2017, <https://github.com/chaos0x8>
  *
  *  \copyright
  *  Permission to use, copy, modify, and/or distribute this software for any
@@ -20,28 +20,35 @@
 
 #pragma once
 
-#include <gtkmm.h>
+#include <curl/curl.h>
+#include <string>
+#include <memory>
 
 namespace Common
 {
-namespace Gui
-{
+  namespace CurlWrapper
+  {
+    namespace Detail
+    {
+      struct GlobalInit;
 
-class FileChooserDialog : public Gtk::FileChooserDialog
-{
-public:
-    FileChooserDialog(Gtk::Window& parent, const Glib::ustring& prompt, Gtk::FileChooserAction action);
+      struct Handle
+      {
+        Handle();
+        Handle(const Handle&) = delete;
+        Handle(Handle&& other);
 
-    void addFilter(const std::string& name, const std::string& pattern);
-    void setFileName(const std::string& fileName);
+        ~Handle();
 
-    std::string execute();
+        Handle& operator=(const Handle&) = delete;
+        Handle& operator=(Handle&& other);
 
-private:
-    void initDefaultButtons();
+        std::string get(const std::string& url);
 
-    std::vector<Glib::RefPtr<Gtk::FileFilter>> filters;
-};
-
-}
+      private:
+        std::shared_ptr<GlobalInit> global;
+        CURL* handle;
+      };
+    }
+  }
 }

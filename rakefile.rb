@@ -2,7 +2,7 @@
 
 # \author <https://github.com/chaos0x8>
 # \copyright
-# Copyright (c) 2015 - 2016, <https://github.com/chaos0x8>
+# Copyright (c) 2015 - 2017, <https://github.com/chaos0x8>
 #
 # \copyright
 # Permission to use, copy, modify, and/or distribute this software for any
@@ -27,6 +27,14 @@ require 'RakeBuilder'
 
 #FLAGS = [ '--std=c++14', '-g' ]
 FLAGS = [ '--std=c++14', '-O3', '-s', '-DNDEBUG' ]
+
+PKG_MAP = {
+  'Gtkmm' => ['gtkmm-3.0'],
+  'EmbededRuby' => ['ruby'],
+  'SqLite' => ['sqlite3'],
+  'GL' => ['glew'],
+  'CurlWrapper' => ['libcurl']
+}
 
 license = File.open('LICENSE', 'r') { |f|
     result = Array.new
@@ -110,16 +118,7 @@ uts << Executable.new { |t|
 
 tmp = Dir['Source/*'].select{ |x| File.directory?(x) } - [ 'Source/Common' ]
 tmp.each { |dir|
-    pkgs = case File.basename(dir)
-           when 'Gtkmm'
-               ['gtkmm-3.0']
-           when 'EmbededRuby'
-               ['ruby']
-           when 'SqLite'
-               ['sqlite3']
-           when 'GL'
-               ['glew']
-           end
+    pkgs = PKG_MAP[File.basename(dir)] || []
 
     sources = Dir["#{dir}/**/*.cpp"] - Dir["#{dir}/**/TestModules/*.cpp"]
 
@@ -132,7 +131,6 @@ tmp.each { |dir|
         t.pkgs << pkgs
         t.sources << sources
         t.description = "Builds library '#{t.name}'"
-
     } if sources.size > 0
 
     sources = Dir["#{dir}/**/TestModules/*.cpp"]

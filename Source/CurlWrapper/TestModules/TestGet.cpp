@@ -1,7 +1,7 @@
 /*!
  *  \author <https://github.com/chaos0x8>
  *  \copyright
- *  Copyright (c) 2015 - 2017, <https://github.com/chaos0x8>
+ *  Copyright (c) 2017, <https://github.com/chaos0x8>
  *
  *  \copyright
  *  Permission to use, copy, modify, and/or distribute this software for any
@@ -18,30 +18,19 @@
  *  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#pragma once
+#include "CurlWrapper/Get.hpp"
 
-#include <gtkmm.h>
+#include <gmock/gmock.h>
 
 namespace Common
 {
-namespace Gui
-{
+  namespace CurlWrapper
+  {
+    using namespace testing;
 
-class FileChooserDialog : public Gtk::FileChooserDialog
-{
-public:
-    FileChooserDialog(Gtk::Window& parent, const Glib::ustring& prompt, Gtk::FileChooserAction action);
-
-    void addFilter(const std::string& name, const std::string& pattern);
-    void setFileName(const std::string& fileName);
-
-    std::string execute();
-
-private:
-    void initDefaultButtons();
-
-    std::vector<Glib::RefPtr<Gtk::FileFilter>> filters;
-};
-
-}
+    TEST(TestGet, getsHtmlCodeOfExampleCom)
+    {
+      EXPECT_THAT(get("http://example.com/"), ContainsRegex("Example Domain"));
+    }
+  }
 }

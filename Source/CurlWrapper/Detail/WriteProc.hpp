@@ -1,7 +1,7 @@
 /*!
  *  \author <https://github.com/chaos0x8>
  *  \copyright
- *  Copyright (c) 2015 - 2017, <https://github.com/chaos0x8>
+ *  Copyright (c) 2017, <https://github.com/chaos0x8>
  *
  *  \copyright
  *  Permission to use, copy, modify, and/or distribute this software for any
@@ -20,28 +20,23 @@
 
 #pragma once
 
-#include <gtkmm.h>
+#include <string>
 
 namespace Common
 {
-namespace Gui
-{
+  namespace CurlWrapper
+  {
+    namespace Detail
+    {
+      inline int writeProc(char* data, size_t size, size_t nmemb, std::string* result)
+      {
+        if (data == nullptr)
+          return 0;
 
-class FileChooserDialog : public Gtk::FileChooserDialog
-{
-public:
-    FileChooserDialog(Gtk::Window& parent, const Glib::ustring& prompt, Gtk::FileChooserAction action);
+        result->append(data, size * nmemb);
 
-    void addFilter(const std::string& name, const std::string& pattern);
-    void setFileName(const std::string& fileName);
-
-    std::string execute();
-
-private:
-    void initDefaultButtons();
-
-    std::vector<Glib::RefPtr<Gtk::FileFilter>> filters;
-};
-
-}
+        return size * nmemb;
+      }
+    }
+  }
 }
