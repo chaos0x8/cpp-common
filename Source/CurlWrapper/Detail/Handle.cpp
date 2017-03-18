@@ -21,6 +21,7 @@
 #include "CurlWrapper/Detail/Handle.hpp"
 #include "CurlWrapper/Detail/GlobalInit.hpp"
 #include "CurlWrapper/Detail/WriteProc.hpp"
+#include "CurlWrapper/Error.hpp"
 #include <curl/curl.h>
 
 namespace Common
@@ -63,7 +64,8 @@ namespace Common
         curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
         curl_easy_setopt(handle, CURLOPT_WRITEDATA, &result);
 
-        curl_easy_perform(handle);
+        if (curl_easy_perform(handle) != CURLE_OK)
+          throw CurlWrapper::Error("perform failed!");
 
         return result;
       }
