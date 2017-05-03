@@ -113,7 +113,7 @@ int SqLite3::selectCallBack(void* data, int argc, char** argv, char** colName)
     auto result = static_cast<std::pair<SelectResult, bool>*>(data);
 
     if (!result->second)
-        for (size_t i = 0; i < argc; ++i)
+        for (int i = 0; i < argc; ++i)
             result->first.addColumn(colName[i], i);
 
     SelectResult::Row newRow;

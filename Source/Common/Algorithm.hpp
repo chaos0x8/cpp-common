@@ -128,7 +128,21 @@ inline auto filter(Container&& c, Functor&& f)
   return out;
 }
 
-template <typename Container, typename Functor>
+template <
+  typename Container,
+  typename Item,
+  typename std::enable_if< TypeTraces::IsComparable<TypeTraces::ValueType_t<Container>, Item>::value, int>::type = 0
+>
+inline auto first(Container&& c, const Item& i)
+{
+  return std::find(Algorithm::cbegin<Container>(c), Algorithm::cend<Container>(c), i);
+}
+
+template <
+  typename Container,
+  typename Functor,
+  typename std::enable_if<!TypeTraces::IsComparable<TypeTraces::ValueType_t<Container>, Functor>::value, int>::type = 0
+>
 inline auto first(Container&& c, Functor&& f)
 {
   return std::find_if(Algorithm::cbegin<Container>(c), Algorithm::cend<Container>(c), std::forward<Functor>(f));

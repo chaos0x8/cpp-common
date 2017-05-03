@@ -34,6 +34,12 @@ class FunctionStub
 {
 public:
     template <typename... Args>
+    static void ignore(Args...)
+    {
+
+    }
+
+    template <typename... Args>
     static int f1(Args... args)
     {
         ++f1Count;
@@ -49,7 +55,7 @@ public:
     template <typename U, int... T>
     static void callF2(U values, IndexList<T...>)
     {
-        int dummy[sizeof...(T)] = { f1(std::get<T>(values))... };
+        ignore( f1(std::get<T>(values))... );
     }
 
     static size_t f1Count;

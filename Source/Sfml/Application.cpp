@@ -33,34 +33,38 @@ Application::Application(int argc, char** argv)
 
 void Application::handleEvent(const sf::Event& event)
 {
-    switch (event.type)
-    {
-        case sf::Event::Closed:
-            window->close();
-        case sf::Event::KeyPressed:
-            keyPressed(event.key);
-        break;
-        case sf::Event::MouseWheelMoved:
-            mouseWheelDelta = event.mouseWheel.delta;
-        break;
-        case sf::Event::Resized:
-            resized(event.size);
-        break;
-    }
+  switch (event.type)
+  {
+    case sf::Event::Closed:
+      window->close();
+    case sf::Event::KeyPressed:
+      keyPressed(event.key);
+      break;
+    case sf::Event::MouseWheelMoved:
+      mouseWheelDelta = event.mouseWheel.delta;
+      break;
+    case sf::Event::Resized:
+      resized(event.size);
+      break;
+    default:
+      break;
+  }
 }
 
 void Application::keyPressed(const sf::Event::KeyEvent& keyEvent)
 {
-    switch (keyEvent.code)
-    {
-        case sf::Keyboard::Key::Escape:
-            window->close();
-        break;
-        case sf::Keyboard::Key::F4:
-            if (keyEvent.alt)
-                window->close();
-        break;
-    }
+  switch (keyEvent.code)
+  {
+    case sf::Keyboard::Key::Escape:
+      window->close();
+      break;
+    case sf::Keyboard::Key::F4:
+      if (keyEvent.alt)
+        window->close();
+      break;
+    default:
+      break;
+  }
 }
 
 void Application::resized(const sf::Event::SizeEvent& sizeEvent)

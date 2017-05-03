@@ -64,9 +64,9 @@ public:
     {
         sut = nullptr;
 
-        system(boost::str(boost::format(
-            "if [ -e %1% ]; then rm -v %1%; fi")
-            % DB_FILE).c_str());
+        EXPECT_THAT(
+            system(boost::str(boost::format("if [ -e %1% ]; then rm -v %1%; fi") % DB_FILE).c_str()),
+            Eq(0));
     }
 
     void insertField(const Field& field, bool deleteAfter = true)

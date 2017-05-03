@@ -48,7 +48,7 @@ UdpMessage UdpServer::receive()
 
 void UdpServer::send(UdpMessage msg)
 {
-    if (::sendto(static_cast<int>(fd), msg.data.data(), msg.data.size(), 0, reinterpret_cast<sockaddr*>(&msg.address), msg.addressLength) != msg.data.size())
+    if (::sendto(static_cast<int>(fd), msg.data.data(), msg.data.size(), 0, reinterpret_cast<sockaddr*>(&msg.address), msg.addressLength) != static_cast<ssize_t>(msg.data.size()))
         throw Exceptions::SystemError(errno);
 }
 

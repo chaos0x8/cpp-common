@@ -21,12 +21,13 @@
 require 'date'
 require 'pathname'
 
-gem 'rake-builder', '~> 0.3.0'
+gem 'rake-builder', '~> 0.3.3'
 
 require 'RakeBuilder'
+require 'RakeGenerate'
 
-#FLAGS = [ '--std=c++14', '-g' ]
-FLAGS = [ '--std=c++14', '-O3', '-s', '-DNDEBUG' ]
+#FLAGS = [ '--std=c++14', '-Wall', '-Werror', '-g' ]
+FLAGS = [ '--std=c++14', '-Wall', '-Werror', '-O3', '-s', '-DNDEBUG' ]
 
 PKG_MAP = {
   'Gtkmm' => ['gtkmm-3.0'],
@@ -50,49 +51,36 @@ license = File.open('LICENSE', 'r') { |f|
     result.join('')
 }
 
-generated = Array.new
+preGenerated = []
+preGenerated << GeneratedFile.new { |t|
+  t.name = "Source/Generated/CacheLineSize.hpp"
+  t.code = Proc.new {
+    puts "Generating '#{t.name}'..."
 
-generated << GeneratedFile.new { |t|
-    t.name = "Source/Generated/CacheLineSize.hpp"
-    t.code = Proc.new {
-        puts "Generating '#{t.name}'..."
+    cacheLineSize = `getconf LEVEL1_DCACHE_LINESIZE`.chomp
 
-        cacheLineSize = `getconf LEVEL1_DCACHE_LINESIZE`.chomp
-
-        File.open(t.name, 'w') { |f|
-            f.write license
-            f.write "#pragma once\n"
-            f.write "\n"
-            f.write "#define CACHE_LINE_SIZE (#{cacheLineSize}ul)\n"
-            f.write "\n"
-        }
+    File.open(t.name, 'w') { |f|
+      f.write license
+      f.write "#pragma once\n"
+      f.write "\n"
+      f.write "#define CACHE_LINE_SIZE (#{cacheLineSize}ul)\n"
+      f.write "\n"
     }
-    t.description = "Generates '#{t.name}'"
+  }
+  t.description = "Generates '#{t.name}'"
 }
 
-tmp = [ 'Source/Generated', 'Source/Common/Exceptions' ] + Dir['Source/*'].select{ |x| File.directory?(x) }
-tmp.uniq.each { |dir|
-    generated << GeneratedFile.new { |t|
-        t.name = "#{dir}.hpp"
-        t.code = Proc.new {
-            puts "Generating '#{t.name}'..."
-
-            headers = Dir["#{dir}/*.hpp"].collect { |h|
-                Pathname.new(h).relative_path_from(Pathname.new('Source'))
-            }
-
-            File.open(t.name, 'w') { |f|
-                f.write license
-                f.write "#pragma once\n"
-                f.write "\n"
-                f.write headers.collect{ |h| "#include <#{h}>\n" }.join('')
-                f.write "\n"
-            }
-        }
-        t.description = "Generates '#{t.name}'"
-    }
+['Source/Common/Exceptions'].each { |dir|
+  preGenerated << Generate.includeDirectory(dir)
 }
 
+generated = []
+Dir['Source/*'].select { |x| File.directory?(x) }.each { |dir|
+  generated << Generate.includeDirectory(dir, requirements: preGenerated)
+}
+generated = (generated + preGenerated).flatten
+
+libraries = []
 libCommon = Library.new { |t|
     t.name = 'lib/libcommon.a'
     t.includes << [ 'Source' ]
@@ -101,10 +89,9 @@ libCommon = Library.new { |t|
     t.sources << Dir['Source/Common/**/*.cpp'] - Dir['Source/Common/TestModules/*.cpp']
     t.description = "Builds library '#{t.name}'"
 }
+libraries << libCommon
 
-libraries = Array.new
-uts = Array.new
-
+uts = []
 uts << Executable.new { |t|
     t.name = "bin/Common-ut"
     t.includes << [ 'Source' ]
@@ -152,13 +139,22 @@ tmp.each { |dir|
 desc 'Builds all generated files'
 multitask(:generated => RakeBuilder::Names[generated])
 
+desc 'Removes generated files'
+task(:clean_generated) {
+  require 'fileutils'
+
+  RakeBuilder::Names[generated].each { |x|
+    FileUtils.rm(x, verbose: true) if File.exists?(x)
+  }
+}
+
 desc 'Builds all libraries'
 multitask(:libraries => RakeBuilder::Names[libraries])
 
 desc 'Builds everything & runs uts'
 multitask(:default => RakeBuilder::Names[libraries, uts]) {
-    uts.each { |x|
-        sh x.name
-    }
+  uts.each { |x|
+    sh x.name
+  }
 }
 

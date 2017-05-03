@@ -33,8 +33,8 @@ Window::Window()
 }
 
 Window::Window(int height, int width, int y, int x)
-    : _height(height),
-      _width(width)
+    : _width(width),
+      _height(height)
 {
     win = newwin(_height, _width, y, x);
 }
