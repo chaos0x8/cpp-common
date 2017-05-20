@@ -31,6 +31,8 @@ namespace Network
 class TcpIpServer : public Detail::BaseSocket
 {
 public:
+    TcpIpServer() noexcept = default;
+
     //! \throw Exceptions::SystemError
     TcpIpServer(const std::string& ip, const std::string& port);
 
