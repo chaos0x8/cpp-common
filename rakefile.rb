@@ -37,20 +37,6 @@ PKG_MAP = {
   'CurlWrapper' => ['libcurl']
 }
 
-license = File.open('LICENSE', 'r') { |f|
-    result = Array.new
-
-    result << "/*!\n"
-    f.each_line { |line|
-        line = line.gsub('#{year}', DateTime::now.year.to_s)
-
-        result << " *  #{line}".rstrip + "\n"
-    }
-    result << " */\n\n"
-
-    result.join('')
-}
-
 preGenerated = []
 preGenerated << GeneratedFile.new { |t|
   t.name = "Source/Generated/CacheLineSize.hpp"
@@ -60,7 +46,6 @@ preGenerated << GeneratedFile.new { |t|
     cacheLineSize = `getconf LEVEL1_DCACHE_LINESIZE`.chomp
 
     File.open(t.name, 'w') { |f|
-      f.write license
       f.write "#pragma once\n"
       f.write "\n"
       f.write "#define CACHE_LINE_SIZE (#{cacheLineSize}ul)\n"
