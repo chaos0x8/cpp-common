@@ -135,7 +135,7 @@ template <
 >
 inline auto first(Container&& c, const Item& i)
 {
-  return std::find(Algorithm::cbegin<Container>(c), Algorithm::cend<Container>(c), i);
+  return std::find(Algorithm::begin<Container>(c), Algorithm::end<Container>(c), i);
 }
 
 template <
@@ -145,7 +145,7 @@ template <
 >
 inline auto first(Container&& c, Functor&& f)
 {
-  return std::find_if(Algorithm::cbegin<Container>(c), Algorithm::cend<Container>(c), std::forward<Functor>(f));
+  return std::find_if(Algorithm::begin<Container>(c), Algorithm::end<Container>(c), std::forward<Functor>(f));
 }
 
 template <
