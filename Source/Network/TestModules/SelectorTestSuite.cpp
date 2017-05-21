@@ -103,6 +103,14 @@ TEST_F(SelectorTestSuite, addingFdTwiceShouldNotWork)
     pipes[1].write("100");
 }
 
+TEST_F(SelectorTestSuite, selectorCanBeSafetlyStoppedManually)
+{
+  expectedCount = 0;
+
+  sut.stop();
+  sut.wait();
+}
+
 }
 }
 }

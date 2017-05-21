@@ -36,7 +36,18 @@ Selector::Selector()
 
 Selector::~Selector()
 {
-    internalCommunication.write("K");
+  stop();
+  wait();
+}
+
+void Selector::stop()
+{
+  internalCommunication.write("K");
+}
+
+void Selector::wait()
+{
+  if (selectorThread.joinable())
     selectorThread.join();
 }
 

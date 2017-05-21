@@ -42,6 +42,9 @@ public:
 
     Selector& operator = (const Selector&) = delete;
 
+    void stop();
+    void wait();
+
     template <class T, class F, class... Args>
     void add(const T& t, F&& f, Args&&... args)
     {
