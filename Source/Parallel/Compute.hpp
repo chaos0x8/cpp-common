@@ -60,7 +60,8 @@ public:
     ComputeContext(ComputeContext<T, F, R>&&) = delete;
     ~ComputeContext()
     {
-        std::for_each(std::begin(threads), std::end(threads), std::mem_fn(&std::thread::join));
+      for (auto& t : threads)
+        t.join();
     }
 
     ComputeContext<T, F, R>& operator = (const ComputeContext<T, F, R>&) = delete;
@@ -68,8 +69,9 @@ public:
 
     void wait()
     {
-        std::for_each(std::begin(threads), std::end(threads), std::mem_fn(&std::thread::join));
-        threads.clear();
+      for (auto& t : threads)
+        t.join();
+      threads.clear();
     }
 
     std::vector<R, Allocator> get()

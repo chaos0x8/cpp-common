@@ -27,7 +27,7 @@ require 'RakeBuilder'
 require 'RakeGenerate'
 
 #FLAGS = [ '--std=c++14', '-Wall', '-Werror', '-g' ]
-FLAGS = [ '--std=c++14', '-Wall', '-Werror', '-O3', '-s', '-DNDEBUG' ]
+FLAGS = [ '--std=c++14', '-Wall', '-Werror', '-O3', '-s', '-DNDEBUG', '-Wno-deprecated' ]
 
 PKG_MAP = {
   'Gtkmm' => ['gtkmm-3.0'],

@@ -57,7 +57,8 @@ public:
     ForEachContext(ForEachContext&&) = delete;
     ~ForEachContext()
     {
-        std::for_each(std::begin(threads), std::end(threads), std::mem_fn(&std::thread::join));
+      for (auto& t : threads)
+        t.join();
     }
 
     ForEachContext<T, F>& operator = (const ForEachContext&) = delete;
@@ -65,8 +66,9 @@ public:
 
     void wait()
     {
-        std::for_each(std::begin(threads), std::end(threads), std::mem_fn(&std::thread::join));
-        threads.clear();
+      for (auto& t : threads)
+        t.join();
+      threads.clear();
     }
 
 private:

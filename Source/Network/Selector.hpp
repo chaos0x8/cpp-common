@@ -25,6 +25,7 @@
 #include <map>
 #include <mutex>
 #include <thread>
+#include <atomic>
 
 namespace Common
 {
@@ -70,7 +71,7 @@ private:
     void threadProcedure();
     void internalHandler();
 
-    bool keepAlive{true};
+    std::atomic<bool> keepAlive{true};
     std::mutex itemsMutex;
     Pipe internalCommunication;
     std::thread selectorThread;
