@@ -34,19 +34,33 @@ TcpIpClient::TcpIpClient(const std::string& ip, const std::string& port)
 
 void TcpIpClient::send(const std::string& data)
 {
-    if (::send(static_cast<int>(fd), data.data(), data.size(), 0) == -1)
-        throw Exceptions::SystemError(errno);
+  if (::send(static_cast<NativeHandler>(fd), data.data(), data.size(), 0) == -1)
+    throw Exceptions::SystemError(errno);
+}
+
+void TcpIpClient::send(const void* src, size_t size)
+{
+  if (::send(static_cast<NativeHandler>(fd), src, size, 0) == -1)
+    throw Exceptions::SystemError(errno);
 }
 
 std::string TcpIpClient::receive()
 {
-    std::array<char, BUFFOR_SIZE> buffor;
+  std::array<char, BUFFOR_SIZE> buffor;
 
-    int r = ::recv(static_cast<int>(fd), buffor.data(), buffor.size(), 0);
-    if (r == -1)
-        throw Exceptions::SystemError(errno);
+  int r = ::recv(static_cast<NativeHandler>(fd), buffor.data(), buffor.size(), 0);
+  if (r == -1)
+    throw Exceptions::SystemError(errno);
 
-    return std::string(buffor.data(), r);
+  return std::string(buffor.data(), r);
+}
+
+bool TcpIpClient::receive(void* dst, size_t size)
+{
+  int r = ::recv(static_cast<NativeHandler>(fd), dst, size, 0);
+  if (r == -1)
+    throw Exceptions::SystemError(errno);
+  return r > 0 and static_cast<size_t>(r) == size;
 }
 
 TcpIpClient::TcpIpClient(Detail::FileDescriptor fd)

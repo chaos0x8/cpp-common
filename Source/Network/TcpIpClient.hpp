@@ -39,7 +39,13 @@ public:
     void send(const std::string& data);
 
     //! \throw Exceptions::SystemError
+    void send(const void* src, size_t);
+
+    //! \throw Exceptions::SystemError
     std::string receive();
+
+    //! \throw Exceptions::SystemError
+    bool  receive(void* dst, size_t);
 
     //! \throw Exceptions::SystemError
     using Detail::BaseSocket::shutdown;
