@@ -46,7 +46,7 @@ class BaseSocket
     };
 
 public:
-    FileDescriptor::value_type getNativeHandler() const;
+    NativeHandler getNativeHandler() const;
 
 protected:
     BaseSocket() noexcept = default;

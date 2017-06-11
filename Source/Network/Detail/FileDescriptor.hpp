@@ -26,36 +26,37 @@
 
 namespace Common
 {
-namespace Network
-{
-namespace Detail
-{
+  namespace Network
+  {
+    namespace Detail
+    {
 
-class FileDescriptor
-{
-public:
-    using value_type = int;
+      class FileDescriptor
+      {
+      public:
+        using value_type = int;
 
-    FileDescriptor() = default;
-    explicit FileDescriptor(value_type fd);
-    FileDescriptor(const FileDescriptor& other) = delete;
-    FileDescriptor(FileDescriptor&& other);
-    ~FileDescriptor();
+        FileDescriptor() = default;
+        explicit FileDescriptor(value_type fd);
+        FileDescriptor(const FileDescriptor& other) = delete;
+        FileDescriptor(FileDescriptor&& other);
+        ~FileDescriptor();
 
-    FileDescriptor& operator = (const FileDescriptor&) = delete;
-    FileDescriptor& operator = (FileDescriptor&& other);
+        FileDescriptor& operator=(const FileDescriptor&) = delete;
+        FileDescriptor& operator=(FileDescriptor&& other);
 
-    explicit operator bool () const;
-    explicit operator value_type () const;
+        explicit operator bool() const;
+        explicit operator value_type() const;
 
-    void close();
+        void close();
 
-private:
-    static constexpr value_type INVALID_VALUE = -1;
+      private:
+        static constexpr value_type INVALID_VALUE = -1;
 
-    value_type fd{INVALID_VALUE};
-};
+        value_type fd{INVALID_VALUE};
+      };
+    }
 
-}
-}
+    using NativeHandler = Detail::FileDescriptor::value_type;
+  }
 }

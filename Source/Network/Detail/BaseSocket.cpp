@@ -27,9 +27,9 @@ namespace Network
 namespace Detail
 {
 
-FileDescriptor::value_type BaseSocket::getNativeHandler() const
+NativeHandler BaseSocket::getNativeHandler() const
 {
-    return static_cast<FileDescriptor::value_type>(fd);
+    return static_cast<NativeHandler>(fd);
 }
 
 BaseSocket::BaseSocket(FileDescriptor fd)
@@ -41,7 +41,7 @@ FileDescriptor BaseSocket::connect(const std::string& ip, const std::string port
 {
     FdWithAddrinfo r = socket(ip, port, socketType);
 
-    if (::connect(static_cast<FileDescriptor::value_type>(r.fd), r.address->ai_addr, static_cast<FileDescriptor::value_type>(r.address->ai_addrlen)) == -1)
+    if (::connect(static_cast<NativeHandler>(r.fd), r.address->ai_addr, static_cast<NativeHandler>(r.address->ai_addrlen)) == -1)
         throw Exceptions::SystemError(errno);
 
     return std::move(r.fd);
@@ -52,10 +52,10 @@ FileDescriptor BaseSocket::bind(const std::string& ip, const std::string port, _
     FdWithAddrinfo r = socket(ip, port, socketType);
 
     int yes = 1;
-    if (::setsockopt(static_cast<FileDescriptor::value_type>(r.fd), SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
+    if (::setsockopt(static_cast<NativeHandler>(r.fd), SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
         throw Exceptions::SystemError(errno);
 
-    if (::bind(static_cast<FileDescriptor::value_type>(r.fd), r.address->ai_addr, static_cast<FileDescriptor::value_type>(r.address->ai_addrlen)) == -1)
+    if (::bind(static_cast<NativeHandler>(r.fd), r.address->ai_addr, static_cast<NativeHandler>(r.address->ai_addrlen)) == -1)
         throw Exceptions::SystemError(errno);
 
     return std::move(r.fd);
@@ -65,7 +65,7 @@ FileDescriptor BaseSocket::listen(const std::string& ip, const std::string port)
 {
     FileDescriptor fd = bind(ip, port, SOCK_STREAM);
 
-    if (::listen(static_cast<FileDescriptor::value_type>(fd), SOMAXCONN) == -1)
+    if (::listen(static_cast<NativeHandler>(fd), SOMAXCONN) == -1)
         throw Exceptions::SystemError(errno);
 
     return fd;
@@ -73,7 +73,7 @@ FileDescriptor BaseSocket::listen(const std::string& ip, const std::string port)
 
 void BaseSocket::shutdown()
 {
-    if (::shutdown(static_cast<FileDescriptor::value_type>(fd), SHUT_RDWR) == -1)
+    if (::shutdown(static_cast<NativeHandler>(fd), SHUT_RDWR) == -1)
         throw Exceptions::SystemError(errno);
 }
 
