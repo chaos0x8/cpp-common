@@ -24,13 +24,17 @@
 
 namespace Common
 {
-namespace Exceptions
-{
+  namespace Exceptions
+  {
+    SystemError::SystemError(int errnoValue)
+        : std::runtime_error(boost::str(boost::format("System error: %1%") % strerror(errnoValue))),
+          _errnoValue(errnoValue)
+    {
+    }
 
-SystemError::SystemError(int errnoValue)
-    : std::runtime_error(boost::str(boost::format("System error: %1%") % strerror(errnoValue)))
-{
-}
-
-}
+    int SystemError::errnoValue() const
+    {
+      return _errnoValue;
+    }
+  }
 }

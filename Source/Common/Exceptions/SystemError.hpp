@@ -24,14 +24,17 @@
 
 namespace Common
 {
-namespace Exceptions
-{
+  namespace Exceptions
+  {
+    class SystemError : public std::runtime_error
+    {
+    public:
+      explicit SystemError(int errnoValue);
 
-class SystemError : public std::runtime_error
-{
-public:
-    explicit SystemError(int errnoValue);
-};
+      int errnoValue() const;
 
-}
+    private:
+      int _errnoValue;
+    };
+  }
 }
