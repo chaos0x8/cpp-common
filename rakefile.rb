@@ -21,7 +21,7 @@
 require 'date'
 require 'pathname'
 
-gem 'rake-builder', '~> 0.3.3'
+gem 'rake-builder', '~> 0.4.0'
 
 require 'RakeBuilder'
 require 'RakeGenerate'
@@ -122,22 +122,22 @@ tmp.each { |dir|
 }
 
 desc 'Builds all generated files'
-multitask(:generated => RakeBuilder::Names[generated])
+multitask(:generated => Names[generated])
 
 desc 'Removes generated files'
 task(:clean_generated) {
   require 'fileutils'
 
-  RakeBuilder::Names[generated].each { |x|
+  Names[generated].each { |x|
     FileUtils.rm(x, verbose: true) if File.exists?(x)
   }
 }
 
 desc 'Builds all libraries'
-multitask(:libraries => RakeBuilder::Names[libraries])
+multitask(:libraries => Names[libraries])
 
 desc 'Builds everything & runs uts'
-multitask(:default => RakeBuilder::Names[libraries, uts]) {
+multitask(:default => Names[libraries, uts]) {
   uts.each { |x|
     sh x.name
   }
