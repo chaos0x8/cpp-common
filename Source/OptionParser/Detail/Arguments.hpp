@@ -1,7 +1,7 @@
 /*!
  *  \author <https://github.com/chaos0x8>
  *  \copyright
- *  Copyright (c) 2015 - 2016, <https://github.com/chaos0x8>
+ *  Copyright (c) 2017, <https://github.com/chaos0x8>
  *
  *  \copyright
  *  Permission to use, copy, modify, and/or distribute this software for any
@@ -20,12 +20,26 @@
 
 #pragma once
 
-#include <vector>
 #include <string>
 
-namespace Common
+namespace Common::OptionParser::Detail
 {
+  struct Arguments
+  {
+    Arguments(int* argc, char** argv);
 
-std::vector<std::string> parseArgs(int argc, char** argv);
+    bool takeName(std::string* name);
+    bool takeValue(std::string* name);
+    bool next();
 
+    bool containsValue() const;
+
+  private:
+    int32_t _it = 1;
+    uint32_t _kt = 0;
+    bool _containsValue = false;
+
+    int* _argc;
+    char** _argv;
+  };
 }

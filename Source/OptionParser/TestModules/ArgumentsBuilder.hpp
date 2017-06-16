@@ -1,7 +1,7 @@
 /*!
  *  \author <https://github.com/chaos0x8>
  *  \copyright
- *  Copyright (c) 2015 - 2016, <https://github.com/chaos0x8>
+ *  Copyright (c) 2017, <https://github.com/chaos0x8>
  *
  *  \copyright
  *  Permission to use, copy, modify, and/or distribute this software for any
@@ -18,22 +18,41 @@
  *  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <Common/ParseArgs.hpp>
-#include <gmock/gmock.h>
+#pragma once
 
-namespace Common
+#include <string>
+#include <tuple>
+#include <memory>
+
+namespace Common::OptionParser
 {
-namespace UT
-{
+  struct ArgumentsBuilder
+  {
+    ArgumentsBuilder();
+    ~ArgumentsBuilder();
 
-using namespace testing;
+    ArgumentsBuilder(const ArgumentsBuilder&) = delete;
+    ArgumentsBuilder(ArgumentsBuilder&& other);
 
-TEST(ParseArgsTestSuite, testParsing)
-{
-    int argc = 4;
-    const char* argv[4] = { "program", "argument1", "arg2", "arg3" };
-    ASSERT_THAT(parseArgs(argc, const_cast<char**>(argv)), ElementsAre("argument1", "arg2", "arg3"));
-}
+    ArgumentsBuilder& operator = (const ArgumentsBuilder&) = delete;
+    ArgumentsBuilder& operator = (ArgumentsBuilder&& other);
 
-}
+    void push_back(std::string arg);
+
+    void reset();
+
+    std::tuple<int, char**> view() const;
+
+  private:
+    int argc = 0;
+    char** argv = nullptr;
+  };
+
+  template <class... Args>
+  inline auto makeArgs(Args&&... args)
+  {
+    auto result = std::make_shared<ArgumentsBuilder>();
+    (result->push_back(args), ...);
+    return result;
+  }
 }

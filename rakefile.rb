@@ -26,8 +26,10 @@ gem 'rake-builder', '~> 0.4.0'
 require 'RakeBuilder'
 require 'RakeGenerate'
 
-#FLAGS = [ '--std=c++14', '-Wall', '-Werror', '-g' ]
-FLAGS = [ '--std=c++14', '-Wall', '-Werror', '-O3', '-s', '-DNDEBUG', '-Wno-deprecated' ]
+autoload :FileUtils, 'fileutils'
+
+#FLAGS = [ '-Wall', '-Werror', '-g', '-Wno-deprecated' ]
+FLAGS = [ '-Wall', '-Werror', '-O3', '-s', '-DNDEBUG', '-Wno-deprecated' ]
 
 PKG_MAP = {
   'Gtkmm' => ['gtkmm-3.0'],
@@ -35,6 +37,12 @@ PKG_MAP = {
   'SqLite' => ['sqlite3'],
   'GL' => ['glew'],
   'CurlWrapper' => ['libcurl']
+}
+
+FLAGS_MAP = {
+  'Gtkmm' => ['--std=c++14'],
+  'EmbededRuby' => ['--std=c++14'],
+  :default => ['--std=c++17']
 }
 
 preGenerated = []
@@ -67,9 +75,11 @@ generated = (generated + preGenerated).flatten
 
 libraries = []
 libCommon = Library.new { |t|
+    flags = FLAGS_MAP['Common'] || FLAGS_MAP[:default]
+
     t.name = 'lib/libcommon.a'
     t.includes << [ 'Source' ]
-    t.flags << [ FLAGS ]
+    t.flags << [FLAGS, flags]
     t.requirements << generated
     t.sources << Dir['Source/Common/**/*.cpp'] - Dir['Source/Common/TestModules/*.cpp']
     t.description = "Builds library '#{t.name}'"
@@ -78,9 +88,11 @@ libraries << libCommon
 
 uts = []
 uts << Executable.new { |t|
+    flags = FLAGS_MAP['Common'] || FLAGS_MAP[:default]
+
     t.name = "bin/Common-ut"
     t.includes << [ 'Source' ]
-    t.flags << [ FLAGS, '-pthread' ]
+    t.flags << [FLAGS, flags, '-pthread']
     t.requirements << generated
     t.libs << [ '-lgtest', '-lgmock' ]
     t.libs << [ libCommon ]
@@ -91,13 +103,14 @@ uts << Executable.new { |t|
 tmp = Dir['Source/*'].select{ |x| File.directory?(x) } - [ 'Source/Common' ]
 tmp.each { |dir|
     pkgs = PKG_MAP[File.basename(dir)] || []
+    flags = FLAGS_MAP[File.basename(dir)] || FLAGS_MAP[:default]
 
     sources = Dir["#{dir}/**/*.cpp"] - Dir["#{dir}/**/TestModules/*.cpp"]
 
     libraries << Library.new { |t|
         t.name = "lib/libcommon#{File.basename(dir)}.a"
         t.includes << [ 'Source' ]
-        t.flags << [ FLAGS ]
+        t.flags << [FLAGS, flags]
         t.requirements << generated
         t.libs << libCommon
         t.pkgs << pkgs
@@ -111,7 +124,7 @@ tmp.each { |dir|
         t.name = "bin/#{File.basename(dir)}-ut"
         t.description = "Builds ut target '#{t.name}'"
         t.includes << [ 'Source' ]
-        t.flags << [ FLAGS, '-pthread' ]
+        t.flags << [FLAGS, flags, '-pthread']
         t.requirements << generated
         t.libs << [ '-lgtest', '-lgmock' ]
         t.libs << libraries.select { |l| l.name == "lib/libcommon#{File.basename(dir)}.a" }
@@ -126,8 +139,6 @@ multitask(:generated => Names[generated])
 
 desc 'Removes generated files'
 task(:clean_generated) {
-  require 'fileutils'
-
   Names[generated].each { |x|
     FileUtils.rm(x, verbose: true) if File.exists?(x)
   }

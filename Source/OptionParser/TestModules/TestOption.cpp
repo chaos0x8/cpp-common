@@ -1,5 +1,26 @@
+/*!
+ *  \author <https://github.com/chaos0x8>
+ *  \copyright
+ *  Copyright (c) 2017, <https://github.com/chaos0x8>
+ *
+ *  \copyright
+ *  Permission to use, copy, modify, and/or distribute this software for any
+ *  purpose with or without fee is hereby granted, provided that the above
+ *  copyright notice and this permission notice appear in all copies.
+ *
+ *  \copyright
+ *  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ *  WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ *  MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ *  ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ *  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ *  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ *  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
 #include "../Option.hpp"
 #include <gmock/gmock.h>
+#include <optional>
 
 namespace Common::OptionParser
 {
@@ -22,81 +43,84 @@ namespace Common::OptionParser
     size_t _value = 0u;
   };
 
-  TEST(TestOption, shouldAssignName)
-  {
-    auto sut = Option<std::string>("name");
-    EXPECT_THAT(sut.name(), Eq("name"));
-    EXPECT_THAT(sut.info(), Eq("\tname"));
-  }
-
   TEST(TestOption, shouldAssignDescription)
   {
-    auto sut = Option<std::string>("name").description("desc");
+    auto sut = Option<std::string>("-n", "--name").description("desc");
     EXPECT_THAT(sut.description(), Eq("desc"));
-    EXPECT_THAT(sut.info(), Eq("\tname\tdesc"));
   }
 
   TEST(TestOption, shouldBeNotValidWhenValueIsNotSet)
   {
-    auto sut = Option<std::string>("name");
+    auto sut = Option<std::string>("-n", "--name");
     EXPECT_THAT(static_cast<bool>(sut), Eq(false));
   }
 
   TEST(TestOption, shouldDoNothingWhenSetUsedOnNonBoolOption)
   {
-    auto sut = Option<std::string>("name").set();
+    auto sut = Option<std::string>("-n", "--name").set();
     EXPECT_THAT(static_cast<bool>(sut), Eq(false));
     EXPECT_THAT(sut.value(), Eq(std::string()));
   }
 
   TEST(TestOption, shouldBeValidWhenValueIsNotSetButParamHasDefault)
   {
-    auto sut = Option<std::string>("name").defaultValue("def");
+    auto sut = Option<std::string>("-n", "--name").defaultValue("def");
     EXPECT_THAT(static_cast<bool>(sut), Eq(true));
     EXPECT_THAT(sut.value(), Eq("def"));
-    EXPECT_THAT(sut.info(), Eq("\tname\n\t\tdefault: def"));
   }
 
   TEST(TestOption, shouldAssignValue)
   {
-    auto sut = Option<std::string>("name").value("val");
+    auto sut = Option<std::string>("-n", "--name").value("val");
     EXPECT_THAT(static_cast<bool>(sut), Eq(true));
     EXPECT_THAT(sut.value(), Eq("val"));
   }
 
   TEST(TestOption, shouldAutoConvertToInteger)
   {
-    auto sut = Option<int>("name").value("42");
+    auto sut = Option<int>("--number").value("42");
     EXPECT_THAT(static_cast<bool>(sut), Eq(true));
     EXPECT_THAT(sut.value(), Eq(42));
   }
 
   TEST(TestOption, shouldBeSetByDefaultToFalseOnBoolOption)
   {
-    auto sut = Option<bool>("name");
+    auto sut = Option<bool>("--help");
     EXPECT_THAT(static_cast<bool>(sut), Eq(true));
     EXPECT_THAT(sut.value(), Eq(false));
-    EXPECT_THAT(sut.info(), Eq("\tname\n\t\tdefault: false"));
   }
 
   TEST(TestOption, shouldAutoConvertToBool)
   {
-    auto sut = Option<bool>("name").value("true");
+    auto sut = Option<bool>("--help").value("true");
     EXPECT_THAT(static_cast<bool>(sut), Eq(true));
     EXPECT_THAT(sut.value(), Eq(true));
   }
 
   TEST(TestOption, shouldAssignTrueWhenSetUsedOnBoolOption)
   {
-    auto sut = Option<bool>("name").set();
+    auto sut = Option<bool>("--help").set();
     EXPECT_THAT(static_cast<bool>(sut), Eq(true));
     EXPECT_THAT(sut.value(), Eq(true));
   }
 
   TEST(TestOption, shouldAutoConvertToClass)
   {
-    auto sut = Option<Size>("name").value("42");
+    auto sut = Option<Size>("-s", "--size").value("42");
     EXPECT_THAT(static_cast<bool>(sut), Eq(true));
     EXPECT_THAT(sut.value().value(), Eq(2u));
+  }
+
+  TEST(TestOption, shouldExecuteCallbackWhenValueIsSet)
+  {
+    std::optional<std::string> actual;
+
+    auto sut = Option<std::string>("--name").on([&](const std::string& val){
+      actual = val;
+    });
+
+    sut.value("Jessy");
+
+    EXPECT_THAT(actual, Eq("Jessy"));
   }
 }

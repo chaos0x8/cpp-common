@@ -18,10 +18,25 @@
  *  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <gtest/gtest.h>
+#pragma once
 
-int main(int argc, char** argv)
+#include <stdexcept>
+#include <string>
+
+namespace Common::OptionParser
 {
-    testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+  struct UnknownOptionError : public std::runtime_error
+  {
+    UnknownOptionError(std::string optionName);
+  };
+
+  struct MissingValueError : public std::runtime_error
+  {
+    MissingValueError(std::string optionName);
+  };
+
+  struct UnexpectedValueError : public std::runtime_error
+  {
+    UnexpectedValueError(std::string optionName);
+  };
 }

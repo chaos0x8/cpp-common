@@ -1,7 +1,7 @@
 /*!
  *  \author <https://github.com/chaos0x8>
  *  \copyright
- *  Copyright (c) 2016, <https://github.com/chaos0x8>
+ *  Copyright (c) 2016 - 2017, <https://github.com/chaos0x8>
  *
  *  \copyright
  *  Permission to use, copy, modify, and/or distribute this software for any
@@ -18,8 +18,9 @@
  *  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <Common/SharedLibrary.hpp>
-#include <Common/RuntimeAssert.hpp>
+#include "SharedLibrary.hpp"
+
+#include "Common/RuntimeAssert.hpp"
 #include <dlfcn.h>
 
 using namespace std::literals;

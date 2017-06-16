@@ -1,7 +1,7 @@
 /*!
  *  \author <https://github.com/chaos0x8>
  *  \copyright
- *  Copyright (c) 2015 - 2016, <https://github.com/chaos0x8>
+ *  Copyright (c) 2017, <https://github.com/chaos0x8>
  *
  *  \copyright
  *  Permission to use, copy, modify, and/or distribute this software for any
@@ -18,17 +18,23 @@
  *  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <Common/ParseArgs.hpp>
+#include "Exceptions.hpp"
+#include <boost/format.hpp>
 
-namespace Common
+namespace Common::OptionParser
 {
+  UnknownOptionError::UnknownOptionError(std::string optionName)
+      : std::runtime_error(boost::str(boost::format("UnknownOptionError: '%1%'") % optionName))
+  {
+  }
 
-std::vector<std::string> parseArgs(int argc, char** argv)
-{
-    std::vector<std::string> result;
-    for (int i = 1; i < argc; ++i)
-        result.emplace_back(argv[i]);
-    return result;
-}
+  MissingValueError::MissingValueError(std::string optionName)
+      : std::runtime_error(boost::str(boost::format("MissingValueError: '%1%'") % optionName))
+  {
+  }
 
+  UnexpectedValueError::UnexpectedValueError(std::string optionName)
+      : std::runtime_error(boost::str(boost::format("UnexpectedValueError: '%1%'") % optionName))
+  {
+  }
 }
