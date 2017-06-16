@@ -158,28 +158,28 @@ namespace Common::OptionParser
     }
 
   private:
-    template <int I, int MAX, typename F, class std::enable_if<I != MAX, int>::type = 0>
+    template <int I, int MAX, class This, typename F, class std::enable_if<I != MAX, int>::type = 0>
+    static void _each(This _this, F&& fun)
+    {
+      fun(std::get<I>(_this->options).option);
+      _each<I + 1, MAX>(_this, std::forward<F>(fun));
+    }
+
+    template <int I, int MAX, class This, typename F, class std::enable_if<I == MAX, int>::type = 0>
+    static void _each(This _this, F&& fun)
+    {
+    }
+
+    template <int I, int MAX, typename F>
     void each(F&& fun)
     {
-      fun(std::get<I>(options).option);
-      each<I + 1, MAX>(std::forward<F>(fun));
+      _each<I, MAX>(this, std::forward<F>(fun));
     }
 
-    template <int I, int MAX, typename F, class std::enable_if<I == MAX, int>::type = 0>
-    void each(F&& fun)
-    {
-    }
-
-    template <int I, int MAX, typename F, class std::enable_if<I != MAX, int>::type = 0>
+    template <int I, int MAX, typename F>
     void each(F&& fun) const
     {
-      fun(std::get<I>(options).option);
-      each<I + 1, MAX>(std::forward<F>(fun));
-    }
-
-    template <int I, int MAX, typename F, class std::enable_if<I == MAX, int>::type = 0>
-    void each(F&& fun) const
-    {
+      _each<I, MAX>(this, std::forward<F>(fun));
     }
 
     std::vector<std::string> _helpPrefix;
