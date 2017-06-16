@@ -54,7 +54,7 @@ namespace Common::OptionParser
   struct Tagged
   {
     template <class... Args>
-    Tagged(Args&&... args) : option(std::forward<Args>(args)...)
+    Tagged(OPTION o) : option(o)
     {
     }
 
@@ -65,6 +65,12 @@ namespace Common::OptionParser
 
     OPTION option;
   };
+
+  template <class TAG, TAG VALUE, class OPTION>
+  auto tagged(OPTION option)
+  {
+    return Tagged<TAG, VALUE, OPTION>(option);
+  }
 
   template <class TAG, class A0, class... Args>
   struct Parser

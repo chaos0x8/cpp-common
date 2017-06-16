@@ -39,12 +39,9 @@ namespace Common::OptionParser
   auto makeSut()
   {
     auto res = makeParser<Tag>(
-        Tagged<Tag, Tag::Name, Option<std::string>>("-n", "--name"),
-        Tagged<Tag, Tag::Number, Option<int>>("--number"),
-        Tagged<Tag, Tag::Help, Option<bool>>("--help"));
-    res.get<Tag::Name>().description("some name");
-    res.get<Tag::Number>().description("some number");
-    res.get<Tag::Help>().description("some flag");
+        tagged<Tag, Tag::Name>(Option<std::string>("-n", "--name").description("some name")),
+        tagged<Tag, Tag::Number>(Option<int>("--number").description("some number")),
+        tagged<Tag, Tag::Help>(Option<bool>("--help").description("some flag")));
     return res;
   }
 
