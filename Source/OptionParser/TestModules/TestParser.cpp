@@ -40,7 +40,7 @@ namespace Common::OptionParser
   {
     auto res = makeParser<Tag>(
         tagged<Tag, Tag::Name>(Option<std::string>("-n", "--name").description("some name")),
-        tagged<Tag, Tag::Number>(Option<int>("--number").description("some number")),
+        tagged<Tag, Tag::Number>(Option<int>("--number").description("some number").defaultValue("17")),
         tagged<Tag, Tag::Help>(Option<bool>("--help").description("some flag")));
     return res;
   }
@@ -127,8 +127,8 @@ namespace Common::OptionParser
       "--\n"
       "  -n, --name        some name\n"
       "  --number          some number\n"
+      "                      default: 17\n"
       "  --help            some flag\n"
-      "                      default: false\n"
       "--\n"
       "sufix\n"));
   }

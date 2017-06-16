@@ -43,9 +43,6 @@ namespace Common::OptionParser
     {
       _names.push_back(std::move(name));
       ( _names.push_back(std::move(names)), ... );
-
-      if constexpr(std::is_same<T, bool>::value)
-        defaultValue("false");
     }
 
     Option<T>& description(std::string val)
@@ -99,8 +96,6 @@ namespace Common::OptionParser
 
     Option<T>& set()
     {
-      if constexpr(std::is_same<T, bool>::value)
-        value("true");
       return *this;
     }
 
@@ -121,8 +116,6 @@ namespace Common::OptionParser
         if (_hasDefault)
         {
           ss << "  default: ";
-          if (std::is_same<T, bool>::value)
-            ss << std::boolalpha;
           ss << _default;
         }
 
@@ -136,7 +129,7 @@ namespace Common::OptionParser
       return _present or _hasDefault;
     }
 
-    enum { isBool = std::is_same<T, bool>::value };
+    enum { isBool = false };
 
   private:
     template <class U, class std::enable_if<
@@ -151,8 +144,7 @@ namespace Common::OptionParser
     template <class U, class std::enable_if<
       std::is_same<U, std::string>::value and
       ! std::is_same<T, std::string>::value and
-      ! std::is_same<T, int>::value and
-      ! std::is_same<T, bool>::value, int>::type = 0
+      ! std::is_same<T, int>::value, int>::type = 0
     >
     T _convert(U val)
     {
@@ -166,15 +158,6 @@ namespace Common::OptionParser
     T _convert(U val)
     {
       return std::stoi(val);
-    }
-
-    template <class U, class std::enable_if<
-      std::is_same<U, std::string>::value and
-      std::is_same<T, bool>::value, int>::type = 0
-    >
-    T _convert(U val)
-    {
-      return val == "true";
     }
 
     T _convert(const char* val)
@@ -192,5 +175,82 @@ namespace Common::OptionParser
 
     bool _present = false;
     T _value = T();
+  };
+
+  template <>
+  struct Option<bool>
+  {
+    template <class... Args>
+    explicit Option(std::string name, Args&&... names)
+      : _value()
+    {
+      _names.push_back(std::move(name));
+      ( _names.push_back(std::move(names)), ... );
+    }
+
+    Option<bool>& description(std::string val)
+    {
+      _description = val;
+      return *this;
+    }
+
+    std::string description() const
+    {
+      return _description;
+    }
+
+    template <class U>
+    Option<bool>& value(U val)
+    {
+      _value = std::string(val) == "true";
+
+      if (_callback)
+        _callback(_value);
+
+      return *this;
+    }
+
+    bool value() const
+    {
+      return _value;
+    }
+
+    Option<bool>& on(std::function<void (bool)> callback)
+    {
+      _callback = callback;
+      return *this;
+    }
+
+    Option<bool>& set()
+    {
+      _value = true;
+      return *this;
+    }
+
+    bool matchName(std::string name) const
+    {
+      return Detail::matchName(_names, name);
+    }
+
+    template <class F>
+    void help(F&& fun) const
+    {
+      fun(Detail::join(_names, ", "), _description);
+    }
+
+    explicit operator bool() const
+    {
+      return _value;
+    }
+
+    enum { isBool = true };
+
+  private:
+    std::function<void (bool)> _callback;
+
+    std::vector<std::string> _names;
+    std::string _description;
+
+    bool _value = false;
   };
 }

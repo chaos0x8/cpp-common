@@ -86,8 +86,19 @@ namespace Common::OptionParser
   TEST(TestOption, shouldBeSetByDefaultToFalseOnBoolOption)
   {
     auto sut = Option<bool>("--help");
-    EXPECT_THAT(static_cast<bool>(sut), Eq(true));
+    EXPECT_THAT(static_cast<bool>(sut), Eq(false));
     EXPECT_THAT(sut.value(), Eq(false));
+  }
+
+  TEST(TestOption, shouldEvaluateToValueOnBoolOption)
+  {
+    auto sut = Option<bool>("--help").value("false");
+    EXPECT_THAT(static_cast<bool>(sut), Eq(false));
+    EXPECT_THAT(sut.value(), Eq(false));
+
+    sut = Option<bool>("--help").value("true");
+    EXPECT_THAT(static_cast<bool>(sut), Eq(true));
+    EXPECT_THAT(sut.value(), Eq(true));
   }
 
   TEST(TestOption, shouldAutoConvertToBool)
