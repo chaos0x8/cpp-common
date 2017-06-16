@@ -32,6 +32,39 @@ namespace Common::OptionParser
   {
     std::string join(const std::vector<std::string>& text, std::string sep);
     bool matchName(const std::vector<std::string>& names, std::string expected);
+
+    template <class... Args>
+    inline std::vector<std::string> mkVector(std::string name, Args&&... names)
+    {
+      auto result = std::vector<std::string>();
+      result.emplace_back(std::move(name));
+      ( result.emplace_back(std::move(names)), ... );
+      return result;
+    }
+
+    template <class TO>
+    inline TO convert(std::string from)
+    {
+      return TO(from);
+    }
+
+    template <>
+    inline std::string convert<std::string>(std::string from)
+    {
+      return from;
+    }
+
+    template <>
+    inline int convert<int>(std::string from)
+    {
+      return std::stoi(from);
+    }
+
+    template <>
+    inline bool convert<bool>(std::string from)
+    {
+      return from == "true";
+    }
   }
 
   template <class T>
@@ -39,10 +72,8 @@ namespace Common::OptionParser
   {
     template <class... Args>
     explicit Option(std::string name, Args&&... names)
-      : _value()
+      : _names(Detail::mkVector(std::move(name), std::forward<Args>(names)...))
     {
-      _names.push_back(std::move(name));
-      ( _names.push_back(std::move(names)), ... );
     }
 
     Option<T>& description(std::string val)
@@ -56,10 +87,9 @@ namespace Common::OptionParser
       return _description;
     }
 
-    template <class U>
-    Option<T>& value(U val)
+    Option<T>& value(std::string val)
     {
-      _value = _convert(val);
+      _value = Detail::convert<T>(val);
       _present = true;
 
       if (_callback)
@@ -75,10 +105,9 @@ namespace Common::OptionParser
       return _default;
     }
 
-    template <typename U>
-    Option<T>& defaultValue(U val)
+    Option<T>& defaultValue(std::string val)
     {
-      _default = _convert(val);
+      _default = Detail::convert<T>(val);
       _hasDefault = true;
       return *this;
     }
@@ -113,11 +142,8 @@ namespace Common::OptionParser
       {
         std::stringstream ss;
 
-        if (_hasDefault)
-        {
-          ss << "  default: ";
-          ss << _default;
-        }
+        ss << "  default: ";
+        ss << _default;
 
         using namespace std::literals;
         fun(""s, ss.str());
@@ -132,39 +158,6 @@ namespace Common::OptionParser
     enum { isBool = false };
 
   private:
-    template <class U, class std::enable_if<
-      std::is_same<U, std::string>::value and
-      std::is_same<T, std::string>::value, int>::type = 0
-    >
-    T _convert(U val)
-    {
-      return val;
-    }
-
-    template <class U, class std::enable_if<
-      std::is_same<U, std::string>::value and
-      ! std::is_same<T, std::string>::value and
-      ! std::is_same<T, int>::value, int>::type = 0
-    >
-    T _convert(U val)
-    {
-      return T(val);
-    }
-
-    template <class U, class std::enable_if<
-      std::is_same<U, std::string>::value and
-      std::is_same<T, int>::value, int>::type = 0
-    >
-    T _convert(U val)
-    {
-      return std::stoi(val);
-    }
-
-    T _convert(const char* val)
-    {
-      return _convert(std::string(val));
-    }
-
     std::function<void (const T&)> _callback;
 
     std::vector<std::string> _names;
@@ -182,10 +175,8 @@ namespace Common::OptionParser
   {
     template <class... Args>
     explicit Option(std::string name, Args&&... names)
-      : _value()
+      : _names(Detail::mkVector(std::move(name), std::forward<Args>(names)...))
     {
-      _names.push_back(std::move(name));
-      ( _names.push_back(std::move(names)), ... );
     }
 
     Option<bool>& description(std::string val)
@@ -202,7 +193,7 @@ namespace Common::OptionParser
     template <class U>
     Option<bool>& value(U val)
     {
-      _value = std::string(val) == "true";
+      _value = Detail::convert<bool>(val);
 
       if (_callback)
         _callback(_value);
