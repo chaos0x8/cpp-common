@@ -18,32 +18,29 @@
  *  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#pragma once
+#include "Argv.hpp"
 
-#include <string>
-
-namespace Common::OptionParser::Detail
+namespace Common::OptionParser
 {
-  struct Arguments
+  Argv::Argv(int argc, char** argv)
+    : _argc(argc), _argv(argv)
   {
-    Arguments(int* argc, char** argv);
+  }
 
-    bool takeName(std::string* name);
-    bool takeValue(std::string* name);
-    bool next();
+  using value_type = const char*;
 
-    bool containsValue() const;
+  const char* Argv::zero() const
+  {
+    return _argv[0];
+  }
 
-    void setMatched();
-    void setNotMatched(std::string option);
+  const char* Argv::operator[](size_t index) const
+  {
+    return _argv[1u+index];
+  }
 
-  private:
-    int _it = 1;
-    unsigned int _kt = 0;
-    unsigned int _matched = 0;
-    bool _containsValue = false;
-
-    int* _argc;
-    char** _argv;
-  };
+  size_t Argv::size() const
+  {
+    return static_cast<size_t>(_argc-1);
+  }
 }

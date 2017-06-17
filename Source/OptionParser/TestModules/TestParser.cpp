@@ -20,6 +20,7 @@
 
 #include "../Parser.hpp"
 #include "../Option.hpp"
+#include "../Tagged.hpp"
 #include "ArgumentsBuilder.hpp"
 #include <gmock/gmock.h>
 #include <cstring>
@@ -28,6 +29,7 @@
 namespace Common::OptionParser
 {
   using namespace testing;
+  using namespace std::literals;
 
   enum class Tag : uint32_t
   {
@@ -41,7 +43,7 @@ namespace Common::OptionParser
     auto res = makeParser<Tag>(
         tagged<Tag, Tag::Name>(Option<std::string>("-n", "--name").description("some name")),
         tagged<Tag, Tag::Number>(Option<int>("--number").description("some number").defaultValue("17")),
-        tagged<Tag, Tag::Help>(Option<bool>("--help").description("some flag")));
+        tagged<Tag, Tag::Help>(Option<bool>("-h", "--help").description("some flag")));
     return res;
   }
 
@@ -70,6 +72,9 @@ namespace Common::OptionParser
   };
 
   INSTANTIATE_TEST_CASE_P(, TestParser_A, Values(
+    makeArgs("-nfdsfdf", "--help", "--number", "42"),
+    makeArgs("-n", "fdsfdf", "--help", "--number", "42"),
+    makeArgs("-hnfdsfdf", "--number", "42"),
     makeArgs("--name", "fdsfdf", "--help", "--number", "42"),
     makeArgs("--name=fdsfdf", "--help", "--number=42")));
 
@@ -128,8 +133,30 @@ namespace Common::OptionParser
       "  -n, --name        some name\n"
       "  --number          some number\n"
       "                      default: 17\n"
-      "  --help            some flag\n"
+      "  -h, --help        some flag\n"
       "--\n"
       "sufix\n"));
+  }
+
+  TEST_F(TestParser, shouldRemoveUsedOptions)
+  {
+    setArguments(makeArgs("--help", "-x", "-nLOL", "unknown"));
+
+    auto sut = makeSut();
+
+    sut.parse(&argc, argv);
+
+    EXPECT_THAT(argc, Eq(3));
+    EXPECT_THAT(argv[1], Eq("-x"s));
+    EXPECT_THAT(argv[2], Eq("unknown"s));
+  }
+
+  TEST_F(TestParser, shouldThrowWhenUnknownOptionIsMixedWithKnown)
+  {
+    setArguments(makeArgs("-hxnLOL"));
+
+    auto sut = makeSut();
+
+    ASSERT_THROW(sut.parse(&argc, argv), UnknownOptionError);
   }
 }

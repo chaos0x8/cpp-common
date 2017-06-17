@@ -20,30 +20,23 @@
 
 #pragma once
 
-#include <string>
-
 namespace Common::OptionParser::Detail
 {
-  struct Arguments
+  template <class TAG, TAG VALUE, int N, class OPT, class... Args>
+  struct Find
   {
-    Arguments(int* argc, char** argv);
+    enum
+    {
+      value = (OPT::value() == VALUE ? N : Find<TAG, VALUE, N + 1, Args...>::value)
+    };
+  };
 
-    bool takeName(std::string* name);
-    bool takeValue(std::string* name);
-    bool next();
-
-    bool containsValue() const;
-
-    void setMatched();
-    void setNotMatched(std::string option);
-
-  private:
-    int _it = 1;
-    unsigned int _kt = 0;
-    unsigned int _matched = 0;
-    bool _containsValue = false;
-
-    int* _argc;
-    char** _argv;
+  template <class TAG, TAG VALUE, int N, class OPT>
+  struct Find<TAG, VALUE, N, OPT>
+  {
+    enum
+    {
+      value = (OPT::value() == VALUE ? N : N + 1)
+    };
   };
 }

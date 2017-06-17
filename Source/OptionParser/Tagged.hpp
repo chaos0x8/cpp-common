@@ -20,30 +20,27 @@
 
 #pragma once
 
-#include <string>
-
-namespace Common::OptionParser::Detail
+namespace Common::OptionParser
 {
-  struct Arguments
+  template <class TAG, TAG VALUE, class OPTION>
+  struct Tagged
   {
-    Arguments(int* argc, char** argv);
+    template <class... Args>
+    Tagged(OPTION o) : option(o)
+    {
+    }
 
-    bool takeName(std::string* name);
-    bool takeValue(std::string* name);
-    bool next();
+    static constexpr TAG value()
+    {
+      return VALUE;
+    }
 
-    bool containsValue() const;
-
-    void setMatched();
-    void setNotMatched(std::string option);
-
-  private:
-    int _it = 1;
-    unsigned int _kt = 0;
-    unsigned int _matched = 0;
-    bool _containsValue = false;
-
-    int* _argc;
-    char** _argv;
+    OPTION option;
   };
+
+  template <class TAG, TAG VALUE, class OPTION>
+  auto tagged(OPTION option)
+  {
+    return Tagged<TAG, VALUE, OPTION>(option);
+  }
 }

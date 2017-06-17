@@ -20,30 +20,21 @@
 
 #pragma once
 
-#include <string>
+#include <cstddef>
 
-namespace Common::OptionParser::Detail
+namespace Common::OptionParser
 {
-  struct Arguments
+  struct Argv
   {
-    Arguments(int* argc, char** argv);
+    Argv(int argc, char** argv);
 
-    bool takeName(std::string* name);
-    bool takeValue(std::string* name);
-    bool next();
+    const char* zero() const;
+    const char* operator[](size_t index) const;
 
-    bool containsValue() const;
-
-    void setMatched();
-    void setNotMatched(std::string option);
+    size_t size() const;
 
   private:
-    int _it = 1;
-    unsigned int _kt = 0;
-    unsigned int _matched = 0;
-    bool _containsValue = false;
-
-    int* _argc;
+    int _argc;
     char** _argv;
   };
 }

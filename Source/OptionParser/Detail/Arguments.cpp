@@ -19,6 +19,7 @@
  */
 
 #include "Arguments.hpp"
+#include "../Exceptions.hpp"
 #include <regex>
 #include <iostream>
 
@@ -83,6 +84,7 @@ namespace Common::OptionParser::Detail
       {
         *value = &_argv[_it][_kt];
         _kt = std::strlen(_argv[_it]);
+        ++_matched;
         return true;
       }
     }
@@ -92,8 +94,19 @@ namespace Common::OptionParser::Detail
 
   bool Arguments::next()
   {
-    ++_it;
+    if (_matched > 0)
+    {
+      for (int i = _it+1; i < *_argc; ++i)
+        std::swap(_argv[i-1], _argv[i]);
+      *_argc -= 1;
+    }
+    else
+    {
+      ++_it;
+    }
+
     _kt = 0;
+    _matched = 0;
     _containsValue = false;
 
     return _it < *_argc;
@@ -102,5 +115,16 @@ namespace Common::OptionParser::Detail
   bool Arguments::containsValue() const
   {
     return _containsValue;
+  }
+
+  void Arguments::setMatched()
+  {
+    ++_matched;
+  }
+
+  void Arguments::setNotMatched(std::string option)
+  {
+    if (_matched > 0)
+      throw UnknownOptionError(option);
   }
 }

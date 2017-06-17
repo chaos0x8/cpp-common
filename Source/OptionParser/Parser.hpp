@@ -25,53 +25,11 @@
 #include <sstream>
 #include <vector>
 #include "Detail/Arguments.hpp"
+#include "Detail/Find.hpp"
 #include "Exceptions.hpp"
 
 namespace Common::OptionParser
 {
-  namespace Detail
-  {
-    template <class TAG, TAG VALUE, int N, class OPT, class... Args>
-    struct Find
-    {
-      enum
-      {
-        value = (OPT::value() == VALUE ? N : Find<TAG, VALUE, N + 1, Args...>::value)
-      };
-    };
-
-    template <class TAG, TAG VALUE, int N, class OPT>
-    struct Find<TAG, VALUE, N, OPT>
-    {
-      enum
-      {
-        value = (OPT::value() == VALUE ? N : N + 1)
-      };
-    };
-  }
-
-  template <class TAG, TAG VALUE, class OPTION>
-  struct Tagged
-  {
-    template <class... Args>
-    Tagged(OPTION o) : option(o)
-    {
-    }
-
-    static constexpr TAG value()
-    {
-      return VALUE;
-    }
-
-    OPTION option;
-  };
-
-  template <class TAG, TAG VALUE, class OPTION>
-  auto tagged(OPTION option)
-  {
-    return Tagged<TAG, VALUE, OPTION>(option);
-  }
-
   template <class TAG, class A0, class... Args>
   struct Parser
   {
@@ -92,9 +50,13 @@ namespace Common::OptionParser
       std::string name, value;
       while (args.takeName(&name) or (args.next() and args.takeName(&name)))
       {
+        bool anyMatched = false;
+
         each<0, 1+sizeof...(Args)>([&](auto& opt) {
           if (opt.matchName(name))
           {
+            anyMatched = true;
+
             if constexpr(opt.isBool)
             {
               if (args.containsValue())
@@ -115,6 +77,11 @@ namespace Common::OptionParser
             }
           }
         });
+
+        if (anyMatched)
+          args.setMatched();
+        else
+          args.setNotMatched(name);
       }
     }
 

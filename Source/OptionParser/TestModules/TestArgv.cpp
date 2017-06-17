@@ -18,32 +18,45 @@
  *  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#pragma once
+#include "../Argv.hpp"
+#include "ArgumentsBuilder.hpp"
+#include <gmock/gmock.h>
 
-#include <string>
-
-namespace Common::OptionParser::Detail
+namespace Common::OptionParser
 {
-  struct Arguments
+  using namespace testing;
+  using namespace std::literals;
+
+  struct TestArgv : public Test
   {
-    Arguments(int* argc, char** argv);
+    TestArgv()
+      : _args(makeArgs("arg1", "arg2", "arg3")),
+        _view(_args->view()),
+        sut(std::get<int>(_view), std::get<char**>(_view))
+    {
+    }
 
-    bool takeName(std::string* name);
-    bool takeValue(std::string* name);
-    bool next();
-
-    bool containsValue() const;
-
-    void setMatched();
-    void setNotMatched(std::string option);
 
   private:
-    int _it = 1;
-    unsigned int _kt = 0;
-    unsigned int _matched = 0;
-    bool _containsValue = false;
+    std::shared_ptr<ArgumentsBuilder> _args;
+    std::tuple<int, char**> _view;
 
-    int* _argc;
-    char** _argv;
+  public:
+    Argv sut;
   };
+
+  TEST_F(TestArgv, shouldAccessZerothArgument)
+  {
+    EXPECT_THAT(sut.zero(), Eq("appName"s));
+  }
+
+  TEST_F(TestArgv, shouldReturnSizeWithoutZeroArgument)
+  {
+    EXPECT_THAT(sut.size(), Eq(3u));
+  }
+
+  TEST_F(TestArgv, shouldReturnArgument)
+  {
+    EXPECT_THAT(sut[1], Eq("arg2"s));
+  }
 }
