@@ -23,23 +23,28 @@
 
 namespace Common::OptionParser
 {
+  OPError::OPError(std::string msg)
+    : std::runtime_error(std::move(msg))
+  {
+  }
+
   UnknownOptionError::UnknownOptionError(std::string optionName)
-      : std::runtime_error(boost::str(boost::format("UnknownOptionError: '%1%'") % optionName))
+      : OPError(boost::str(boost::format("UnknownOptionError: '%1%'") % optionName))
   {
   }
 
   MissingValueError::MissingValueError(std::string optionName)
-      : std::runtime_error(boost::str(boost::format("MissingValueError: '%1%'") % optionName))
+      : OPError(boost::str(boost::format("MissingValueError: '%1%'") % optionName))
   {
   }
 
   UnexpectedValueError::UnexpectedValueError(std::string optionName)
-      : std::runtime_error(boost::str(boost::format("UnexpectedValueError: '%1%'") % optionName))
+      : OPError(boost::str(boost::format("UnexpectedValueError: '%1%'") % optionName))
   {
   }
 
   InsufficientOptionsError::InsufficientOptionsError()
-      : std::runtime_error("InsufficientOptionsError")
+      : OPError("InsufficientOptionsError")
   {
   }
 }

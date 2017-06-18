@@ -25,22 +25,27 @@
 
 namespace Common::OptionParser
 {
-  struct UnknownOptionError : public std::runtime_error
+  struct OPError : public std::runtime_error
+  {
+    OPError(std::string msg);
+  };
+
+  struct UnknownOptionError : public OPError
   {
     UnknownOptionError(std::string optionName);
   };
 
-  struct MissingValueError : public std::runtime_error
+  struct MissingValueError : public OPError
   {
     MissingValueError(std::string optionName);
   };
 
-  struct UnexpectedValueError : public std::runtime_error
+  struct UnexpectedValueError : public OPError
   {
     UnexpectedValueError(std::string optionName);
   };
 
-  struct InsufficientOptionsError : public std::runtime_error
+  struct InsufficientOptionsError : public OPError
   {
     InsufficientOptionsError();
   };
