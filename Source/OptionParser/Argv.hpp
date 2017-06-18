@@ -21,20 +21,23 @@
 #pragma once
 
 #include <cstddef>
+#include <string>
 
 namespace Common::OptionParser
 {
   struct Argv
   {
-    Argv(int argc, char** argv);
+    Argv(int* argc, char** argv);
 
     const char* zero() const;
     const char* operator[](size_t index) const;
 
+    std::string take();
+
     size_t size() const;
 
   private:
-    int _argc;
+    int* _argc;
     char** _argv;
   };
 }

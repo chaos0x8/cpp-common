@@ -37,4 +37,9 @@ namespace Common::OptionParser
       : std::runtime_error(boost::str(boost::format("UnexpectedValueError: '%1%'") % optionName))
   {
   }
+
+  InsufficientOptionsError::InsufficientOptionsError()
+      : std::runtime_error("InsufficientOptionsError")
+  {
+  }
 }

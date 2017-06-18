@@ -19,10 +19,11 @@
  */
 
 #include "Argv.hpp"
+#include "Exceptions.hpp"
 
 namespace Common::OptionParser
 {
-  Argv::Argv(int argc, char** argv)
+  Argv::Argv(int* argc, char** argv)
     : _argc(argc), _argv(argv)
   {
   }
@@ -41,6 +42,24 @@ namespace Common::OptionParser
 
   size_t Argv::size() const
   {
-    return static_cast<size_t>(_argc-1);
+    return static_cast<size_t>(*_argc-1);
+  }
+
+  std::string Argv::take()
+  {
+    if (*_argc > 1)
+    {
+      std::string result = _argv[1];
+
+      for (int i = 2; i < *_argc; ++i)
+        std::swap(_argv[i], _argv[i-1]);
+      *_argc -= 1;
+
+      return result;
+    }
+    else
+    {
+      throw InsufficientOptionsError();
+    }
   }
 }

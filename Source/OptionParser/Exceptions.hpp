@@ -39,4 +39,9 @@ namespace Common::OptionParser
   {
     UnexpectedValueError(std::string optionName);
   };
+
+  struct InsufficientOptionsError : public std::runtime_error
+  {
+    InsufficientOptionsError();
+  };
 }

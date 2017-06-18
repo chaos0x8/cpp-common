@@ -19,6 +19,7 @@
  */
 
 #include "../Argv.hpp"
+#include "../Exceptions.hpp"
 #include "ArgumentsBuilder.hpp"
 #include <gmock/gmock.h>
 
@@ -32,7 +33,7 @@ namespace Common::OptionParser
     TestArgv()
       : _args(makeArgs("arg1", "arg2", "arg3")),
         _view(_args->view()),
-        sut(std::get<int>(_view), std::get<char**>(_view))
+        sut(&std::get<int>(_view), std::get<char**>(_view))
     {
     }
 
@@ -58,5 +59,20 @@ namespace Common::OptionParser
   TEST_F(TestArgv, shouldReturnArgument)
   {
     EXPECT_THAT(sut[1], Eq("arg2"s));
+  }
+
+  TEST_F(TestArgv, shouldTakeArguments)
+  {
+    EXPECT_THAT(sut.take(), Eq("arg1"s));
+    EXPECT_THAT(sut.take(), Eq("arg2"s));
+    EXPECT_THAT(sut.take(), Eq("arg3"s));
+  }
+
+  TEST_F(TestArgv, throwWhenNoMoreArgumentsToTake)
+  {
+    while (sut.size() > 0)
+      sut.take();
+
+    ASSERT_THROW(sut.take(), InsufficientOptionsError);
   }
 }
