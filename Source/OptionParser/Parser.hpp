@@ -118,11 +118,12 @@ namespace Common::OptionParser
 
       for (const auto& l : lines)
       {
-        auto width = col1Width + 8 - std::get<0>(l).size();
-        auto spaces = std::string(width, ' ');
-
         if (std::get<1>(l).size() > 0)
+        {
+          auto width = col1Width + 8 - std::get<0>(l).size();
+          auto spaces = std::string(width, ' ');
           ss << "  " << std::get<0>(l) << spaces << std::get<1>(l) << "\n";
+        }
         else
           ss << "  " << std::get<0>(l) << "\n";
       }
