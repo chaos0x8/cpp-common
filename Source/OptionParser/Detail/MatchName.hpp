@@ -18,48 +18,12 @@
  *  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "Argv.hpp"
-#include "Exceptions.hpp"
+#pragma once
 
-namespace Common::OptionParser
+#include <vector>
+#include <string>
+
+namespace Common::OptionParser::Detail
 {
-  Argv::Argv(int* argc, char** argv)
-    : _argc(argc), _argv(argv)
-  {
-  }
-
-  using value_type = const char*;
-
-  const char* Argv::zero() const
-  {
-    return _argv[0];
-  }
-
-  const char* Argv::operator[](size_t index) const
-  {
-    return _argv[1u+index];
-  }
-
-  size_t Argv::size() const
-  {
-    return static_cast<size_t>(*_argc-1);
-  }
-
-  std::string Argv::take()
-  {
-    if (*_argc > 1)
-    {
-      std::string result = _argv[1];
-
-      for (int i = 2; i < *_argc; ++i)
-        std::swap(_argv[i], _argv[i-1]);
-      *_argc -= 1;
-
-      return result;
-    }
-    else
-    {
-      throw InsufficientOptionsError();
-    }
-  }
+  bool matchName(const std::vector<std::string>& names, const std::string& expected);
 }

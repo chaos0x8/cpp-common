@@ -25,9 +25,9 @@
 
 namespace Common::OptionParser
 {
-  struct Argv
+  struct Args
   {
-    Argv(int* argc, char** argv);
+    Args(int* argc, char** argv);
 
     const char* zero() const;
     const char* operator[](size_t index) const;

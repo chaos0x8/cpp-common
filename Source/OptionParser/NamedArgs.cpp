@@ -18,20 +18,29 @@
  *  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "Option.hpp"
+#include "NamedArgs.hpp"
+#include "Exceptions.hpp"
+#include "Detail/MatchName.hpp"
 #include <algorithm>
 
-namespace Common::OptionParser::Detail
+namespace Common::OptionParser
 {
-  std::string join(const std::vector<std::string>& text, std::string sep)
+  NamedArgs::NamedArgs(std::vector<Item> items)
+    : _items(std::move(items))
   {
-    std::stringstream ss;
-    for (size_t i = 0; i < text.size(); ++i)
-    {
-      ss << text[i];
-      if (i+1 < text.size())
-        ss << sep;
-    }
-    return ss.str();
+  }
+
+  NamedArgs::~NamedArgs() = default;
+
+  std::string NamedArgs::operator[](std::string name) const
+  {
+    auto it = std::find_if(std::begin(_items), std::end(_items), [&](const auto& item) {
+      return Detail::matchName(item.keys, name);
+    });
+
+    if (it == std::end(_items))
+      throw UnknownOptionError(name);
+
+    return it->value;
   }
 }

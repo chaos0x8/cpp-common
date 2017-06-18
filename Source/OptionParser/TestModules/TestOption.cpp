@@ -83,6 +83,13 @@ namespace Common::OptionParser
     EXPECT_THAT(sut.value(), Eq(42));
   }
 
+  TEST(TestOption, shouldAutoConvertToDouble)
+  {
+    auto sut = Option<double>("--number").value("42.7");
+    EXPECT_THAT(static_cast<bool>(sut), Eq(true));
+    EXPECT_THAT(sut.value(), DoubleEq(42.7));
+  }
+
   TEST(TestOption, shouldBeSetByDefaultToFalseOnBoolOption)
   {
     auto sut = Option<bool>("--help");

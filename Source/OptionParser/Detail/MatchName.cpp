@@ -18,20 +18,13 @@
  *  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "Option.hpp"
+#include "MatchName.hpp"
 #include <algorithm>
 
 namespace Common::OptionParser::Detail
 {
-  std::string join(const std::vector<std::string>& text, std::string sep)
+  bool matchName(const std::vector<std::string>& names, const std::string& expected)
   {
-    std::stringstream ss;
-    for (size_t i = 0; i < text.size(); ++i)
-    {
-      ss << text[i];
-      if (i+1 < text.size())
-        ss << sep;
-    }
-    return ss.str();
+    return std::find(std::begin(names), std::end(names), expected) != std::end(names);
   }
 }

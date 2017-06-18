@@ -27,6 +27,7 @@
 #include "Detail/Arguments.hpp"
 #include "Detail/Find.hpp"
 #include "Exceptions.hpp"
+#include "NamedArgs.hpp"
 
 namespace Common::OptionParser
 {
@@ -120,14 +121,32 @@ namespace Common::OptionParser
         auto width = col1Width + 8 - std::get<0>(l).size();
         auto spaces = std::string(width, ' ');
 
-
-        ss << "  " << std::get<0>(l) << spaces << std::get<1>(l) << "\n";
+        if (std::get<1>(l).size() > 0)
+          ss << "  " << std::get<0>(l) << spaces << std::get<1>(l) << "\n";
+        else
+          ss << "  " << std::get<0>(l) << "\n";
       }
 
       for (const auto& l : _helpSufix)
         ss << l << "\n";
 
       return ss.str();
+    }
+
+    NamedArgs namedArgs() const
+    {
+      auto items = std::vector<NamedArgs::Item>();
+
+      each<0, sizeof...(Args)>([&](const auto& opt) {
+        std::stringstream ss;
+        if constexpr(opt.isBool)
+          ss << std::boolalpha;
+        ss << opt.value();
+
+        items.emplace_back(opt.names(), ss.str());
+      });
+
+      return NamedArgs(std::move(items));
     }
 
   private:

@@ -18,20 +18,48 @@
  *  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "Option.hpp"
-#include <algorithm>
+#include "Args.hpp"
+#include "Exceptions.hpp"
 
-namespace Common::OptionParser::Detail
+namespace Common::OptionParser
 {
-  std::string join(const std::vector<std::string>& text, std::string sep)
+  Args::Args(int* argc, char** argv)
+    : _argc(argc), _argv(argv)
   {
-    std::stringstream ss;
-    for (size_t i = 0; i < text.size(); ++i)
+  }
+
+  using value_type = const char*;
+
+  const char* Args::zero() const
+  {
+    return _argv[0];
+  }
+
+  const char* Args::operator[](size_t index) const
+  {
+    return _argv[1u+index];
+  }
+
+  size_t Args::size() const
+  {
+    return static_cast<size_t>(*_argc-1);
+  }
+
+  std::string Args::take()
+  {
+    if (*_argc > 1)
     {
-      ss << text[i];
-      if (i+1 < text.size())
-        ss << sep;
+      std::string result = _argv[1];
+
+      for (int i = 2; i < *_argc; ++i)
+        std::swap(_argv[i], _argv[i-1]);
+      *_argc -= 1;
+
+      return result;
     }
-    return ss.str();
+    else
+    {
+      throw InsufficientOptionsError();
+    }
   }
 }

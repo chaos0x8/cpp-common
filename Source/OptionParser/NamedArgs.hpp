@@ -18,20 +18,33 @@
  *  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "Option.hpp"
-#include <algorithm>
+#pragma once
 
-namespace Common::OptionParser::Detail
+#include <string>
+#include <vector>
+#include <tuple>
+
+namespace Common::OptionParser
 {
-  std::string join(const std::vector<std::string>& text, std::string sep)
+  struct NamedArgs
   {
-    std::stringstream ss;
-    for (size_t i = 0; i < text.size(); ++i)
+    struct Item
     {
-      ss << text[i];
-      if (i+1 < text.size())
-        ss << sep;
-    }
-    return ss.str();
-  }
+      Item(std::vector<std::string> keys, std::string value)
+        : keys(std::move(keys)), value(std::move(value))
+      {
+      }
+
+      std::vector<std::string> keys;
+      std::string value;
+    };
+
+    NamedArgs(std::vector<Item> items);
+    ~NamedArgs();
+
+    std::string operator[](std::string) const;
+
+  private:
+    std::vector<Item> _items;
+  };
 }

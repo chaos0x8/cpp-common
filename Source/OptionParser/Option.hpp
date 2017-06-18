@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include "Detail/MatchName.hpp"
 #include <string>
 #include <sstream>
 #include <type_traits>
@@ -31,7 +32,6 @@ namespace Common::OptionParser
   namespace Detail
   {
     std::string join(const std::vector<std::string>& text, std::string sep);
-    bool matchName(const std::vector<std::string>& names, std::string expected);
 
     template <class... Args>
     inline std::vector<std::string> mkVector(std::string name, Args&&... names)
@@ -61,6 +61,12 @@ namespace Common::OptionParser
     }
 
     template <>
+    inline double convert<double>(std::string from)
+    {
+      return std::stod(from);
+    }
+
+    template <>
     inline bool convert<bool>(std::string from)
     {
       return from == "true";
@@ -74,6 +80,11 @@ namespace Common::OptionParser
     explicit Option(std::string name, Args&&... names)
       : _names(Detail::mkVector(std::move(name), std::forward<Args>(names)...))
     {
+    }
+
+    std::vector<std::string> names() const
+    {
+      return _names;
     }
 
     Option<T>& description(std::string val)
@@ -177,6 +188,11 @@ namespace Common::OptionParser
     explicit Option(std::string name, Args&&... names)
       : _names(Detail::mkVector(std::move(name), std::forward<Args>(names)...))
     {
+    }
+
+    std::vector<std::string> names() const
+    {
+      return _names;
     }
 
     Option<bool>& description(std::string val)

@@ -35,7 +35,26 @@ namespace Common::OptionParser
   {
     Name,
     Number,
-    Help
+    Help,
+    Custom
+  };
+
+  struct Custom
+  {
+    Custom() = default;
+    Custom(std::string val)
+      : _val(val)
+    {
+    }
+
+    friend std::ostream& operator << (std::ostream& os, const Custom& o)
+    {
+      os << o._val;
+      return os;
+    }
+
+  private:
+    std::string _val;
   };
 
   auto makeSut()
@@ -43,7 +62,8 @@ namespace Common::OptionParser
     auto res = makeParser<Tag>(
         tagged<Tag, Tag::Name>(Option<std::string>("-n", "--name").description("some name")),
         tagged<Tag, Tag::Number>(Option<int>("--number").description("some number").defaultValue("17")),
-        tagged<Tag, Tag::Help>(Option<bool>("-h", "--help").description("some flag")));
+        tagged<Tag, Tag::Help>(Option<bool>("-h", "--help").description("some flag")),
+        tagged<Tag, Tag::Custom>(Option<Custom>("--custom")));
     return res;
   }
 
@@ -134,6 +154,7 @@ namespace Common::OptionParser
       "  --number          some number\n"
       "                      default: 17\n"
       "  -h, --help        some flag\n"
+      "  --custom\n"
       "--\n"
       "sufix\n"));
   }
@@ -158,5 +179,22 @@ namespace Common::OptionParser
     auto sut = makeSut();
 
     ASSERT_THROW(sut.parse(&argc, argv), UnknownOptionError);
+  }
+
+  TEST_F(TestParser, shouldReturnNamedArgs)
+  {
+    setArguments(makeArgs("--name=Leona", "--help", "--number=42", "--custom=c"));
+
+    auto sut = makeSut();
+
+    sut.parse(&argc, argv);
+
+    auto namedArgs = sut.namedArgs();
+
+    EXPECT_THAT(namedArgs["-n"], Eq("Leona"));
+    EXPECT_THAT(namedArgs["--name"], Eq("Leona"));
+    EXPECT_THAT(namedArgs["--help"], Eq("true"));
+    EXPECT_THAT(namedArgs["--number"], Eq("42"));
+    EXPECT_THAT(namedArgs["--custom"], Eq("c"));
   }
 }
