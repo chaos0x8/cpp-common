@@ -69,7 +69,7 @@ preGenerated << GeneratedFile.new { |t|
 
 generated = []
 Dir['Source/*'].select { |x| File.directory?(x) }.each { |dir|
-#  generated << Generate.includeDirectory(dir, requirements: preGenerated)
+  generated << Generate.includeDirectory(dir, requirements: preGenerated)
 }
 generated = (generated + preGenerated).flatten
 
