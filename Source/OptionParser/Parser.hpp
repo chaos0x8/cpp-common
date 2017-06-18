@@ -30,17 +30,17 @@
 
 namespace Common::OptionParser
 {
-  template <class TAG, class A0, class... Args>
+  template <class TAG, class... Args>
   struct Parser
   {
-    Parser(A0&& a0, Args&&... args) : options(std::forward<A0>(a0), std::forward<Args>(args)...)
+    Parser(Args&&... args) : options(std::forward<Args>(args)...)
     {
     }
 
     template <TAG VALUE>
     auto& get()
     {
-      return std::get<Detail::Find<TAG, VALUE, 0, A0, Args...>::value>(options).option;
+      return std::get<Detail::Find<TAG, VALUE, 0, Args...>::value>(options).option;
     }
 
     void parse(int* argc, char** argv)
@@ -52,7 +52,7 @@ namespace Common::OptionParser
       {
         bool anyMatched = false;
 
-        each<0, 1+sizeof...(Args)>([&](auto& opt) {
+        each<0, sizeof...(Args)>([&](auto& opt) {
           if (opt.matchName(name))
           {
             anyMatched = true;
@@ -99,7 +99,7 @@ namespace Common::OptionParser
     {
       auto lines = std::vector<std::tuple<std::string, std::string>>();
 
-      each<0, 1+sizeof...(Args)>([&](const auto& opt) {
+      each<0, sizeof...(Args)>([&](const auto& opt) {
         opt.help([&](auto col1, auto col2) {
           lines.emplace_back(col1, col2);
         });
@@ -158,7 +158,7 @@ namespace Common::OptionParser
     std::vector<std::string> _helpPrefix;
     std::vector<std::string> _helpSufix;
 
-    std::tuple<A0, Args...> options;
+    std::tuple<Args...> options;
   };
 
   template <class TAG, class... Args>
