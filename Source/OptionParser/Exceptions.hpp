@@ -45,6 +45,11 @@ namespace Common::OptionParser
     UnexpectedValueError(std::string optionName);
   };
 
+  struct InvalidOptionNameError : public OPError
+  {
+    InvalidOptionNameError(std::string optionName);
+  };
+
   struct InsufficientOptionsError : public OPError
   {
     InsufficientOptionsError();

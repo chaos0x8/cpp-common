@@ -43,6 +43,11 @@ namespace Common::OptionParser
   {
   }
 
+  InvalidOptionNameError::InvalidOptionNameError(std::string optionName)
+    : OPError(boost::str(boost::format("InvalidOptionName: '%1%'") % optionName))
+  {
+  }
+
   InsufficientOptionsError::InsufficientOptionsError()
       : OPError("InsufficientOptionsError")
   {

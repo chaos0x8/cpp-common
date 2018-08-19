@@ -19,6 +19,7 @@
  */
 
 #include "../Option.hpp"
+#include "../Exceptions.hpp"
 #include <gmock/gmock.h>
 #include <optional>
 
@@ -53,13 +54,6 @@ namespace Common::OptionParser
   {
     auto sut = Option<std::string>("-n", "--name");
     EXPECT_THAT(static_cast<bool>(sut), Eq(false));
-  }
-
-  TEST(TestOption, shouldDoNothingWhenSetUsedOnNonBoolOption)
-  {
-    auto sut = Option<std::string>("-n", "--name").set();
-    EXPECT_THAT(static_cast<bool>(sut), Eq(false));
-    EXPECT_THAT(sut.value(), Eq(std::string()));
   }
 
   TEST(TestOption, shouldBeValidWhenValueIsNotSetButParamHasDefault)
@@ -99,8 +93,12 @@ namespace Common::OptionParser
 
   TEST(TestOption, shouldEvaluateToValueOnBoolOption)
   {
-    auto sut = Option<bool>("--help").value("false");
-    EXPECT_THAT(static_cast<bool>(sut), Eq(false));
+    auto sut = Option<bool>("--help");
+    EXPECT_THAT(static_cast<bool>(sut), Eq(true));
+    EXPECT_THAT(sut.value(), Eq(false));
+
+    sut = Option<bool>("--help").value("false");
+    EXPECT_THAT(static_cast<bool>(sut), Eq(true));
     EXPECT_THAT(sut.value(), Eq(false));
 
     sut = Option<bool>("--help").value("true");
@@ -111,13 +109,6 @@ namespace Common::OptionParser
   TEST(TestOption, shouldAutoConvertToBool)
   {
     auto sut = Option<bool>("--help").value("true");
-    EXPECT_THAT(static_cast<bool>(sut), Eq(true));
-    EXPECT_THAT(sut.value(), Eq(true));
-  }
-
-  TEST(TestOption, shouldAssignTrueWhenSetUsedOnBoolOption)
-  {
-    auto sut = Option<bool>("--help").set();
     EXPECT_THAT(static_cast<bool>(sut), Eq(true));
     EXPECT_THAT(sut.value(), Eq(true));
   }
@@ -140,5 +131,31 @@ namespace Common::OptionParser
     sut.value("Jessy");
 
     EXPECT_THAT(actual, Eq("Jessy"));
+  }
+
+  TEST(TestOption, shouldThrowWhenNegationNameAppearForNonBoolOptions)
+  {
+    ASSERT_THROW(Option<int>("--[no-]xxx"), InvalidOptionNameError);
+  }
+
+  TEST(TestOption, shouldMatchBooleanWithNegationName)
+  {
+    auto sut = Option<bool>("--[no-]xxx");
+    EXPECT_THAT(sut.isName("--xxx"), Eq(true));
+    EXPECT_THAT(sut.isName("--no-xxx"), Eq(true));
+  }
+
+  TEST(TestOption, shouldReturnTrueForNegationNames)
+  {
+    auto sut = Option<bool>("--[no-]xxx");
+    EXPECT_THAT(sut.isNegationName("--xxx"), Eq(false));
+    EXPECT_THAT(sut.isNegationName("--no-xxx"), Eq(true));
+  }
+
+  TEST(TestOption, shouldReturnTrueForNegationNamesInNamedArgs)
+  {
+    auto sut = Option<bool>("--[no-]xxx").namedArgs();
+    EXPECT_THAT(sut["--xxx"], Eq(false));
+    EXPECT_THAT(sut["--no-xxx"], Eq(true));
   }
 }

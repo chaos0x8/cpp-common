@@ -54,7 +54,7 @@ namespace Common::OptionParser
         bool anyMatched = false;
 
         each<0, sizeof...(Args)>([&](auto& opt) {
-          if (opt.matchName(name))
+          if (opt.isName(name))
           {
             anyMatched = true;
 
@@ -62,7 +62,7 @@ namespace Common::OptionParser
             {
               if (args.containsValue())
                 throw UnexpectedValueError(name);
-              opt.set();
+              opt.value("true");
             }
             else
             {

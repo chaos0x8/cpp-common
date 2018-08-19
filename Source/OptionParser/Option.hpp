@@ -80,6 +80,11 @@ namespace Common::OptionParser
     explicit Option(std::string name, Args&&... names)
       : _names(Detail::mkVector(std::move(name), std::forward<Args>(names)...))
     {
+      if constexpr(isBool)
+      {
+        _present = true;
+        _hasDefault = true;
+      }
     }
 
     std::vector<std::string> names() const
@@ -134,30 +139,44 @@ namespace Common::OptionParser
       return *this;
     }
 
-    Option<T>& set()
+    bool isName(std::string name) const
     {
-      return *this;
+      return Detail::isName(_names, name);
     }
 
-    bool matchName(std::string name) const
+    bool isNegationName(std::string name) const
     {
-      return Detail::matchName(_names, name);
+      return false;
     }
 
     template <class F>
     void help(F&& fun) const
     {
-      fun(Detail::join(_names, ", "), _description);
+      auto _def = std::string();
 
-      if (_hasDefault)
+      if (_hasDefault and _showDefault<T>())
       {
         std::stringstream ss;
 
-        ss << "  default: ";
+        ss << "default: ";
+        if constexpr(isBool)
+          ss << std::boolalpha;
         ss << _default;
 
         using namespace std::literals;
-        fun(""s, ss.str());
+        _def = ss.str();
+      }
+
+      if (_description.empty() and _def.size() > 0)
+        fun(Detail::join(_names, ", "), _def);
+      else
+      {
+        fun(Detail::join(_names, ", "), _description);
+        if (_def.size() > 0)
+        {
+          using namespace std::literals;
+          fun(std::string(), "  "s + _def);
+        }
       }
     }
 
@@ -166,9 +185,21 @@ namespace Common::OptionParser
       return _present or _hasDefault;
     }
 
-    enum { isBool = false };
+    enum { isBool = std::is_same<T, bool>::value };
 
   private:
+    template <class U, class std::enable_if<  std::is_same<U, bool>::value, int>::type = 0>
+    bool _showDefault() const
+    {
+      return _default == true;
+    }
+
+    template <class U, class std::enable_if<! std::is_same<U, bool>::value, int>::type = 0>
+    bool _showDefault() const
+    {
+      return true;
+    }
+
     std::function<void (const T&)> _callback;
 
     std::vector<std::string> _names;
@@ -179,85 +210,5 @@ namespace Common::OptionParser
 
     bool _present = false;
     T _value = T();
-  };
-
-  template <>
-  struct Option<bool>
-  {
-    template <class... Args>
-    explicit Option(std::string name, Args&&... names)
-      : _names(Detail::mkVector(std::move(name), std::forward<Args>(names)...))
-    {
-    }
-
-    std::vector<std::string> names() const
-    {
-      return _names;
-    }
-
-    Option<bool>& description(std::string val)
-    {
-      _description = val;
-      return *this;
-    }
-
-    std::string description() const
-    {
-      return _description;
-    }
-
-    template <class U>
-    Option<bool>& value(U val)
-    {
-      _value = Detail::convert<bool>(val);
-
-      if (_callback)
-        _callback(_value);
-
-      return *this;
-    }
-
-    bool value() const
-    {
-      return _value;
-    }
-
-    Option<bool>& on(std::function<void (bool)> callback)
-    {
-      _callback = callback;
-      return *this;
-    }
-
-    Option<bool>& set()
-    {
-      _value = true;
-      return *this;
-    }
-
-    bool matchName(std::string name) const
-    {
-      return Detail::matchName(_names, name);
-    }
-
-    template <class F>
-    void help(F&& fun) const
-    {
-      fun(Detail::join(_names, ", "), _description);
-    }
-
-    explicit operator bool() const
-    {
-      return _value;
-    }
-
-    enum { isBool = true };
-
-  private:
-    std::function<void (bool)> _callback;
-
-    std::vector<std::string> _names;
-    std::string _description;
-
-    bool _value = false;
   };
 }

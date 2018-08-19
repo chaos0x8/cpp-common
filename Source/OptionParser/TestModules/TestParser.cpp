@@ -36,7 +36,9 @@ namespace Common::OptionParser
     Name,
     Number,
     Help,
-    Custom
+    Custom,
+    Stuff1,
+    Stuff2
   };
 
   struct Custom
@@ -63,7 +65,9 @@ namespace Common::OptionParser
         tagged<Tag, Tag::Name>(Option<std::string>("-n", "--name").description("some name")),
         tagged<Tag, Tag::Number>(Option<int>("--number").description("some number").defaultValue("17")),
         tagged<Tag, Tag::Help>(Option<bool>("-h", "--help").description("some flag")),
-        tagged<Tag, Tag::Custom>(Option<Custom>("--custom")));
+        tagged<Tag, Tag::Custom>(Option<Custom>("--custom")),
+        tagged<Tag, Tag::Stuff1>(Option<bool>("--[no-]stuff1").defaultValue("true")),
+        tagged<Tag, Tag::Stuff2>(Option<bool>("--[no-]stuff2").defaultValue("false")));
     return res;
   }
 
@@ -150,11 +154,13 @@ namespace Common::OptionParser
     EXPECT_THAT(sut.help(), Eq(
       "prefix\n"
       "--\n"
-      "  -n, --name        some name\n"
-      "  --number          some number\n"
-      "                      default: 17\n"
-      "  -h, --help        some flag\n"
+      "  -n, --name           some name\n"
+      "  --number             some number\n"
+      "                         default: 17\n"
+      "  -h, --help           some flag\n"
       "  --custom\n"
+      "  --[no-]stuff1        default: true\n"
+      "  --[no-]stuff2\n"
       "--\n"
       "sufix\n"));
   }
@@ -196,5 +202,23 @@ namespace Common::OptionParser
     EXPECT_THAT(namedArgs["--help"], Eq("true"));
     EXPECT_THAT(namedArgs["--number"], Eq("42"));
     EXPECT_THAT(namedArgs["--custom"], Eq("c"));
+  }
+
+  TEST_F(TestParser, shouldHandleNoInBooleanOption)
+  {
+    setArguments(makeArgs("--no-stuff1"));
+
+    auto sut = makeSut();
+
+    EXPECT_THAT(sut.get<Tag::Stuff1>().value(), Eq(false));
+  }
+
+  TEST_F(TestParser, shouldHandleBooleanOptionWhenDefaultIsFalse)
+  {
+    setArguments(makeArgs("--stuff2"));
+
+    auto sut = makeSut();
+
+    EXPECT_THAT(sut.get<Tag::Stuff2>().value(), Eq(true));
   }
 }

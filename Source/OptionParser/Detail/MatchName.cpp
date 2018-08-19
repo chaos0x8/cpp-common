@@ -23,7 +23,7 @@
 
 namespace Common::OptionParser::Detail
 {
-  bool matchName(const std::vector<std::string>& names, const std::string& expected)
+  bool isName(const std::vector<std::string>& names, const std::string& expected)
   {
     return std::find(std::begin(names), std::end(names), expected) != std::end(names);
   }

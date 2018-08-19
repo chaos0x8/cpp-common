@@ -35,7 +35,7 @@ namespace Common::OptionParser
   std::string NamedArgs::operator[](std::string name) const
   {
     auto it = std::find_if(std::begin(_items), std::end(_items), [&](const auto& item) {
-      return Detail::matchName(item.keys, name);
+      return Detail::isName(item.keys, name);
     });
 
     if (it == std::end(_items))
