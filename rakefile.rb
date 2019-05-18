@@ -52,6 +52,7 @@ preGenerated << GeneratedFile.new { |t|
     puts "Generating '#{t.name}'..."
 
     cacheLineSize = `getconf LEVEL1_DCACHE_LINESIZE`.chomp
+    cacheLineSize = [cacheLineSize.to_i(10), 64].max
 
     File.open(t.name, 'w') { |f|
       f.write "#pragma once\n"
@@ -69,7 +70,7 @@ preGenerated << GeneratedFile.new { |t|
 
 generated = []
 Dir['Source/*'].select { |x| File.directory?(x) }.each { |dir|
-#  generated << Generate.includeDirectory(dir, requirements: preGenerated)
+  generated << Generate.includeDirectory(dir, requirements: preGenerated)
 }
 generated = (generated + preGenerated).flatten
 
