@@ -58,7 +58,11 @@ namespace Common::OptionParser
           {
             anyMatched = true;
 
+            #ifdef __cpp_if_constexpr
             if constexpr(opt.isBool)
+            #else
+            if (opt.isBool)
+            #endif
             {
               if (args.containsValue())
                 throw UnexpectedValueError(name);
@@ -106,7 +110,7 @@ namespace Common::OptionParser
         });
       });
 
-      auto col1Width = 0ul;
+      size_t col1Width = 0;
 
       for (const auto& l : lines)
         col1Width = std::max(col1Width, std::get<0>(l).size());
@@ -140,8 +144,15 @@ namespace Common::OptionParser
 
       each<0, sizeof...(Args)>([&](const auto& opt) {
         std::stringstream ss;
+        #ifdef __cpp_if_constexpr
         if constexpr(opt.isBool)
+        #else
+        if (opt.isBool)
+        #endif
+        {
           ss << std::boolalpha;
+        }
+
         ss << opt.value();
 
         items.emplace_back(opt.names(), ss.str());
@@ -151,25 +162,25 @@ namespace Common::OptionParser
     }
 
   private:
-    template <int I, int MAX, class This, typename F, class std::enable_if<I != MAX, int>::type = 0>
+    template <int I, int MAX, class This, class F, typename std::enable_if<I != MAX, int>::type = 0>
     static void _each(This _this, F&& fun)
     {
       fun(std::get<I>(_this->options).option);
       _each<I + 1, MAX>(_this, std::forward<F>(fun));
     }
 
-    template <int I, int MAX, class This, typename F, class std::enable_if<I == MAX, int>::type = 0>
+    template <int I, int MAX, class This, class F, typename std::enable_if<I == MAX, int>::type = 0>
     static void _each(This _this, F&& fun)
     {
     }
 
-    template <int I, int MAX, typename F>
+    template <int I, int MAX, class F>
     void each(F&& fun)
     {
       _each<I, MAX>(this, std::forward<F>(fun));
     }
 
-    template <int I, int MAX, typename F>
+    template <int I, int MAX, class F>
     void each(F&& fun) const
     {
       _each<I, MAX>(this, std::forward<F>(fun));

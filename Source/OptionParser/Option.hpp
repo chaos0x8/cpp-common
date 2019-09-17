@@ -80,7 +80,11 @@ namespace Common::OptionParser
     explicit Option(std::string name, Args&&... names)
       : _names(Detail::mkVector(std::move(name), std::forward<Args>(names)...))
     {
+      #ifdef __cpp_if_constexpr
       if constexpr(isBool)
+      #else
+      if (isBool)
+      #endif
       {
         _present = true;
         _hasDefault = true;
@@ -152,15 +156,21 @@ namespace Common::OptionParser
     template <class F>
     void help(F&& fun) const
     {
-      auto _def = std::string();
+      std::string _def;
 
       if (_hasDefault and _showDefault<T>())
       {
         std::stringstream ss;
 
         ss << "default: ";
+        #ifdef __cpp_if_constexpr
         if constexpr(isBool)
+        #else
+        if (isBool)
+        #endif
+        {
           ss << std::boolalpha;
+        }
         ss << _default;
 
         using namespace std::literals;
@@ -188,13 +198,13 @@ namespace Common::OptionParser
     enum { isBool = std::is_same<T, bool>::value };
 
   private:
-    template <class U, class std::enable_if<  std::is_same<U, bool>::value, int>::type = 0>
+    template <class U, typename std::enable_if<  std::is_same<U, bool>::value, int>::type = 0>
     bool _showDefault() const
     {
       return _default == true;
     }
 
-    template <class U, class std::enable_if<! std::is_same<U, bool>::value, int>::type = 0>
+    template <class U, typename std::enable_if<! std::is_same<U, bool>::value, int>::type = 0>
     bool _showDefault() const
     {
       return true;
