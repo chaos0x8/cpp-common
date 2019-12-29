@@ -36,7 +36,8 @@ PKG_MAP = {
   'EmbededRuby' => ['ruby'],
   'SqLite' => ['sqlite3'],
   'GL' => ['glew'],
-  'CurlWrapper' => ['libcurl']
+  'CurlWrapper' => ['libcurl'],
+  'CryptoWrapper' => ['libcrypto++']
 }
 
 FLAGS_MAP = {
