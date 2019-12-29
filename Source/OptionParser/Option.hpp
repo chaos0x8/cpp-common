@@ -71,7 +71,7 @@ namespace Common::OptionParser
     {
       return from == "true";
     }
-  }
+  } // namespace Detail
 
   template <class T>
   struct Option
@@ -221,4 +221,4 @@ namespace Common::OptionParser
     bool _present = false;
     T _value = T();
   };
-}
+} // namespace Common::OptionParser

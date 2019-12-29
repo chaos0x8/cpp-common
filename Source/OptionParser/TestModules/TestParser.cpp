@@ -66,8 +66,8 @@ namespace Common::OptionParser
         tagged<Tag, Tag::Number>(Option<int>("--number").description("some number").defaultValue("17")),
         tagged<Tag, Tag::Help>(Option<bool>("-h", "--help").description("some flag")),
         tagged<Tag, Tag::Custom>(Option<Custom>("--custom")),
-        tagged<Tag, Tag::Stuff1>(Option<bool>("--[no-]stuff1").defaultValue("true")),
-        tagged<Tag, Tag::Stuff2>(Option<bool>("--[no-]stuff2").defaultValue("false")));
+        tagged<Tag, Tag::Stuff1>(Option<bool>("--stuff1").defaultValue("true")),
+        tagged<Tag, Tag::Stuff2>(Option<bool>("--stuff2").defaultValue("false")));
     return res;
   }
 
@@ -154,13 +154,13 @@ namespace Common::OptionParser
     EXPECT_THAT(sut.help(), Eq(
       "prefix\n"
       "--\n"
-      "  -n, --name           some name\n"
-      "  --number             some number\n"
-      "                         default: 17\n"
-      "  -h, --help           some flag\n"
+      "  -n, --name        some name\n"
+      "  --number          some number\n"
+      "                      default: 17\n"
+      "  -h, --help        some flag\n"
       "  --custom\n"
-      "  --[no-]stuff1        default: true\n"
-      "  --[no-]stuff2\n"
+      "  --stuff1          default: true\n"
+      "  --stuff2\n"
       "--\n"
       "sufix\n"));
   }
@@ -192,7 +192,6 @@ namespace Common::OptionParser
     setArguments(makeArgs("--name=Leona", "--help", "--number=42", "--custom=c"));
 
     auto sut = makeSut();
-
     sut.parse(&argc, argv);
 
     auto namedArgs = sut.namedArgs();
@@ -209,6 +208,7 @@ namespace Common::OptionParser
     setArguments(makeArgs("--no-stuff1"));
 
     auto sut = makeSut();
+    sut.parse(&argc, argv);
 
     EXPECT_THAT(sut.get<Tag::Stuff1>().value(), Eq(false));
   }
@@ -218,6 +218,7 @@ namespace Common::OptionParser
     setArguments(makeArgs("--stuff2"));
 
     auto sut = makeSut();
+    sut.parse(&argc, argv);
 
     EXPECT_THAT(sut.get<Tag::Stuff2>().value(), Eq(true));
   }
