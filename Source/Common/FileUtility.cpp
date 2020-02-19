@@ -20,6 +20,7 @@
 
 #include <Common/FileUtility.hpp>
 #include <Common/Exceptions/FileLoadError.hpp>
+#include <Common/Exceptions/FileSaveError.hpp>
 #include <fstream>
 #include <vector>
 
@@ -53,6 +54,16 @@ size_t fileSize(const std::string& fileName)
     size_t length = fileSize(file);
     file.close();
     return length;
+}
+
+void writeFile(const std::string& fileName, const std::string content)
+{
+    std::ofstream file(fileName.c_str());
+    if (!file.is_open())
+      throw Exceptions::FileSaveError(fileName);
+
+    file.write(content.c_str(), content.size());
+    file.close();
 }
 
 std::string readFile(const std::string& fileName)

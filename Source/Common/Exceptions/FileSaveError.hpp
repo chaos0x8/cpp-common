@@ -19,22 +19,19 @@
  */
 
 #pragma once
-
-#include <string>
-#include <istream>
+#include <stdexcept>
 
 namespace Common
 {
+namespace Exceptions
+{
 
-bool doesFileExist(const std::string& fileName);
-
-size_t fileSize(std::istream& stream);
-size_t fileSize(const std::string& fileName);
-
-void writeFile(const std::string& fileName, const std::string content);
-std::string readFile(const std::string& fileName);
-
-std::string basename(const std::string& fileName);
-std::string noExtension(const std::string& fileName);
+class FileSaveError : public std::runtime_error
+{
+public:
+    explicit FileSaveError(const std::string&);
+};
 
 }
+}
+

@@ -18,23 +18,18 @@
  *  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#pragma once
-
-#include <string>
-#include <istream>
+#include <Common/Exceptions/FileSaveError.hpp>
+#include <boost/format.hpp>
 
 namespace Common
 {
+namespace Exceptions
+{
 
-bool doesFileExist(const std::string& fileName);
+FileSaveError::FileSaveError(const std::string& fileName)
+    : std::runtime_error(boost::str(boost::format("Could not save to file: %1%") % fileName))
+{
+}
 
-size_t fileSize(std::istream& stream);
-size_t fileSize(const std::string& fileName);
-
-void writeFile(const std::string& fileName, const std::string content);
-std::string readFile(const std::string& fileName);
-
-std::string basename(const std::string& fileName);
-std::string noExtension(const std::string& fileName);
-
+}
 }
