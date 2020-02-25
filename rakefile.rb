@@ -18,15 +18,13 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-require 'date'
-require 'pathname'
-
-gem 'rake-builder', '~> 0.4.0'
-
-require 'RakeBuilder'
-require 'RakeGenerate'
+gem 'rake-builder', '~> 0.5', '>= 0.5.0'
 
 autoload :FileUtils, 'fileutils'
+
+require 'date'
+require 'pathname'
+require 'rake-builder'
 
 #FLAGS = [ '-Wall', '-Werror', '-g', '-Wno-deprecated' ]
 FLAGS = [ '-Wall', '-Werror', '-O3', '-s', '-DNDEBUG', '-Wno-deprecated' ]
