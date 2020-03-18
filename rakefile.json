@@ -68,8 +68,7 @@
     "name" : "bin/commonCurlWrapper-ut",
     "sources" : ["Test/CurlWrapper/**/*.cpp"],
     "libs" : ["lib/libcommonCurlWrapper.a", "lib/libcommon.a"],
-    "pkgs" : ["libcurl"],
-    "wip" : true
+    "pkgs" : ["libcurl"]
   }, {
     "name" : "bin/commonNetwork-ut",
     "sources" : ["Test/Network/**/*.cpp"],

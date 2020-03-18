@@ -18,7 +18,7 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-gem 'rake-builder', '~> 0.5', '>= 0.5.1'
+gem 'rake-builder', '~> 0.5', '>= 0.5.2'
 
 autoload :FileUtils, 'fileutils'
 
