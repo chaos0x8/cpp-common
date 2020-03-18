@@ -18,8 +18,8 @@
  *  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "../Arguments.hpp"
-#include "../../TestModules/ArgumentsBuilder.hpp"
+#include "OptionParser/Detail/Arguments.hpp"
+#include "ArgumentsBuilder.hpp"
 #include <gmock/gmock.h>
 
 namespace Common::OptionParser::Detail

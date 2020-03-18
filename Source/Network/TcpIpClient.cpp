@@ -20,6 +20,7 @@
 
 #include <Network/TcpIpClient.hpp>
 #include <Network/Detail/BufforSize.hpp>
+#include <Common/RuntimeAssert.hpp>
 #include <array>
 
 namespace Common
@@ -49,6 +50,19 @@ std::string TcpIpClient::receive()
   std::array<char, BUFFOR_SIZE> buffor;
 
   int r = ::recv(static_cast<NativeHandler>(fd), buffor.data(), buffor.size(), 0);
+  if (r == -1)
+    throw Exceptions::SystemError(errno);
+
+  return std::string(buffor.data(), r);
+}
+
+std::string TcpIpClient::receive(size_t size)
+{
+  std::array<char, BUFFOR_SIZE> buffor;
+
+  Common::runtimeAssert(size <= BUFFOR_SIZE, "size exceeds buffor size");
+
+  int r = ::recv(static_cast<NativeHandler>(fd), buffor.data(), std::min(buffor.size(), size), 0);
   if (r == -1)
     throw Exceptions::SystemError(errno);
 

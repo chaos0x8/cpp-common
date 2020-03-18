@@ -60,6 +60,14 @@ namespace Common
         ASSERT_THAT(clientServerSide.receive(), Eq("Hello world"));
       }
 
+      TEST_F(TcpIpSocketsTestSuite, sendRecvStringWithSize) {
+        TcpIpClient clientClientSide = TcpIpClient{LOCAL_HOST, PORT};
+        clientClientSide.send("Hello world");
+
+        TcpIpClient clientServerSide = acceptResult.get();
+        ASSERT_THAT(clientServerSide.receive(3), Eq("Hel"));
+      }
+
       TEST_F(TcpIpSocketsTestSuite, shoutdownClient)
       {
         TcpIpClient clientClientSide = TcpIpClient{LOCAL_HOST, PORT};
@@ -77,6 +85,7 @@ namespace Common
         TcpIpClient clientServerSide = acceptResult.get();
 
         listener.shutdown();
+
         ASSERT_THROW(listener.accept(), Exceptions::SystemError);
       }
 

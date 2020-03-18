@@ -43,6 +43,7 @@ public:
 
     //! \throw Exceptions::SystemError
     std::string receive();
+    std::string receive(size_t size);
 
     //! \throw Exceptions::SystemError
     bool  receive(void* dst, size_t);

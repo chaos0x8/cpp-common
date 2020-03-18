@@ -33,7 +33,7 @@ class FileUtilityTestSuite : public Test
 {
 public:
     std::string NON_EXISTING_FILE{"xxx"};
-    std::string EXISTING_FILE{"Source/Common/TestModules/main.cpp"};
+    std::string EXISTING_FILE{"Test/Common/main.cpp"};
 };
 
 TEST_F(FileUtilityTestSuite, shouldThrowWhenFileDoesntExist)

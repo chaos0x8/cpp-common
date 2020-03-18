@@ -18,9 +18,9 @@
  *  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "../Parser.hpp"
-#include "../Option.hpp"
-#include "../Tagged.hpp"
+#include "OptionParser/Parser.hpp"
+#include "OptionParser/Option.hpp"
+#include "OptionParser/Tagged.hpp"
 #include "ArgumentsBuilder.hpp"
 #include <gmock/gmock.h>
 #include <cstring>

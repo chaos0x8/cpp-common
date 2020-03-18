@@ -18,31 +18,14 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-gem 'rake-builder', '~> 0.5', '>= 0.5.0'
+gem 'rake-builder', '~> 0.5', '>= 0.5.1'
 
 autoload :FileUtils, 'fileutils'
 
 require 'date'
 require 'pathname'
 require 'rake-builder'
-
-#FLAGS = [ '-Wall', '-Werror', '-g', '-Wno-deprecated' ]
-FLAGS = [ '-Wall', '-Werror', '-O3', '-s', '-DNDEBUG', '-Wno-deprecated' ]
-
-PKG_MAP = {
-  'Gtkmm' => ['gtkmm-3.0'],
-  'EmbededRuby' => ['ruby'],
-  'SqLite' => ['sqlite3'],
-  'GL' => ['glew'],
-  'CurlWrapper' => ['libcurl'],
-  'CryptoWrapper' => ['libcrypto++']
-}
-
-FLAGS_MAP = {
-  'Gtkmm' => ['--std=c++14'],
-  'EmbededRuby' => ['--std=c++14'],
-  :default => ['--std=c++17']
-}
+require 'json'
 
 preGenerated = []
 preGenerated << GeneratedFile.new { |t|
@@ -71,75 +54,72 @@ generated = []
 Dir['Source/*'].select { |x| File.directory?(x) }.each { |dir|
   generated << Generate.includeDirectory(dir, requirements: preGenerated)
 }
-generated = (generated + preGenerated).flatten
 
 libraries = []
-libCommon = Library.new { |t|
-    flags = FLAGS_MAP['Common'] || FLAGS_MAP[:default]
-
-    t.name = 'lib/libcommon.a'
-    t.includes << [ 'Source' ]
-    t.flags << [FLAGS, flags]
-    t.requirements << generated
-    t.sources << Dir['Source/Common/**/*.cpp'] - Dir['Source/Common/TestModules/*.cpp']
-    t.description = "Builds library '#{t.name}'"
-}
-libraries << libCommon
-
 uts = []
-uts << Executable.new { |t|
-    flags = FLAGS_MAP['Common'] || FLAGS_MAP[:default]
 
-    t.name = "bin/Common-ut"
-    t.includes << [ 'Source' ]
-    t.flags << [FLAGS, flags, '-pthread']
-    t.requirements << generated
-    t.libs << [ '-lgtest', '-lgmock' ]
-    t.libs << [ libCommon ]
-    t.sources << Dir['Source/Common/TestModules/*.cpp']
-    t.description = "Builds ut target '#{t.name}'"
+config = JSON.parse(IO.read("#{File.dirname(__FILE__)}/rakefile.json"))
+
+config['libs'].each { |lib|
+  libraries << Library.new { |t|
+    if lib['install']
+      t.requirements << InstallPkg.new(name: "install-#{lib['name']}", pkgs: lib['install'])
+    end
+
+    t.name = lib['name']
+    t.requirements << generated << preGenerated
+    t.flags << (lib['flags'] || config['flags'])
+    t.flags << (lib['std'] || config['std'])
+    t.includes << FileList['Source', *(lib['includes'] || [])]
+    t.sources << FileList[*lib['sources']]
+    t.description = "Builds library #{t.name}"
+    t.pkgs << (lib['pkgs'] || [])
+  } unless lib['wip']
 }
 
-tmp = Dir['Source/*'].select{ |x| File.directory?(x) } - [ 'Source/Common' ]
-tmp.each { |dir|
-    pkgs = PKG_MAP[File.basename(dir)] || []
-    flags = FLAGS_MAP[File.basename(dir)] || FLAGS_MAP[:default]
+config['uts'].each { |ut|
+  uts << Executable.new { |t|
+    if ut['install']
+      t.requirements << InstallPkg.new(name: "install-#{ut['name']}", pkgs: ut['install'])
+    end
 
-    sources = Dir["#{dir}/**/*.cpp"] - Dir["#{dir}/**/TestModules/*.cpp"]
+    t.name = ut['name']
+    t.requirements << generated << preGenerated
+    t.flags << (ut['flags'] || config['flags'])
+    t.flags << (ut['std'] || config['std'])
+    t.includes << FileList['Source', 'Test', *(ut['includes'] || [])]
+    t.sources << FileList[*ut['sources']]
+    t.description = "Builds library #{t.name}"
+    t.libs << ['-pthread', '-lgtest', '-lgmock']
+    t.libs << (ut['libs'] || [])
+    t.pkgs << (ut['pkgs'] || [])
+  } unless ut['wip']
+}
 
-    libraries << Library.new { |t|
-        t.name = "lib/libcommon#{File.basename(dir)}.a"
-        t.includes << [ 'Source' ]
-        t.flags << [FLAGS, flags]
-        t.requirements << generated
-        t.libs << libCommon
-        t.pkgs << pkgs
-        t.sources << sources
-        t.description = "Builds library '#{t.name}'"
-    } if sources.size > 0
+#FLAGS = [ '-Wall', '-Werror', '-g', '-Wno-deprecated' ]
+FLAGS = [ '-Wall', '-Werror', '-O3', '-s', '-DNDEBUG', '-Wno-deprecated' ]
 
-    sources = Dir["#{dir}/**/TestModules/*.cpp"]
+PKG_MAP = {
+  'Gtkmm' => ['gtkmm-3.0'],
+  'EmbededRuby' => ['ruby'],
+  'SqLite' => ['sqlite3'],
+  'GL' => ['glew'],
+  'CurlWrapper' => ['libcurl'],
+  'CryptoWrapper' => ['libcrypto++']
+}
 
-    uts << Executable.new { |t|
-        t.name = "bin/#{File.basename(dir)}-ut"
-        t.description = "Builds ut target '#{t.name}'"
-        t.includes << [ 'Source' ]
-        t.flags << [FLAGS, flags, '-pthread']
-        t.requirements << generated
-        t.libs << [ '-lgtest', '-lgmock' ]
-        t.libs << libraries.select { |l| l.name == "lib/libcommon#{File.basename(dir)}.a" }
-        t.libs << libCommon
-        t.pkgs << pkgs
-        t.sources << sources
-    } if sources.size > 0
+FLAGS_MAP = {
+  'Gtkmm' => ['--std=c++14'],
+  'EmbededRuby' => ['--std=c++14'],
+  :default => ['--std=c++17']
 }
 
 desc 'Builds all generated files'
-multitask(:generated => Names[generated])
+multitask(:generated => Names[generated, preGenerated])
 
 desc 'Removes generated files'
 task(:clean_generated) {
-  Names[generated].each { |x|
+  Names[generated, preGenerated].each { |x|
     FileUtils.rm(x, verbose: true) if File.exists?(x)
   }
 }
@@ -154,3 +134,13 @@ multitask(:default => Names[libraries, uts]) {
   }
 }
 
+desc 'Cleans build'
+task(:clean) {
+  ['.obj', 'bin', 'lib'].each { |fn|
+    if File.directory? fn
+      FileUtils.rm_rf fn, verbose: true
+    elsif File.exist? fn
+      FileUtils.rm fn, verbose: true
+    end
+  }
+}

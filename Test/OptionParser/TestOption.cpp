@@ -18,8 +18,8 @@
  *  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "../Option.hpp"
-#include "../Exceptions.hpp"
+#include "OptionParser/Option.hpp"
+#include "OptionParser/Exceptions.hpp"
 #include <gmock/gmock.h>
 
 namespace Common::OptionParser

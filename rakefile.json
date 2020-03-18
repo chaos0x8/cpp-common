@@ -1,0 +1,110 @@
+{
+  "std" : "--std=c++17",
+  "flags" : ["-Wall", "-Werror", "-O3", "-s", "-Wno-deprecated", "-Wno-register"],
+  "libs" : [{
+    "name" : "lib/libcommon.a",
+    "sources" : ["Source/Common/**/*.cpp"],
+    "install" : ["libboost-all-dev"]
+  }, {
+    "name" : "lib/libcommonCryptoWrapper.a",
+    "sources" : ["Source/CryptoWrapper/**/*.cpp"],
+    "install" : ["libcrypto++-dev"]
+  }, {
+    "name" : "lib/libcommonCurlWrapper.a",
+    "sources" : ["Source/CurlWrapper/**/*.cpp"],
+    "install" : ["libcurl4-openssl-dev"]
+  }, {
+    "name" : "lib/libcommonDL.a",
+    "sources" : ["Source/DL/**/*.cpp"]
+  }, {
+    "name" : "lib/libcommonEmbededRuby.a",
+    "sources" : ["Source/EmbededRuby/**/*.cpp"],
+    "install" : ["ruby-dev"],
+    "pkgs" : ["ruby"]
+  }, {
+    "name" : "lib/libcommonGtkmm.a",
+    "sources" : ["Source/Gtkmm/**/*.cpp"],
+    "install" : ["libgtkmm-3.0-dev"],
+    "pkgs" : ["gtkmm-3.0"]
+  }, {
+    "name" : "lib/libcommonGL.a",
+    "sources" : ["Source/GL/**/*.cpp"],
+    "install" : ["libassimp-dev", "libsoil-dev"],
+    "pkgs" : ["assimp"]
+  }, {
+    "name" : "lib/libcommonNCurses.a",
+    "sources" : ["Source/NCurses/**/*.cpp"],
+    "install" : ["libncurses5-dev"],
+    "pkgs" : ["ncurses"]
+  }, {
+    "name" : "lib/libcommonNetwork.a",
+    "sources" : ["Source/Network/**/*.cpp"]
+  }, {
+    "name" : "lib/libcommonOptionParser.a",
+    "sources" : ["Source/OptionParser/**/*.cpp"]
+  }, {
+    "name" : "lib/libcommonParallel.a",
+    "sources" : ["Source/Parallel/**/*.cpp"]
+  }, {
+    "name" : "lib/libcommonSfml.a",
+    "sources" : ["Source/Sfml/**/*.cpp"],
+    "install" : ["libsfml-dev", "libglew-dev", "libglm-dev"],
+    "pkgs" : ["sfml-all", "glew", "glm"]
+  }, {
+    "name" : "lib/libcommonSqLite.a",
+    "sources" : ["Source/SqLite/**/*.cpp"],
+    "install" : ["libsqlite3-dev"]
+  }],
+  "uts" : [{
+    "name" : "bin/common-ut",
+    "sources" : ["Test/Common/**/*.cpp"],
+    "libs" : ["lib/libcommon.a"]
+  }, {
+    "name" : "bin/commonCryptoWrapper-ut",
+    "sources" : ["Test/CryptoWrapper/**/*.cpp"],
+    "libs" : ["lib/libcommonCryptoWrapper.a", "lib/libcommon.a"],
+    "pkgs" : ["libcrypto++"]
+  }, {
+    "name" : "bin/commonCurlWrapper-ut",
+    "sources" : ["Test/CurlWrapper/**/*.cpp"],
+    "libs" : ["lib/libcommonCurlWrapper.a", "lib/libcommon.a"],
+    "pkgs" : ["libcurl"],
+    "wip" : true
+  }, {
+    "name" : "bin/commonNetwork-ut",
+    "sources" : ["Test/Network/**/*.cpp"],
+    "libs" : ["lib/libcommonNetwork.a", "lib/libcommon.a"],
+    "wip" : true
+  }, {
+    "name" : "bin/commonSqLite-ut",
+    "sources" : ["Test/SqLite/**/*.cpp"],
+    "libs" : ["lib/libcommonSqLite.a", "lib/libcommon.a"],
+    "pkgs" : ["sqlite3"]
+  }, {
+    "name" : "bin/commonEmbededRuby-ut",
+    "sources" : ["Test/EmbededRuby/**/*.cpp"],
+    "libs" : ["lib/libcommonEmbededRuby.a", "lib/libcommon.a"],
+    "pkgs" : ["ruby"]
+  }, {
+    "name" : "bin/commonGtestExtras-ut",
+    "sources" : ["Test/GtestExtras/**/*.cpp"],
+    "libs" : ["lib/libcommon.a"]
+  }, {
+    "name" : "bin/commonOptionParse-ut",
+    "sources" : ["Test/OptionParser/**/*.cpp"],
+    "libs" : ["lib/libcommonOptionParser.a", "lib/libcommon.a"]
+  }, {
+    "name" : "bin/commonParallel-ut",
+    "sources" : ["Test/Parallel/**/*.cpp"],
+    "libs" : ["lib/libcommonParallel.a", "lib/libcommon.a"]
+  }, {
+    "name" : "bin/commonTraits-ut",
+    "sources" : ["Test/Traits/**/*.cpp"],
+    "libs" : ["lib/libcommon.a"]
+  }, {
+    "name" : "bin/commonGL-ut",
+    "sources" : ["Test/GL/**/*.cpp"],
+    "libs" : ["lib/libcommonGL.a", "lib/libcommon.a"],
+    "pkgs" : ["assimp"]
+  }]
+}

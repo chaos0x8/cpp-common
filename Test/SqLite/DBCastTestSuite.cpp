@@ -33,6 +33,7 @@ namespace UT
 {
 
 using namespace testing;
+using namespace std::literals;
 
 TEST(DBCastTestSuite, shouldCastToDbFormat)
 {
@@ -48,6 +49,8 @@ TEST(DBCastTestSuite, shouldCastToDbFormat)
 
 TEST(DBCastTestSuite, shouldCastFromDbFormat)
 {
+    ASSERT_THAT(fromDBFormat<uint32_t>("15"), Eq(15));
+    ASSERT_THAT(fromDBFormat<uint64_t>("15"), Eq(15));
     ASSERT_THAT(fromDBFormat<int>("15"), Eq(15));
     ASSERT_THAT(fromDBFormat<double>("15.5"), Eq(15.5));
     ASSERT_THAT(fromDBFormat<std::string>("15"), Eq("15"));
@@ -55,6 +58,18 @@ TEST(DBCastTestSuite, shouldCastFromDbFormat)
     ASSERT_THAT(fromDBFormat<boost::optional<std::string>>("15"), Eq(std::string("15")));
     ASSERT_THAT(fromDBFormat<boost::optional<std::string>>(std::string()), Eq(boost::none));
     ASSERT_DOUBLE_EQ(12.7, fromDBFormat<boost::optional<double>>("12.7").get_value_or(0.));
+}
+
+TEST(DBCastTestSuite, shouldCastFromDbFormat_String) {
+    ASSERT_THAT(fromDBFormat<uint32_t>("15s"), Eq(15));
+    ASSERT_THAT(fromDBFormat<uint64_t>("15s"), Eq(15));
+    ASSERT_THAT(fromDBFormat<int>("15"s), Eq(15));
+    ASSERT_THAT(fromDBFormat<double>("15.5"s), Eq(15.5));
+    ASSERT_THAT(fromDBFormat<std::string>("15"s), Eq("15"));
+    ASSERT_THAT(fromDBFormat<boost::optional<int>>("15"s), Eq(15));
+    ASSERT_THAT(fromDBFormat<boost::optional<std::string>>("15"s), Eq(std::string("15")));
+    ASSERT_THAT(fromDBFormat<boost::optional<std::string>>(std::string()), Eq(boost::none));
+    ASSERT_DOUBLE_EQ(12.7, fromDBFormat<boost::optional<double>>("12.7"s).get_value_or(0.));
 }
 
 TEST(DBCastTestSuite, integralCastFromDbFormat)
