@@ -43,9 +43,6 @@
     "name" : "lib/libcommonOptionParser.a",
     "sources" : ["Source/OptionParser/**/*.cpp"]
   }, {
-    "name" : "lib/libcommonParallel.a",
-    "sources" : ["Source/Parallel/**/*.cpp"]
-  }, {
     "name" : "lib/libcommonSfml.a",
     "sources" : ["Source/Sfml/**/*.cpp"],
     "install" : ["libsfml-dev", "libglew-dev", "libglm-dev"],
@@ -92,10 +89,6 @@
     "name" : "bin/commonOptionParser-ut",
     "sources" : ["Test/OptionParser/**/*.cpp", "Test/main.cpp"],
     "libs" : ["lib/libcommonOptionParser.a", "lib/libcommon.a"]
-  }, {
-    "name" : "bin/commonParallel-ut",
-    "sources" : ["Test/Parallel/**/*.cpp"],
-    "libs" : ["lib/libcommonParallel.a", "lib/libcommon.a"]
   }, {
     "name" : "bin/commonTraits-ut",
     "sources" : ["Test/Traits/**/*.cpp"],

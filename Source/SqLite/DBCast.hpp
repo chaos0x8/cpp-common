@@ -19,169 +19,112 @@
  */
 
 #pragma once
-#include <Traits/IsOptional.hpp>
-#include <string>
-#include <sstream>
-#include <type_traits>
-#include <boost/optional.hpp>
-#include <boost/lexical_cast.hpp>
+
 #include <boost/algorithm/string/replace.hpp>
+#include <boost/lexical_cast.hpp>
+#include <optional>
+#include <sstream>
+#include <string>
+#include <type_traits>
 
-namespace Common
-{
-namespace SqLite
-{
-namespace DBCast
-{
-namespace Detail
-{
+namespace Common {
+  namespace SqLite {
+    namespace DBCast {
+      namespace Detail {
 
-template <class T>
-struct ConvertableNumber
-{
-    static constexpr bool value = std::is_same<unsigned, T>::value
-                               || std::is_same<unsigned long, T>::value
-                               || std::is_same<unsigned long long, T>::value
-                               || std::is_same<int, T>::value
-                               || std::is_same<long, T>::value
-                               || std::is_same<long long, T>::value
-                               || std::is_same<float, T>::value
-                               || std::is_same<double, T>::value
-                               || std::is_same<long double, T>::value;
-};
+        template <class T> struct ConvertableNumber {
+          static constexpr bool value =
+            std::is_same<unsigned, T>::value ||
+            std::is_same<unsigned long, T>::value ||
+            std::is_same<unsigned long long, T>::value ||
+            std::is_same<int, T>::value || std::is_same<long, T>::value ||
+            std::is_same<long long, T>::value ||
+            std::is_same<float, T>::value || std::is_same<double, T>::value ||
+            std::is_same<long double, T>::value;
+        };
 
-template <typename T>
-inline T convNumber(const std::string&);
+        template <typename T> inline T convNumber(const std::string&);
 
-template <>
-inline unsigned convNumber<unsigned>(const std::string& data)
-{
-    return std::stoul(data);
-}
+        template <>
+        inline unsigned convNumber<unsigned>(const std::string& data) {
+          return std::stoul(data);
+        }
 
-template <>
-inline unsigned long convNumber<unsigned long>(const std::string& data)
-{
-    return std::stoul(data);
-}
+        template <>
+        inline unsigned long convNumber<unsigned long>(
+          const std::string& data) {
+          return std::stoul(data);
+        }
 
-template <>
-inline unsigned long long convNumber<unsigned long long>(const std::string& data)
-{
-    return std::stoull(data);
-}
+        template <>
+        inline unsigned long long convNumber<unsigned long long>(
+          const std::string& data) {
+          return std::stoull(data);
+        }
 
-template <>
-inline int convNumber<int>(const std::string& data)
-{
-    return std::stoi(data);
-}
+        template <> inline int convNumber<int>(const std::string& data) {
+          return std::stoi(data);
+        }
 
-template <>
-inline long convNumber<long>(const std::string& data)
-{
-    return std::stol(data);
-}
+        template <> inline long convNumber<long>(const std::string& data) {
+          return std::stol(data);
+        }
 
-template <>
-inline long long convNumber<long long>(const std::string& data)
-{
-    return std::stoll(data);
-}
+        template <>
+        inline long long convNumber<long long>(const std::string& data) {
+          return std::stoll(data);
+        }
 
-template <>
-inline float convNumber<float>(const std::string& data)
-{
-    return std::stof(data);
-}
+        template <> inline float convNumber<float>(const std::string& data) {
+          return std::stof(data);
+        }
 
-template <>
-inline double convNumber<double>(const std::string& data)
-{
-    return std::stod(data);
-}
+        template <> inline double convNumber<double>(const std::string& data) {
+          return std::stod(data);
+        }
 
-template <>
-inline long double convNumber<long double>(const std::string& data)
-{
-    return std::stold(data);
-}
+        template <>
+        inline long double convNumber<long double>(const std::string& data) {
+          return std::stold(data);
+        }
+      } // namespace Detail
 
-}
+      template <typename T> inline T fromDBFormat(const std::string& data) {
+        if constexpr (std::is_same_v<T, std::string>) {
+          return data;
+        } else if constexpr (Detail::ConvertableNumber<T>::value) {
+          return Detail::convNumber<T>(data);
+        } else {
+          return boost::lexical_cast<T>(data);
+        }
+      }
 
-template <typename T>
-inline T fromDBFormat(
-    std::string& data,
-    typename std::enable_if<!Traits::IsOptional<T>::value &&  std::is_same<T, std::string>::value>::type* = 0)
-{
-    return std::move(data);
-}
+      template <typename T> inline std::string toDBFormat(const T& val) {
+        return boost::lexical_cast<std::string>(val);
+      }
 
-template <typename T>
-inline T fromDBFormat(
-    const std::string& data,
-    typename std::enable_if<!Traits::IsOptional<T>::value &&  std::is_same<T, std::string>::value>::type* = 0)
-{
-    return data;
-}
+      inline std::string toDBFormat(const double& val) {
+        std::ostringstream ss;
+        ss << val;
+        return ss.str();
+      }
 
-template <typename T>
-inline T fromDBFormat(
-    const std::string& data,
-    typename std::enable_if<!Traits::IsOptional<T>::value && !std::is_same<T, std::string>::value &&  Detail::ConvertableNumber<T>::value>::type* = 0)
-{
-    return Detail::convNumber<T>(data);
-}
+      inline std::string toDBFormat(const std::string& value) {
+        return std::string("'") + boost::replace_all_copy(value, "'", "''") +
+               "'";
+      }
 
-template <typename T>
-inline T fromDBFormat(
-    const std::string& data,
-    typename std::enable_if<!Traits::IsOptional<T>::value && !std::is_same<T, std::string>::value && !Detail::ConvertableNumber<T>::value>::type* = 0)
-{
-    return boost::lexical_cast<T>(data);
-}
+      inline std::string toDBFormat(const char* value) {
+        return toDBFormat(std::string(value));
+      }
 
-template <typename T>
-inline T fromDBFormat(
-    const std::string& data,
-    typename std::enable_if< Traits::IsOptional<T>::value>::type* = 0)
-{
-    if (data.empty())
-        return T();
-    return fromDBFormat<typename Traits::IsOptional<T>::type>(data);
-}
+      template <typename T>
+      inline std::string toDBFormat(const std::optional<T>& val) {
+        if (!val)
+          return "null";
+        return toDBFormat(*val);
+      }
 
-template <typename T>
-inline std::string toDBFormat(const T& val)
-{
-    return boost::lexical_cast<std::string>(val);
-}
-
-inline std::string toDBFormat(const double& val)
-{
-    std::ostringstream ss;
-    ss << val;
-    return ss.str();
-}
-
-inline std::string toDBFormat(const std::string& value)
-{
-    return std::string("'") + boost::replace_all_copy(value, "'", "''") + "'";
-}
-
-inline std::string toDBFormat(const char* value)
-{
-    return toDBFormat(std::string(value));
-}
-
-template <typename T>
-inline std::string toDBFormat(const boost::optional<T>& val)
-{
-    if (!val)
-        return "null";
-    return toDBFormat(*val);
-}
-
-}
-}
-}
+    } // namespace DBCast
+  }   // namespace SqLite
+} // namespace Common
