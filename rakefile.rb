@@ -67,11 +67,12 @@ config['libs'].each { |lib|
     end
 
     t.name = lib['name']
-    t.requirements << generated << preGenerated
+    t.requirements << preGenerated
     t.flags << (lib['flags'] || config['flags'])
     t.flags << (lib['std'] || config['std'])
     t.includes << FileList['Source', *(lib['includes'] || [])]
     t.sources << FileList[*lib['sources']]
+    t.requirements << generated
     t.description = "Builds library #{t.name}"
     t.pkgs << (lib['pkgs'] || [])
   } unless lib['wip']
@@ -84,34 +85,20 @@ config['uts'].each { |ut|
     end
 
     t.name = ut['name']
-    t.requirements << generated << preGenerated
+    t.requirements << preGenerated
+    t.requirements << ut['libs'].select { |lib|
+      config['libs'].collect { |l| l['name'] }.include?(lib)
+    }
     t.flags << (ut['flags'] || config['flags'])
     t.flags << (ut['std'] || config['std'])
     t.includes << FileList['Source', 'Test', *(ut['includes'] || [])]
     t.sources << FileList[*ut['sources']]
-    t.description = "Builds library #{t.name}"
+    t.requirements << generated
+    t.description = "Builds test binary #{t.name}"
     t.libs << ['-pthread', '-lgtest', '-lgmock']
     t.libs << (ut['libs'] || [])
     t.pkgs << (ut['pkgs'] || [])
   } unless ut['wip']
-}
-
-#FLAGS = [ '-Wall', '-Werror', '-g', '-Wno-deprecated' ]
-FLAGS = [ '-Wall', '-Werror', '-O3', '-s', '-DNDEBUG', '-Wno-deprecated' ]
-
-PKG_MAP = {
-  'Gtkmm' => ['gtkmm-3.0'],
-  'EmbededRuby' => ['ruby'],
-  'SqLite' => ['sqlite3'],
-  'GL' => ['glew'],
-  'CurlWrapper' => ['libcurl'],
-  'CryptoWrapper' => ['libcrypto++']
-}
-
-FLAGS_MAP = {
-  'Gtkmm' => ['--std=c++14'],
-  'EmbededRuby' => ['--std=c++14'],
-  :default => ['--std=c++17']
 }
 
 desc 'Builds all generated files'

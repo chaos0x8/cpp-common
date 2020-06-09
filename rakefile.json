@@ -89,8 +89,8 @@
     "sources" : ["Test/GtestExtras/**/*.cpp"],
     "libs" : ["lib/libcommon.a"]
   }, {
-    "name" : "bin/commonOptionParse-ut",
-    "sources" : ["Test/OptionParser/**/*.cpp"],
+    "name" : "bin/commonOptionParser-ut",
+    "sources" : ["Test/OptionParser/**/*.cpp", "Test/main.cpp"],
     "libs" : ["lib/libcommonOptionParser.a", "lib/libcommon.a"]
   }, {
     "name" : "bin/commonParallel-ut",

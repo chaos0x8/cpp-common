@@ -1,224 +1,116 @@
-/*!
- *  \author <https://github.com/chaos0x8>
- *  \copyright
- *  Copyright (c) 2017, <https://github.com/chaos0x8>
- *
- *  \copyright
- *  Permission to use, copy, modify, and/or distribute this software for any
- *  purpose with or without fee is hereby granted, provided that the above
- *  copyright notice and this permission notice appear in all copies.
- *
- *  \copyright
- *  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- *  WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- *  MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
- *  ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- *  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- *  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
- *  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- */
-
 #pragma once
 
-#include "Detail/MatchName.hpp"
+#include "Common/Eql.hpp"
+#include <memory>
+#include <optional>
 #include <string>
-#include <sstream>
 #include <type_traits>
-#include <vector>
-#include <regex>
 
-namespace Common::OptionParser
-{
-  namespace Detail
-  {
-    std::string join(const std::vector<std::string>& text, std::string sep);
+namespace Common::OptionParser {
+  namespace Detail {
+    template <class T> struct Traits {
+      static T fromString(std::string_view str) {
+        if constexpr (std::is_floating_point_v<T>) {
+          return std::stod(std::string(str));
+        } else if constexpr (std::is_signed_v<T>) {
+          return std::stoll(std::string(str));
+        } else if constexpr (std::is_unsigned_v<T>) {
+          return std::stoull(std::string(str));
+        } else if constexpr (std::is_same_v<std::string, T>) {
+          return std::string(str);
+        } else {
+          return T::fromString(str);
+        }
+      }
 
-    template <class... Args>
-    inline std::vector<std::string> mkVector(std::string name, Args&&... names)
-    {
-      auto result = std::vector<std::string>();
-      result.emplace_back(std::move(name));
-      ( result.emplace_back(std::move(names)), ... );
-      return result;
-    }
+      static constexpr size_t arity = 1u;
+    };
 
-    template <class TO>
-    inline TO convert(std::string from)
-    {
-      return TO(from);
-    }
+    template <> struct Traits<bool> {
+      static bool fromString(std::string_view str) {
+        return true;
+      }
 
-    template <>
-    inline std::string convert<std::string>(std::string from)
-    {
-      return from;
-    }
+      static constexpr size_t arity = 0u;
+    };
 
-    template <>
-    inline int convert<int>(std::string from)
-    {
-      return std::stoi(from);
-    }
+    struct Option {
+      explicit Option(std::string_view name) : name_(name) {}
 
-    template <>
-    inline double convert<double>(std::string from)
-    {
-      return std::stod(from);
-    }
+      virtual ~Option() = default;
 
-    template <>
-    inline bool convert<bool>(std::string from)
-    {
-      return from == "true";
-    }
+      std::string_view name() const {
+        return name_;
+      }
+
+      virtual void set(std::string_view val) = 0;
+      virtual size_t arity() const = 0;
+
+    private:
+      std::string name_;
+    };
+
+    template <class T> struct TypedOption : public Option {
+      explicit TypedOption(std::string_view name) : Option(name) {}
+
+      explicit operator bool() const {
+        return static_cast<bool>(value_);
+      }
+
+      const T& operator*() const {
+        return *value_;
+      }
+
+      void set(std::string_view val) override {
+        value_ = Traits<T>::fromString(val);
+      }
+
+      size_t arity() const override {
+        return Traits<T>::arity;
+      }
+
+    private:
+      std::optional<T> value_;
+    };
   } // namespace Detail
 
-  template <class T>
-  struct Option
-  {
-    template <class... Args>
-    explicit Option(std::string name, Args&&... names)
-      : _names(Detail::mkVector(std::move(name), std::forward<Args>(names)...))
-    {
-      #ifdef __cpp_if_constexpr
-      if constexpr(isBool)
-      #else
-      if (isBool)
-      #endif
-      {
-        _present = true;
-        _hasDefault = true;
+  template <class T> struct Option {
+    explicit Option(std::shared_ptr<Detail::TypedOption<T>> detail)
+      : detail_(std::move(detail)) {}
+
+    std::string_view name() const {
+      return detail_->name();
+    }
+
+    explicit operator bool() const {
+      return static_cast<bool>(*detail_);
+    }
+
+    const T* operator->() const {
+      return &**detail_;
+    }
+
+    const T& operator*() const {
+      return **detail_;
+    }
+
+    bool operator==(const T& other) const {
+      if (not*detail_) {
+        return false;
+      }
+
+      if constexpr (std::is_floating_point_v<T>) {
+        return Common::eql(**detail_, other);
+      } else {
+        return **detail_ == other;
       }
     }
 
-    std::vector<std::string> names() const
-    {
-      return _names;
+    bool operator!=(const T& other) const {
+      return not operator==(other);
     }
-
-    Option<T>& description(std::string val)
-    {
-      _description = val;
-      return *this;
-    }
-
-    std::string description() const
-    {
-      return _description;
-    }
-
-    Option<T>& value(std::string val)
-    {
-      _value = Detail::convert<T>(val);
-      _present = true;
-
-      if (_callback)
-        _callback(_value);
-
-      return *this;
-    }
-
-    T value() const
-    {
-      if (_present)
-        return _value;
-      return _default;
-    }
-
-    Option<T>& defaultValue(std::string val)
-    {
-      _default = Detail::convert<T>(val);
-      _hasDefault = true;
-      return *this;
-    }
-
-    T defaultValue() const
-    {
-      return _default;
-    }
-
-    Option<T>& on(std::function<void (const T&)> callback)
-    {
-      _callback = callback;
-      return *this;
-    }
-
-    bool isName(std::string name) const
-    {
-      return Detail::isName(_names, name);
-    }
-
-    bool isNegationName(std::string name) const
-    {
-      return false;
-    }
-
-    template <class F>
-    void help(F&& fun) const
-    {
-      std::string _def;
-
-      if (_hasDefault and _showDefault<T>())
-      {
-        std::stringstream ss;
-
-        ss << "default: ";
-        #ifdef __cpp_if_constexpr
-        if constexpr(isBool)
-        #else
-        if (isBool)
-        #endif
-        {
-          ss << std::boolalpha;
-        }
-        ss << _default;
-
-        using namespace std::literals;
-        _def = ss.str();
-      }
-
-      if (_description.empty() and _def.size() > 0)
-        fun(Detail::join(_names, ", "), _def);
-      else
-      {
-        fun(Detail::join(_names, ", "), _description);
-        if (_def.size() > 0)
-        {
-          using namespace std::literals;
-          fun(std::string(), "  "s + _def);
-        }
-      }
-    }
-
-    explicit operator bool() const
-    {
-      return _present or _hasDefault;
-    }
-
-    enum { isBool = std::is_same<T, bool>::value };
 
   private:
-    template <class U, typename std::enable_if<  std::is_same<U, bool>::value, int>::type = 0>
-    bool _showDefault() const
-    {
-      return _default == true;
-    }
-
-    template <class U, typename std::enable_if<! std::is_same<U, bool>::value, int>::type = 0>
-    bool _showDefault() const
-    {
-      return true;
-    }
-
-    std::function<void (const T&)> _callback;
-
-    std::vector<std::string> _names;
-    std::string _description;
-
-    bool _hasDefault = false;
-    T _default = T();
-
-    bool _present = false;
-    T _value = T();
+    std::shared_ptr<Detail::TypedOption<T>> detail_;
   };
 } // namespace Common::OptionParser
