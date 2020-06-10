@@ -1,0 +1,11 @@
+{
+  "std::string" : [
+    "AssertionFailed",
+    "FileLoadError",
+    "FileSaveError",
+    "OperationAborted"
+  ],
+  "void" : [
+    "NoResult"
+  ]
+}
