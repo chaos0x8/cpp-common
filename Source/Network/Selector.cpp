@@ -87,8 +87,8 @@ namespace Common::Network {
             callbacksToExecute.emplace_back(val);
       }
 
-      for (const auto& [nh, callback] : callbacksToExecute)
-        callback(nh);
+      for (const auto& item : callbacksToExecute)
+        item.second(item.first);
     }
   } catch (Exceptions::SystemError& e) {
     std::cerr << e.what() << std::endl;

@@ -44,12 +44,7 @@ namespace Common::Network {
     template <class T, class F, class... Args>
     void add(const T& t, F&& f, Args&&... args) {
       const auto fd = getNativeHandler(t);
-
-      if constexpr (sizeof...(Args) > 0) {
-        addPriv(fd, std::bind(std::forward<F>(f), std::forward<Args>(args)...));
-      } else {
-        addPriv(fd, std::forward<F>(f));
-      }
+      addPriv(fd, std::bind(std::forward<F>(f), std::forward<Args>(args)...));
     }
 
     template <class T> void remove(const T& t) {
