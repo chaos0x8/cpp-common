@@ -29,8 +29,8 @@
   }, {
     "name" : "lib/libcommonGL.a",
     "sources" : ["Source/GL/**/*.cpp"],
-    "install" : ["libassimp-dev", "libsoil-dev"],
-    "pkgs" : ["assimp"]
+    "install" : ["libassimp-dev", "libsoil-dev", "libglew-dev"],
+    "pkgs" : ["assimp", "glew"]
   }, {
     "name" : "lib/libcommonNCurses.a",
     "sources" : ["Source/NCurses/**/*.cpp"],
@@ -69,8 +69,7 @@
   }, {
     "name" : "bin/commonNetwork-ut",
     "sources" : ["Test/Network/**/*.cpp"],
-    "libs" : ["lib/libcommonNetwork.a", "lib/libcommon.a"],
-    "wip" : true
+    "libs" : ["lib/libcommonNetwork.a", "lib/libcommon.a"]
   }, {
     "name" : "bin/commonSqLite-ut",
     "sources" : ["Test/SqLite/**/*.cpp"],
@@ -97,6 +96,6 @@
     "name" : "bin/commonGL-ut",
     "sources" : ["Test/GL/**/*.cpp"],
     "libs" : ["lib/libcommonGL.a", "lib/libcommon.a"],
-    "pkgs" : ["assimp"]
+    "pkgs" : ["assimp", "glew"]
   }]
 }

@@ -20,23 +20,16 @@
 
 #include <Network/TcpIpServer.hpp>
 
-namespace Common
-{
-namespace Network
-{
-
-TcpIpServer::TcpIpServer(const std::string& ip, const std::string& port)
-{
+namespace Common::Network {
+  TcpIpServer::TcpIpServer(const std::string& ip, const std::string& port) {
     fd = listen(ip, port);
-}
+  }
 
-TcpIpClient TcpIpServer::accept()
-{
-    int acceptResult = ::accept(static_cast<int>(fd), nullptr, nullptr);
-    if (acceptResult < 0)
-        throw Exceptions::SystemError(errno);
-    return TcpIpClient{Detail::FileDescriptor{acceptResult}};
-}
-
-}
-}
+  TcpIpClient TcpIpServer::accept() {
+    int acceptResult = ::accept(**fd, nullptr, nullptr);
+    if (acceptResult < 0) {
+      throw Exceptions::SystemError(errno);
+    }
+    return TcpIpClient{Detail::FileDescriptor{NativeHandler(acceptResult)}};
+  }
+} // namespace Common::Network

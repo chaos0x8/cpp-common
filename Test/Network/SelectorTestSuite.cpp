@@ -18,41 +18,37 @@
  *  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <Network/Selector.hpp>
 #include <Network/Pipe.hpp>
-#include <gmock/gmock.h>
+#include <Network/Selector.hpp>
 #include <atomic>
+#include <gmock/gmock.h>
 
-namespace Common
-{
-namespace Network
-{
-namespace UT
-{
+namespace Common::Network {
+  using namespace testing;
 
-using namespace testing;
-
-class SelectorTestSuite : public Test
-{
-public:
-    void TearDown() override
-    {
-        auto now = std::chrono::high_resolution_clock::now();
-        while (count != expectedCount and now + std::chrono::seconds(1) > std::chrono::high_resolution_clock::now())
-            std::this_thread::yield();
-        ASSERT_THAT(count, Eq(expectedCount));
+  class SelectorTestSuite : public Test {
+  public:
+    void TearDown() override {
+      auto now = std::chrono::high_resolution_clock::now();
+      while (
+        count != expectedCount and now + std::chrono::seconds(1) >
+                                     std::chrono::high_resolution_clock::now())
+        std::this_thread::yield();
+      ASSERT_THAT(count, Eq(expectedCount));
     }
 
-    void incrementCount(Pipe* selected)
-    {
-        std::string data = selected->read();
-        count += std::stoul(data);
+    void incrementCount(NativeHandler nh, Pipe* selected) {
+      EXPECT_THAT(nh, Eq(selected->getNativeHandler()[0]));
+
+      std::string data = selected->read();
+      count += std::stoul(data);
     }
 
-    void incrementCountTwice(Pipe* selected)
-    {
-        std::string data = selected->read();
-        count += std::stoul(data) * 2;
+    void incrementCountTwice(NativeHandler nh, Pipe* selected) {
+      EXPECT_THAT(nh, Eq(selected->getNativeHandler()[0]));
+
+      std::string data = selected->read();
+      count += std::stoul(data) * 2;
     }
 
     std::array<Pipe, 4> pipes;
@@ -61,26 +57,26 @@ public:
 
     uint32_t expectedCount{std::numeric_limits<uint32_t>::max()};
     std::atomic<uint32_t> count{0};
-};
+  };
 
-TEST_F(SelectorTestSuite, shouldCallHandlingProcedure)
-{
+  TEST_F(SelectorTestSuite, shouldCallHandlingProcedure) {
     expectedCount = 42;
 
     for (Pipe& pipe : pipes)
-        sut.add(pipe, &SelectorTestSuite::incrementCount, this, &pipe);
+      sut.add(pipe, &SelectorTestSuite::incrementCount, this,
+        std::placeholders::_1, &pipe);
     pipes[0].write("12");
     pipes[1].write("10");
     pipes[2].write("15");
     pipes[3].write("5");
-}
+  }
 
-TEST_F(SelectorTestSuite, shouldRemoveElementsOnlyOnce)
-{
+  TEST_F(SelectorTestSuite, shouldRemoveElementsOnlyOnce) {
     expectedCount = 17;
 
     for (Pipe& pipe : pipes)
-        sut.add(pipe, &SelectorTestSuite::incrementCount, this, &pipe);
+      sut.add(pipe, &SelectorTestSuite::incrementCount, this,
+        std::placeholders::_1, &pipe);
     sut.remove(pipes[1]);
     sut.remove(pipes[1]);
     sut.remove(pipes[2]);
@@ -89,28 +85,26 @@ TEST_F(SelectorTestSuite, shouldRemoveElementsOnlyOnce)
     pipes[1].write("10");
     pipes[2].write("15");
     pipes[3].write("5");
-}
+  }
 
-TEST_F(SelectorTestSuite, addingFdTwiceShouldNotWork)
-{
+  TEST_F(SelectorTestSuite, addingFdTwiceShouldNotWork) {
     expectedCount = 210;
 
-    sut.add(pipes[0], &SelectorTestSuite::incrementCount, this, &pipes[0]);
-    sut.add(pipes[0], &SelectorTestSuite::incrementCountTwice, this, &pipes[0]);
-    sut.add(pipes[1], &SelectorTestSuite::incrementCountTwice, this, &pipes[1]);
+    sut.add(pipes[0], &SelectorTestSuite::incrementCount, this,
+      std::placeholders::_1, &pipes[0]);
+    sut.add(pipes[0], &SelectorTestSuite::incrementCountTwice, this,
+      std::placeholders::_1, &pipes[0]);
+    sut.add(pipes[1], &SelectorTestSuite::incrementCountTwice, this,
+      std::placeholders::_1, &pipes[1]);
 
     pipes[0].write("10");
     pipes[1].write("100");
-}
+  }
 
-TEST_F(SelectorTestSuite, selectorCanBeSafetlyStoppedManually)
-{
-  expectedCount = 0;
+  TEST_F(SelectorTestSuite, selectorCanBeSafetlyStoppedManually) {
+    expectedCount = 0;
 
-  sut.stop();
-  sut.wait();
-}
-
-}
-}
-}
+    sut.stop();
+    sut.wait();
+  }
+} // namespace Common::Network

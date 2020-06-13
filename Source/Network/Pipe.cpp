@@ -18,45 +18,35 @@
  *  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <Network/Pipe.hpp>
 #include <Common/Exceptions/SystemError.hpp>
 #include <Network/Detail/BufforSize.hpp>
+#include <Network/Pipe.hpp>
 #include <array>
 #include <unistd.h>
 
-namespace Common
-{
-namespace Network
-{
-
-Pipe::Pipe()
-{
+namespace Common::Network {
+  Pipe::Pipe() {
     int fds[2] = {};
     if (::pipe(fds) == -1)
-        throw Exceptions::SystemError(errno);
-    readPipe = Detail::FileDescriptor{fds[0]};
-    writePipe = Detail::FileDescriptor{fds[1]};
-}
+      throw Exceptions::SystemError(errno);
+    readPipe = Detail::FileDescriptor{NativeHandler(fds[0])};
+    writePipe = Detail::FileDescriptor{NativeHandler(fds[1])};
+  }
 
-std::string Pipe::read()
-{
+  std::string Pipe::read() {
     std::array<char, BUFFOR_SIZE> buffor;
-    ssize_t nread = ::read(static_cast<int>(readPipe), buffor.data(), buffor.size());
+    ssize_t nread = ::read(**readPipe, buffor.data(), buffor.size());
     if (nread == -1)
-        throw Exceptions::SystemError(errno);
+      throw Exceptions::SystemError(errno);
     return std::string(buffor.data(), nread);
-}
+  }
 
-void Pipe::write(const std::string& buffor)
-{
-    if (::write(static_cast<int>(writePipe), buffor.data(), buffor.size()) == -1)
-        throw Exceptions::SystemError(errno);
-}
+  void Pipe::write(const std::string& buffor) {
+    if (::write(**writePipe, buffor.data(), buffor.size()) == -1)
+      throw Exceptions::SystemError(errno);
+  }
 
-std::array<int, 2> Pipe::getNativeHandler() const
-{
-    return { static_cast<int>(readPipe), static_cast<int>(writePipe) };
-}
-
-}
-}
+  std::array<NativeHandler, 2> Pipe::getNativeHandler() const {
+    return {*readPipe, *writePipe};
+  }
+} // namespace Common::Network

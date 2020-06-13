@@ -18,27 +18,23 @@
  *  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <gmock/gmock.h>
-#include <Network/TcpIpServer.hpp>
-#include <Network/TcpIpClient.hpp>
 #include <Common/Exceptions/SystemError.hpp>
+#include <Network/TcpIpClient.hpp>
+#include <Network/TcpIpServer.hpp>
 #include <future>
+#include <gmock/gmock.h>
 
-namespace Common
-{
-  namespace Network
-  {
-    namespace UT
-    {
+namespace Common {
+  namespace Network {
+    namespace UT {
 
       using namespace testing;
 
-      class TcpIpSocketsTestSuite : public Test
-      {
+      class TcpIpSocketsTestSuite : public Test {
       public:
-        TcpIpSocketsTestSuite()
-        {
-          acceptResult = std::async(std::launch::async, [&] { return listener.accept(); });
+        TcpIpSocketsTestSuite() {
+          acceptResult =
+            std::async(std::launch::async, [&] { return listener.accept(); });
         }
 
         TcpIpServer listener{LOCAL_HOST, PORT};
@@ -51,8 +47,7 @@ namespace Common
       const std::string TcpIpSocketsTestSuite::LOCAL_HOST = "127.0.0.1";
       const std::string TcpIpSocketsTestSuite::PORT = "3042";
 
-      TEST_F(TcpIpSocketsTestSuite, sendReceive)
-      {
+      TEST_F(TcpIpSocketsTestSuite, sendReceive) {
         TcpIpClient clientClientSide = TcpIpClient{LOCAL_HOST, PORT};
         clientClientSide.send("Hello world");
 
@@ -68,8 +63,7 @@ namespace Common
         ASSERT_THAT(clientServerSide.receive(3), Eq("Hel"));
       }
 
-      TEST_F(TcpIpSocketsTestSuite, shoutdownClient)
-      {
+      TEST_F(TcpIpSocketsTestSuite, shoutdownClient) {
         TcpIpClient clientClientSide = TcpIpClient{LOCAL_HOST, PORT};
         TcpIpClient clientServerSide = acceptResult.get();
 
@@ -79,22 +73,16 @@ namespace Common
         ASSERT_THAT(clientServerSide.receive(), IsEmpty());
       }
 
-      TEST_F(TcpIpSocketsTestSuite, shutdownListener)
-      {
+      TEST_F(TcpIpSocketsTestSuite, shutdownListenerThrowsException) {
         TcpIpClient clientClientSide = TcpIpClient{LOCAL_HOST, PORT};
         TcpIpClient clientServerSide = acceptResult.get();
 
-        listener.shutdown();
-
-        ASSERT_THROW(listener.accept(), Exceptions::SystemError);
+        ASSERT_THROW(listener.shutdown(), Exceptions::SystemError);
       }
 
-      struct TcpIpSockets_rawMessages_TestSuite : public TcpIpSocketsTestSuite
-      {
-        struct Message
-        {
-          bool operator == (const Message& other) const
-          {
+      struct TcpIpSockets_rawMessages_TestSuite : public TcpIpSocketsTestSuite {
+        struct Message {
+          bool operator==(const Message& other) const {
             return x == other.x and y == other.y;
           }
 
@@ -102,12 +90,11 @@ namespace Common
           int y;
         };
 
-        Message msg { 7, 42 };
-        Message act {};
+        Message msg{7, 42};
+        Message act{};
       };
 
-      TEST_F(TcpIpSockets_rawMessages_TestSuite, sendReceive)
-      {
+      TEST_F(TcpIpSockets_rawMessages_TestSuite, sendReceive) {
         TcpIpClient clientClientSide = TcpIpClient{LOCAL_HOST, PORT};
         TcpIpClient clientServerSide = acceptResult.get();
 
@@ -117,8 +104,7 @@ namespace Common
         ASSERT_THAT(act, Eq(msg));
       }
 
-      TEST_F(TcpIpSockets_rawMessages_TestSuite, shoutdownClient)
-      {
+      TEST_F(TcpIpSockets_rawMessages_TestSuite, shoutdownClient) {
         TcpIpClient clientClientSide = TcpIpClient{LOCAL_HOST, PORT};
         TcpIpClient clientServerSide = acceptResult.get();
 
@@ -127,6 +113,6 @@ namespace Common
         ASSERT_THAT(clientClientSide.receive(&act, sizeof(act)), Eq(false));
         ASSERT_THAT(clientServerSide.receive(&act, sizeof(act)), Eq(false));
       }
-    }
-  }
-}
+    } // namespace UT
+  }   // namespace Network
+} // namespace Common

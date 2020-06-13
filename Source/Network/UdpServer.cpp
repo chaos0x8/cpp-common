@@ -18,39 +18,35 @@
  *  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <Network/UdpServer.hpp>
 #include <Network/Detail/BufforSize.hpp>
+#include <Network/UdpServer.hpp>
 #include <array>
 
-namespace Common
-{
-namespace Network
-{
-
-UdpServer::UdpServer(const std::string& ip, const std::string& port)
-{
+namespace Common::Network {
+  UdpServer::UdpServer(const std::string& ip, const std::string& port) {
     fd = bind(ip, port, SOCK_DGRAM);
-}
+  }
 
-UdpMessage UdpServer::receive()
-{
+  UdpMessage UdpServer::receive() {
     std::array<char, BUFFOR_SIZE> buffor;
     UdpMessage msg{};
 
-    ssize_t nread = ::recvfrom(static_cast<int>(fd), buffor.data(), buffor.size(), 0, reinterpret_cast<sockaddr*>(&msg.address), &msg.addressLength);
-    if (nread == -1)
-        throw Exceptions::SystemError(errno);
+    ssize_t nread = ::recvfrom(**fd, buffor.data(), buffor.size(), 0,
+      reinterpret_cast<sockaddr*>(&msg.address), &msg.addressLength);
+    if (nread == -1) {
+      throw Exceptions::SystemError(errno);
+    }
 
     msg.data = std::string(buffor.data(), nread);
 
     return msg;
-}
+  }
 
-void UdpServer::send(UdpMessage msg)
-{
-    if (::sendto(static_cast<int>(fd), msg.data.data(), msg.data.size(), 0, reinterpret_cast<sockaddr*>(&msg.address), msg.addressLength) != static_cast<ssize_t>(msg.data.size()))
-        throw Exceptions::SystemError(errno);
-}
-
-}
-}
+  void UdpServer::send(UdpMessage msg) {
+    if (::sendto(**fd, msg.data.data(), msg.data.size(), 0,
+          reinterpret_cast<sockaddr*>(&msg.address),
+          msg.addressLength) != static_cast<ssize_t>(msg.data.size())) {
+      throw Exceptions::SystemError(errno);
+    }
+  }
+} // namespace Common::Network
