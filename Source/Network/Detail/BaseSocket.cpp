@@ -21,10 +21,6 @@
 #include <Network/Detail/BaseSocket.hpp>
 
 namespace Common::Network::Detail {
-  NativeHandler BaseSocket::getNativeHandler() const {
-    return *fd;
-  }
-
   BaseSocket::BaseSocket(FileDescriptor fd) : fd(std::move(fd)) {}
 
   FileDescriptor BaseSocket::connect(

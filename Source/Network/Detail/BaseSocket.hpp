@@ -23,40 +23,44 @@
 #include <Common/Exceptions/SystemError.hpp>
 #include <Network/Detail/AddrinfoDeleter.hpp>
 #include <Network/Detail/FileDescriptor.hpp>
-#include <string>
 #include <memory>
+#include <string>
 
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <netdb.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 
-namespace Common
-{
-namespace Network
-{
-namespace Detail
-{
-
-class BaseSocket
-{
-    struct FdWithAddrinfo
-    {
-        FileDescriptor fd;
-        std::unique_ptr<addrinfo, AddrinfoDeleter> address;
+namespace Common::Network::Detail {
+  class BaseSocket {
+    struct FdWithAddrinfo {
+      FileDescriptor fd;
+      std::unique_ptr<addrinfo, AddrinfoDeleter> address;
     };
 
-public:
-    NativeHandler getNativeHandler() const;
+  public:
+    NativeHandler getNativeHandler() const {
+      return *fd;
+    }
 
-protected:
+    bool operator==(NativeHandler nh) const {
+      return getNativeHandler() == nh;
+    }
+
+    bool operator!=(NativeHandler nh) const {
+      return getNativeHandler() != nh;
+    }
+
+  protected:
     BaseSocket() noexcept = default;
     BaseSocket(FileDescriptor);
 
     //! \throw Exceptions::SystemError
-    static FileDescriptor connect(const std::string& ip, const std::string port, __socket_type socketType);
+    static FileDescriptor connect(
+      const std::string& ip, const std::string port, __socket_type socketType);
 
     //! \throw Exceptions::SystemError
-    static FileDescriptor bind(const std::string& ip, const std::string port, __socket_type socketType);
+    static FileDescriptor bind(
+      const std::string& ip, const std::string port, __socket_type socketType);
 
     //! \throw Exceptions::SystemError
     static FileDescriptor listen(const std::string& ip, const std::string port);
@@ -66,11 +70,9 @@ protected:
 
     FileDescriptor fd{};
 
-private:
+  private:
     //! \throw Exceptions::SystemError
-    static FdWithAddrinfo socket(const std::string& ip, const std::string port, __socket_type socketType);
-};
-
-}
-}
-}
+    static FdWithAddrinfo socket(
+      const std::string& ip, const std::string port, __socket_type socketType);
+  };
+} // namespace Common::Network::Detail
