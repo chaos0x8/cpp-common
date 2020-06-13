@@ -21,74 +21,65 @@
 #pragma once
 
 #include <Network/Pipe.hpp>
+#include <atomic>
 #include <functional>
 #include <map>
 #include <mutex>
 #include <thread>
-#include <atomic>
 
-namespace Common
-{
-namespace Network
-{
+namespace Common::Network {
+  using SelectorCallback = std::function<void(NativeHandler)>;
 
-using SelectorCallback = std::function<void ()>;
-
-class Selector
-{
-public:
+  class Selector {
+  public:
     Selector();
     Selector(const Selector&) = delete;
     ~Selector();
 
-    Selector& operator = (const Selector&) = delete;
+    Selector& operator=(const Selector&) = delete;
 
     void stop();
     void wait();
 
     template <class T, class F, class... Args>
-    void add(const T& t, F&& f, Args&&... args)
-    {
-        const int fd = getNativeHandler(t);
-        SelectorCallback callback  = std::bind(std::forward<F>(f), std::forward<Args>(args)...);
-        add(fd, std::move(callback));
+    void add(const T& t, F&& f, Args&&... args) {
+      const auto fd = getNativeHandler(t);
+
+      if constexpr (sizeof...(Args) > 0) {
+        addPriv(fd, std::bind(std::forward<F>(f), std::forward<Args>(args)...));
+      } else {
+        addPriv(fd, std::forward<F>(f));
+      }
     }
 
-    template <class T>
-    void remove(const T& t)
-    {
-        remove(getNativeHandler(t));
+    template <class T> void remove(const T& t) {
+      remove(getNativeHandler(t));
     }
 
-private:
-    template <class T>
-    static int getNativeHandler(const T& t);
+  private:
+    template <class T> static NativeHandler getNativeHandler(const T& t);
 
     void clear();
 
-    void add(int fd, SelectorCallback);
-    void remove(int fd);
+    void addPriv(NativeHandler fd, SelectorCallback);
+    void remove(NativeHandler fd);
     void threadProcedure();
-    void internalHandler();
+    void internalHandler(NativeHandler);
 
     std::atomic<bool> keepAlive{true};
     std::mutex itemsMutex;
     Pipe internalCommunication;
     std::thread selectorThread;
-    std::map<int, SelectorCallback> items;
-};
+    std::map<NativeHandler, SelectorCallback> items;
+  };
 
-template <class T>
-inline int Selector::getNativeHandler(const T& t)
-{
+  template <class T>
+  inline NativeHandler Selector::getNativeHandler(const T& t) {
     return t.getNativeHandler();
-}
+  }
 
-template <>
-inline int Selector::getNativeHandler<Pipe>(const Pipe& t)
-{
+  template <>
+  inline NativeHandler Selector::getNativeHandler<Pipe>(const Pipe& t) {
     return t.getNativeHandler()[0];
-}
-
-}
-}
+  }
+} // namespace Common::Network

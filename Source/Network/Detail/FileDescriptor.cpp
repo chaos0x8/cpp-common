@@ -19,58 +19,41 @@
  */
 
 #include <Network/Detail/FileDescriptor.hpp>
-#include <utility>
 #include <unistd.h>
+#include <utility>
 
-namespace Common
-{
-namespace Network
-{
-namespace Detail
-{
+namespace Common::Network::Detail {
+  FileDescriptor::FileDescriptor(value_type fd) : fd(std::move(fd)) {}
 
-FileDescriptor::FileDescriptor(value_type fd)
-    : fd(std::move(fd))
-{
-}
-
-FileDescriptor::FileDescriptor(FileDescriptor&& other)
-    : fd(std::move(other.fd))
-{
+  FileDescriptor::FileDescriptor(FileDescriptor&& other)
+    : fd(std::move(other.fd)) {
     other.fd = INVALID_VALUE;
-}
+  }
 
-FileDescriptor::~FileDescriptor()
-{
+  FileDescriptor::~FileDescriptor() {
     close();
-}
+  }
 
-FileDescriptor& FileDescriptor::operator = (FileDescriptor&& other)
-{
+  FileDescriptor& FileDescriptor::operator=(FileDescriptor&& other) {
     this->close();
     this->fd = std::move(other.fd);
     other.fd = INVALID_VALUE;
 
     return *this;
-}
+  }
 
-FileDescriptor::operator bool () const
-{
-    return fd != INVALID_VALUE;
-}
-
-FileDescriptor::operator value_type () const
-{
+  FileDescriptor::value_type FileDescriptor::operator*() const {
     return fd;
-}
+  }
 
-void FileDescriptor::close()
-{
+  FileDescriptor::operator bool() const {
+    return fd != INVALID_VALUE;
+  }
+
+  void FileDescriptor::close() {
     if (operator bool())
-        ::close(fd);
+      ::close(*fd);
     fd = INVALID_VALUE;
-}
+  }
 
-}
-}
-}
+} // namespace Common::Network::Detail

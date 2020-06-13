@@ -20,65 +20,60 @@
 
 #include <Network/Detail/BaseSocket.hpp>
 
-namespace Common
-{
-namespace Network
-{
-namespace Detail
-{
+namespace Common::Network::Detail {
+  NativeHandler BaseSocket::getNativeHandler() const {
+    return *fd;
+  }
 
-NativeHandler BaseSocket::getNativeHandler() const
-{
-    return static_cast<NativeHandler>(fd);
-}
+  BaseSocket::BaseSocket(FileDescriptor fd) : fd(std::move(fd)) {}
 
-BaseSocket::BaseSocket(FileDescriptor fd)
-    : fd(std::move(fd))
-{
-}
-
-FileDescriptor BaseSocket::connect(const std::string& ip, const std::string port, __socket_type socketType)
-{
+  FileDescriptor BaseSocket::connect(
+    const std::string& ip, const std::string port, __socket_type socketType) {
     FdWithAddrinfo r = socket(ip, port, socketType);
 
-    if (::connect(static_cast<NativeHandler>(r.fd), r.address->ai_addr, static_cast<NativeHandler>(r.address->ai_addrlen)) == -1)
-        throw Exceptions::SystemError(errno);
+    if (::connect(**r.fd, r.address->ai_addr, r.address->ai_addrlen) == -1) {
+      throw Exceptions::SystemError(errno);
+    }
 
     return std::move(r.fd);
-}
+  }
 
-FileDescriptor BaseSocket::bind(const std::string& ip, const std::string port, __socket_type socketType)
-{
+  FileDescriptor BaseSocket::bind(
+    const std::string& ip, const std::string port, __socket_type socketType) {
     FdWithAddrinfo r = socket(ip, port, socketType);
 
     int yes = 1;
-    if (::setsockopt(static_cast<NativeHandler>(r.fd), SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
-        throw Exceptions::SystemError(errno);
+    if (::setsockopt(**r.fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) ==
+        -1) {
+      throw Exceptions::SystemError(errno);
+    }
 
-    if (::bind(static_cast<NativeHandler>(r.fd), r.address->ai_addr, static_cast<NativeHandler>(r.address->ai_addrlen)) == -1)
-        throw Exceptions::SystemError(errno);
+    if (::bind(**r.fd, r.address->ai_addr, r.address->ai_addrlen) == -1) {
+      throw Exceptions::SystemError(errno);
+    }
 
     return std::move(r.fd);
-}
+  }
 
-FileDescriptor BaseSocket::listen(const std::string& ip, const std::string port)
-{
+  FileDescriptor BaseSocket::listen(
+    const std::string& ip, const std::string port) {
     FileDescriptor fd = bind(ip, port, SOCK_STREAM);
 
-    if (::listen(static_cast<NativeHandler>(fd), SOMAXCONN) == -1)
-        throw Exceptions::SystemError(errno);
+    if (::listen(**fd, SOMAXCONN) == -1) {
+      throw Exceptions::SystemError(errno);
+    }
 
     return fd;
-}
+  }
 
-void BaseSocket::shutdown()
-{
-    if (::shutdown(static_cast<NativeHandler>(fd), SHUT_RDWR) == -1)
-        throw Exceptions::SystemError(errno);
-}
+  void BaseSocket::shutdown() {
+    if (::shutdown(**fd, SHUT_RDWR) == -1) {
+      throw Exceptions::SystemError(errno);
+    }
+  }
 
-BaseSocket::FdWithAddrinfo BaseSocket::socket(const std::string& ip, const std::string port, __socket_type socketType)
-{
+  BaseSocket::FdWithAddrinfo BaseSocket::socket(
+    const std::string& ip, const std::string port, __socket_type socketType) {
     addrinfo hints{};
     hints.ai_family = AF_UNSPEC;    //! Allows IPv4 or IPv6
     hints.ai_socktype = socketType; //! Basicly TcpIp or Udp
@@ -86,21 +81,21 @@ BaseSocket::FdWithAddrinfo BaseSocket::socket(const std::string& ip, const std::
     hints.ai_protocol = 0;          //! Any
 
     addrinfo* address{nullptr};
-    if (::getaddrinfo(ip.c_str(), port.c_str(), &hints, &address) != 0)
-        throw Exceptions::SystemError(errno);
+    if (::getaddrinfo(ip.c_str(), port.c_str(), &hints, &address) != 0) {
+      throw Exceptions::SystemError(errno);
+    }
 
     std::unique_ptr<addrinfo, Detail::AddrinfoDeleter> _address{address};
 
-    FileDescriptor fd{::socket(address->ai_family, address->ai_socktype, address->ai_protocol)};
-    if (!fd)
-        throw Exceptions::SystemError(errno);
+    FileDescriptor fd{NativeHandler(::socket(
+      address->ai_family, address->ai_socktype, address->ai_protocol))};
+    if (!fd) {
+      throw Exceptions::SystemError(errno);
+    }
 
     FdWithAddrinfo result;
     result.fd = std::move(fd);
     result.address = std::move(_address);
     return result;
-}
-
-}
-}
-}
+  }
+} // namespace Common::Network::Detail

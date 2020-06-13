@@ -20,43 +20,38 @@
 
 #pragma once
 
-#include <sys/types.h>
-#include <sys/socket.h>
+#include "Common/StrongType.hpp"
 #include <netdb.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 
-namespace Common
-{
-  namespace Network
-  {
-    namespace Detail
-    {
+namespace Common::Network {
+  namespace Detail {
 
-      class FileDescriptor
-      {
-      public:
-        using value_type = int;
+    class FileDescriptor {
+    public:
+      using value_type = StrongType<int, struct FileDescriptorTag>;
 
-        FileDescriptor() = default;
-        explicit FileDescriptor(value_type fd);
-        FileDescriptor(const FileDescriptor& other) = delete;
-        FileDescriptor(FileDescriptor&& other);
-        ~FileDescriptor();
+      FileDescriptor() = default;
+      explicit FileDescriptor(value_type fd);
+      FileDescriptor(const FileDescriptor& other) = delete;
+      FileDescriptor(FileDescriptor&& other);
+      ~FileDescriptor();
 
-        FileDescriptor& operator=(const FileDescriptor&) = delete;
-        FileDescriptor& operator=(FileDescriptor&& other);
+      FileDescriptor& operator=(const FileDescriptor&) = delete;
+      FileDescriptor& operator=(FileDescriptor&& other);
 
-        explicit operator bool() const;
-        explicit operator value_type() const;
+      value_type operator*() const;
+      explicit operator bool() const;
 
-        void close();
+      void close();
 
-      private:
-        static constexpr value_type INVALID_VALUE = -1;
+    private:
+      static constexpr value_type INVALID_VALUE = value_type(-1);
 
-        value_type fd{INVALID_VALUE};
-      };
-    }
+      value_type fd{INVALID_VALUE};
+    };
+  } // namespace Detail
 
-    using NativeHandler = Detail::FileDescriptor::value_type;
-  }
-}
+  using NativeHandler = Detail::FileDescriptor::value_type;
+} // namespace Common::Network

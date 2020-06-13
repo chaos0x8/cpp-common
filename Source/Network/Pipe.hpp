@@ -21,17 +21,12 @@
 #pragma once
 
 #include <Network/Detail/FileDescriptor.hpp>
-#include <string>
 #include <array>
+#include <string>
 
-namespace Common
-{
-namespace Network
-{
-
-class Pipe
-{
-public:
+namespace Common::Network {
+  class Pipe {
+  public:
     //! \throw Exceptions::SystemError
     Pipe();
 
@@ -41,12 +36,10 @@ public:
     //! \throw Exceptions::SystemError
     void write(const std::string& buffor);
 
-    std::array<int, 2> getNativeHandler() const;
+    std::array<NativeHandler, 2> getNativeHandler() const;
 
-private:
+  private:
     Detail::FileDescriptor readPipe;
     Detail::FileDescriptor writePipe;
-};
-
-}
-}
+  };
+} // namespace Common::Network
