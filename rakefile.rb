@@ -18,7 +18,7 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-gem 'rake-builder', '~> 0.5', '>= 0.5.2'
+gem 'rake-builder', '~> 1.0', '>= 1.0.2'
 
 autoload :FileUtils, 'fileutils'
 
@@ -86,14 +86,14 @@ config['uts'].each { |ut|
 
     t.name = ut['name']
     t.requirements << preGenerated
-    t.requirements << ut['libs'].select { |lib|
-      config['libs'].collect { |l| l['name'] }.include?(lib)
-    }
     t.flags << (ut['flags'] || config['flags'])
     t.flags << (ut['std'] || config['std'])
     t.includes << FileList['Source', 'Test', *(ut['includes'] || [])]
     t.sources << FileList[*ut['sources']]
     t.requirements << generated
+    t.requirements << ut['libs'].select { |lib|
+      config['libs'].collect { |l| l['name'] }.include?(lib)
+    }
     t.description = "Builds test binary #{t.name}"
     t.libs << ['-pthread', '-lgtest', '-lgmock']
     t.libs << (ut['libs'] || [])
@@ -101,8 +101,8 @@ config['uts'].each { |ut|
   } unless ut['wip']
 }
 
-desc 'Builds all generated files'
-multitask(:generated => Names[generated, preGenerated])
+#desc 'Builds all generated files'
+#multitask(:generated => Names[generated, preGenerated])
 
 desc 'Removes generated files'
 task(:clean_generated) {

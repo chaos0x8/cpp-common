@@ -104,6 +104,42 @@ namespace Common::OptionParser {
     EXPECT_THAT(sut, SizeIs(0u));
   }
 
+  TEST_F(ParserTestSuite, accessLambdaParameterPresentWithoutArg) {
+    bool help = false;
+
+    sut.on<0>("--help", [&help] { help = true; });
+    sut.parse({"--help"});
+
+    ASSERT_THAT(help, Eq(true));
+  }
+
+  TEST_F(ParserTestSuite, accessLambdaParameterNotPresentWithoutArg) {
+    bool help = false;
+
+    sut.on<0>("--help", [&help] { help = true; });
+    sut.parse({});
+
+    ASSERT_THAT(help, Eq(false));
+  }
+
+  TEST_F(ParserTestSuite, accessLambdaParameterPresentWithArg) {
+    std::string help;
+
+    sut.on<1>("--help", [&help](std::string_view arg) { help = arg; });
+    sut.parse({"--help", "me"});
+
+    ASSERT_THAT(help, Eq("me"));
+  }
+
+  TEST_F(ParserTestSuite, accessLambdaParameterNotPresentWithArg) {
+    std::string help;
+
+    sut.on<1>("--help", [&help](std::string_view arg) { help = arg; });
+    sut.parse({});
+
+    ASSERT_THAT(help, Eq(""));
+  }
+
   struct ParserArgsAccessTestSuite : public ParserTestSuite {
     void SetUp() override {
       std::array<const char*, 5> args = {"app", "a0", "a1", "a2", "a3"};

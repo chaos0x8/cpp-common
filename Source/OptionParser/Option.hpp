@@ -72,6 +72,26 @@ namespace Common::OptionParser {
     private:
       std::optional<T> value_;
     };
+
+    template <size_t N, class F> struct LambdaOption : public Option {
+      LambdaOption(std::string_view name, F&& fun)
+        : Option(name), fun_(std::move(fun)) {}
+
+      void set(std::string_view val) override {
+        if constexpr (N == 0) {
+          fun_();
+        } else {
+          fun_(val);
+        }
+      }
+
+      size_t arity() const override {
+        return N;
+      }
+
+    private:
+      F fun_;
+    };
   } // namespace Detail
 
   template <class T> struct Option {

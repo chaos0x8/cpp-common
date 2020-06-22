@@ -39,9 +39,17 @@ namespace Common::OptionParser {
       return Option<T>(std::move(option));
     }
 
+    template <size_t N = 0, class F> void on(std::string_view name, F&& fun) {
+      auto option =
+        std::make_shared<Detail::LambdaOption<N, F>>(name, std::move(fun));
+      options_.emplace_back(option);
+      lambdaOptions_.emplace_back(std::move(option));
+    }
+
   private:
     value_type name_;
     std::vector<value_type> args_;
     std::vector<std::weak_ptr<Detail::Option>> options_;
+    std::vector<std::shared_ptr<Detail::Option>> lambdaOptions_;
   };
 } // namespace Common::OptionParser
